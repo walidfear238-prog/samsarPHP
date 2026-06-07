@@ -1,3 +1,45 @@
+<?php
+
+
+// NO whitespace or ANYTHING before this opening PHP tag!
+require 'db/connect.php';
+
+// Handle verification logic BEFORE any HTML output
+$error_message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
+  $user_code = trim($_POST['code[0]'] . $_POST['code[1]'] . $_POST['code[2]'] . $_POST['code[3]'] . $_POST['code[4]'] . $_POST['code[5]']);
+
+  // Validate numeric input
+  $code_int = filter_var($user_code, FILTER_VALIDATE_INT);
+  if ($code_int === false && !is_numeric($user_code)) {
+    $error_message = "Please enter a valid numeric code.";
+  } else {
+    $numeric_code = (int) $user_code;
+
+    $stmt = $conn->prepare("SELECT * FROM users WHERE verification_code = ?");
+    $stmt->bind_param("i", $numeric_code);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+      $stmt2 = $conn->prepare("UPDATE users SET is_verified = 1 WHERE verification_code = ?");
+      $stmt2->bind_param("i", $numeric_code);
+      $stmt2->execute();
+
+      // Redirect AFTER all processing, before any HTML output
+      header('Location: login.php');
+      exit(); // Always call exit after header redirect
+    } else {
+      $error_message = "Wrong verification code!";
+    }
+  }
+}
+
+
+
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -40,15 +82,16 @@
       <h1>Check your <em>inbox.</em></h1>
       <p>We sent a verification link to</p>
       <span class="email-display" id="email-display">yassine@email.com</span>
-      <p class="sub">Click the link in the email to activate your SAMSAR account. The link expires in 24 hours.</p>
+      <p class="sub">Click the link in the email to activate your SAMSAR account. The link expires in 24 hours.
+      </p>
 
       <div class="code-input" aria-label="Verification code">
-        <input type="text" maxlength="1" data-idx="0" autofocus />
-        <input type="text" maxlength="1" data-idx="1" />
-        <input type="text" maxlength="1" data-idx="2" />
-        <input type="text" maxlength="1" data-idx="3" />
-        <input type="text" maxlength="1" data-idx="4" />
-        <input type="text" maxlength="1" data-idx="5" />
+        <input name="code[]" type="text" maxlength="1" data-idx="0" autofocus />
+        <input name="code[]" type="text" maxlength="1" data-idx="1" />
+        <input name="code[]" type="text" maxlength="1" data-idx="2" />
+        <input name="code[]" type="text" maxlength="1" data-idx="3" />
+        <input name="code[]" type="text" maxlength="1" data-idx="4" />
+        <input name="code[]" type="text" maxlength="1" data-idx="5" />
       </div>
       <p class="code-hint">Or enter the 6-digit code from the email</p>
 
