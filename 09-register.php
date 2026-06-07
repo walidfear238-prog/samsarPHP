@@ -1,142 +1,197 @@
 <?php
 session_start();
-include "db/connect.php";
+require "db/connect.php";
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-//require 'path/to/PHPMailer/src/Exception.php';
-require 'path/to/PHPMailer/src/PHPMailer.php';
-require 'path/to/PHPMailer/src/SMTP.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// function for helping with input 
-// function to clean the input
-function test_input($data)
+if (!$conn) {
+  die("Database connection failed: " . mysqli_connect_error());
+}
+
+function clean_input($data)
 {
   $data = trim($data);
   $data = stripslashes($data);
   $data = htmlspecialchars($data);
   return $data;
 }
-//funvction to check te input 
-function validate_input($data)
+
+function validate_signup($first_name, $last_name, $email, $password, $role, $agency_name, $city)
 {
   $errors = [];
-  //chech if the input is empty
-  if (empty($data["fir"])) {
+
+  if ($first_name == "") {
     $errors[] = "First name is required.";
+  } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $first_name)) {
+    $errors[] = "Only letters and white space allowed in first name.";
   }
-  if (empty($data["las"])) {
+
+  if ($last_name == "") {
     $errors[] = "Last name is required.";
+  } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $last_name)) {
+    $errors[] = "Only letters and white space allowed in last name.";
   }
-  // check if the email is empty and valid
-  if (empty($data["email"])) {
+
+  if ($email == "") {
     $errors[] = "Email is required.";
-  } elseif (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
+  } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = "Invalid email format.";
   }
-  // check if the password is empty and has at least 8 characters
-  if (empty($data["password"])) {
+
+  if ($password == "") {
     $errors[] = "Password is required.";
-  } elseif (strlen($data["password"]) < 8) {
+  } elseif (strlen($password) < 8) {
     $errors[] = "Password must be at least 8 characters long.";
-  } elseif (!preg_match("/[A-Z]/", $data["password"])) {
-    $errors[] = "Password must contain at least one uppercase letter.";
-  } elseif (!preg_match("/[a-z]/", $data["password"])) {
-    $errors[] = "Password must contain at least one lowercase letter.";
-  } elseif (!preg_match("/[0-9]/", $data["password"])) {
-    $errors[] = "Password must contain at least one number.";
-  } elseif (!preg_match("/[!@#$%^&*]/", $data["password"])) {
-    $errors[] = "Password must contain at least one special character.";
   }
+
+  // ✅ FIX: Validate role properly
+  $allowed_roles = ["user", "agency"];
+  if (empty($role) || !in_array($role, $allowed_roles)) {
+    $errors[] = "Please select a valid account type.";
+  }
+
+  if ($role == "agency") {
+    if (empty($agency_name)) {
+      $errors[] = "Agency name is required for agency accounts.";
+    }
+    if (empty($city)) {
+      $errors[] = "City is required for agency accounts.";
+    }
+  }
+
   return $errors;
 }
-//function to handle the file upload
-function handle_file_upload($file)
+
+function upload_profile_picture($file)
 {
-  $target_dir = "uploads/";
-  $target_file = $target_dir . basename($file["name"]);
-  $uploadOk = 1;
+  $target_dir = "uploads/profile/";
+  if (!file_exists($target_dir)) {
+    mkdir($target_dir, 0777, true);
+  }
+
+  $file_extension = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+  $unique_filename = time() . "_" . uniqid() . "." . $file_extension;
+  $target_file = $target_dir . $unique_filename;
+
   $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+  $check = getimagesize($file["tmp_name"]);
 
-  // Check if image file is a actual image or fake image
-  if (isset($_POST["submit"])) {
-    $check = getimagesize($file["tmp_name"]);
-    if ($check !== false) {
-      echo "File is an image - " . $check["mime"] . ".";
-      $uploadOk = 1;
-    } else {
-      echo "File is not an image.";
-      $uploadOk = 0;
-    }
+  if ($check === false) {
+    return ["error" => "File is not an image."];
   }
-
-  // Check if file already exists
-  if (file_exists($target_file)) {
-    echo "Sorry, file already exists.";
-    $uploadOk = 0;
-  }
-
-  // Check file size
   if ($file["size"] > 500000) {
-    echo "Sorry, your file is too large.";
-    $uploadOk = 0;
+    return ["error" => "Sorry, your file is too large."];
   }
-
-  // Allow certain file formats
-  if (
-    $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-    && $imageFileType != "gif"
-  ) {
-    echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-    $uploadOk = 0;
+  if (!in_array($imageFileType, ["jpg", "jpeg", "png", "gif"])) {
+    return ["error" => "Sorry, only JPG, JPEG, PNG & GIF files are allowed."];
   }
-
-  // Check if $uploadOk is set to 0 by an error
-  if ($uploadOk == 0) {
-    echo "Sorry, your file was not uploaded.";
+  if (move_uploaded_file($file["tmp_name"], $target_file)) {
+    return ["path" => $target_file];
   } else {
-    if (move_uploaded_file($file["tmp_name"], $target_file)) {
-      echo "The file " . basename($file["name"]) . " has been uploaded.";
-    } else {
-      echo "Sorry, there was an error uploading your file.";
-    }
+    return ["error" => "Sorry, there was an error uploading your file."];
   }
 }
-// code to handle the form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $data = [
-    "fir" => test_input($_POST["fir"]),
-    "las" => test_input($_POST["las"]),
-    "email" => test_input($_POST["email"]),
-    "password" => test_input($_POST["password"]),
-    "profile-picture" => isset($_FILES["profile-picture"]) ? handle_file_upload($_FILES["profile-picture"]) : ""
-  ];
 
-  $errors = validate_input($data);
-  if (empty($errors)) {
-    // hash the password
-    $hashed_password = password_hash($data["password"], PASSWORD_DEFAULT);
-    // insert the user into the database using oop
-    $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, password , profile_picture) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssss", $data["fir"], $data["las"], $data["email"], $hashed_password, $data["profile-picture"]);
-    if ($stmt->execute()) {
-      // registration successful, redirect to login page
-      header("Location: 20-verify-email.php");
-      exit();
-    } else {
-      // registration failed
-      $error = "Error: " . $stmt->error;
-    }
-  } else {
-    // validation errors
-    $error = implode("<br>", $errors);
+function create_user($conn, $first_name, $last_name, $email, $hashed_password, $role, $agency_name, $phone, $city, $profile_picture)
+{
+  $stmt = $conn->prepare("INSERT INTO users 
+    (firstname, lastname, email, password, role, agencyName, phone, city, profile_image) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+  if (!$stmt) {
+    die("Prepare failed: " . $conn->error);
   }
 
+  $stmt->bind_param(
+    "sssssssss",
+    $first_name,
+    $last_name,
+    $email,
+    $hashed_password,
+    $role,
+    $agency_name,
+    $phone,
+    $city,
+    $profile_picture
+  );
 
+  if ($stmt->execute()) {
+    return true;
+  } else {
+    error_log("Execute error: " . $stmt->error);
+    return false;
+  }
+}
 
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+  if (isset($_SESSION['errors'])) {
+    unset($_SESSION['errors']);
+  }
+
+  // ✅ FIX: Use null coalescing operator for ALL post fields
+  $first_name = isset($_POST["fir"]) ? clean_input($_POST["fir"]) : "";
+  $last_name = isset($_POST["las"]) ? clean_input($_POST["las"]) : "";
+  $email = isset($_POST["email"]) ? clean_input($_POST["email"]) : "";
+  $password = isset($_POST["password"]) ? $_POST["password"] : "";
+  $role = isset($_POST["acct"]) ? clean_input($_POST["acct"]) : "";
+  $city = isset($_POST["city"]) ? clean_input($_POST["city"]) : "";
+  $agency_name = isset($_POST["agency-name"]) ? clean_input($_POST["agency-name"]) : "";
+  $phone = isset($_POST["phone"]) ? clean_input($_POST["phone"]) : "";
+
+  // ✅ DEBUG: Uncomment to inspect what's being submitted
+  // echo "<pre>"; print_r($_POST); echo "</pre>"; die();
+
+  $errors = validate_signup($first_name, $last_name, $email, $password, $role, $agency_name, $city);
+
+  if (empty($errors)) {
+    $profile_picture_path = null;
+
+    if (isset($_FILES["profile-picture"]) && $_FILES["profile-picture"]["error"] == 0) {
+      $upload_result = upload_profile_picture($_FILES["profile-picture"]);
+      if (isset($upload_result["error"])) {
+        $errors[] = $upload_result["error"];
+      } else {
+        $profile_picture_path = $upload_result["path"];
+      }
+    }
+
+    if (empty($errors)) {
+      $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+      if (
+        create_user(
+          $conn,
+          $first_name,
+          $last_name,
+          $email,
+          $hashed_password,
+          $role,
+          $agency_name,
+          $phone,
+          $city,
+          $profile_picture_path
+        )
+      ) {
+        $_SESSION["success_message"] = "Account created successfully! Please log in.";
+        header("Location: 08-login.php");
+        exit();
+      } else {
+        $errors[] = "Error creating account. Please try again.";
+      }
+    }
+  }
+
+  if (!empty($errors)) {
+    $_SESSION['errors'] = $errors;
+    // ✅ Redirect back to prevent form resubmission
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+  }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -198,23 +253,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 </header>
 
-                <!-- User / Agency toggle -->
-                <div class="type-toggle" role="radiogroup" aria-label="Account type">
-                    <label class="tt-opt active" data-type="user">
-                        <input type="radio" name="acct" value="user" checked />
-                        <span class="tt-ico">⌂</span>
-                        <span class="tt-text"><strong>Personal User</strong><em>Browse & message sellers</em></span>
-                    </label>
-                    <label class="tt-opt" data-type="agency">
-                        <input type="radio" name="acct" value="agency" />
-                        <span class="tt-ico">▤</span>
-                        <span class="tt-text"><strong>Real Estate Agency</strong><em>List properties & build a
-                                brand</em></span>
-                    </label>
+                <!-- Display errors -->
+                <?php if (isset($_SESSION['errors']) && !empty($_SESSION['errors'])): ?>
+                <div
+                    style="color: red; padding: 15px; background: #ffeeee; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid red;">
+                    <strong>Please fix the following errors:</strong>
+                    <ul style="margin: 10px 0 0 0;">
+                        <?php foreach ($_SESSION['errors'] as $error): ?>
+                        <li><?php echo $error; ?></li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
+                <?php unset($_SESSION['errors']); ?>
+                <?php endif; ?>
+
 
                 <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST"
                     enctype="multipart/form-data" id="reg-form" class="form">
+                    <!-- Account Type Toggle -->
+                    <div class="type-toggle" role="radiogroup" aria-label="Account type">
+                        <label class="tt-opt active" data-type="user">
+                            <input type="radio" name="acct" value="user" checked />
+                            <span class="tt-ico">⌂</span>
+                            <span class="tt-text"><strong>Personal User</strong><em>Browse & message sellers</em></span>
+                        </label>
+                        <label class="tt-opt" data-type="agency">
+                            <input type="radio" name="acct" value="agency" />
+                            <span class="tt-ico">▤</span>
+                            <span class="tt-text"><strong>Real Estate Agency</strong><em>List properties & build a
+                                    brand</em></span>
+                        </label>
+                    </div>
+
+
                     <div class="row">
                         <label class="floating">
                             <input name="fir" type="text" required placeholder=" " />
@@ -233,14 +304,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <span>Agency name</span>
                             </label>
                             <label class="floating">
-                                <select name="city" required>
-                                    <option disabled selected hidden></option>
-                                    <option>Marrakech</option>
-                                    <option>Casablanca</option>
-                                    <option>Tangier</option>
-                                    <option>Rabat</option>
-                                    <option>Fès</option>
-                                    <option>Essaouira</option>
+                                <select name="city">
+                                    <option value="" disabled selected hidden></option>
+                                    <option value="marrakech">Marrakech</option>
+                                    <option value="casablanca">Casablanca</option>
+                                    <option value="tangier">Tangier</option>
+                                    <option value="rabat">Rabat</option>
+                                    <option value="fès">Fès</option>
+                                    <option value="essaouira">Essaouira</option>
                                 </select>
                                 <span>City</span>
                             </label>
@@ -256,11 +327,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input name="phone" type="tel" placeholder=" " />
                         <span>Phone (optional)</span>
                     </label>
-                    <!--upload a profile picture-->
+
                     <label class="floating">
                         <input name="profile-picture" type="file" accept="image/*" />
                         <span>Upload a profile picture</span>
                     </label>
+
                     <label class="floating">
                         <input name="password" type="password" id="pw" required placeholder=" " />
                         <span>Password</span>
@@ -275,9 +347,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="meter"><span></span></div>
 
                     <label class="check terms"><input name="terms" type="checkbox" required /><span>I agree to the
-                            <a href="#">Terms
-                                of
-                                Service</a> and <a href="#">Privacy Policy</a></span></label>
+                            <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span></label>
 
                     <button class="pill-btn" type="submit">
                         <span>Create free account</span>
