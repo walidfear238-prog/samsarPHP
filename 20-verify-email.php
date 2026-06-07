@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAMSAR · Verify your email</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles/20-verify-email.css" />
+  <link rel="stylesheet" href="styles/samsar-transitions.css" />
+</head>
+
+<body>
+  <div class="cursor"></div>
+  <div class="cursor-dot"></div>
+  <div class="ambient"><span class="orb orb-1"></span><span class="orb orb-2"></span></div>
+
+  <main class="shell">
+    <a href="index.php" class="brand">
+      <svg class="brand-mark" viewBox="0 0 100 100">
+        <path
+          d="M22 44 L50 18 L78 44 L78 86 Q78 90 74 90 L26 90 Q22 90 22 86 Z M38 38 L62 38 L62 50 L38 50 Z M38 60 L62 60 L62 72 L38 72 Z"
+          fill-rule="evenodd" />
+      </svg>
+      <span class="brand-word">SAMSAR</span>
+    </a>
+
+    <div class="card">
+      <div class="icon-ring">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="2" y="4" width="20" height="16" rx="3" />
+          <path d="M22 4 L12 13 L2 4" />
+        </svg>
+      </div>
+
+      <h1>Check your <em>inbox.</em></h1>
+      <p>We sent a verification link to</p>
+      <span class="email-display" id="email-display">yassine@email.com</span>
+      <p class="sub">Click the link in the email to activate your SAMSAR account. The link expires in 24 hours.</p>
+
+      <div class="code-input" aria-label="Verification code">
+        <input type="text" maxlength="1" data-idx="0" autofocus />
+        <input type="text" maxlength="1" data-idx="1" />
+        <input type="text" maxlength="1" data-idx="2" />
+        <input type="text" maxlength="1" data-idx="3" />
+        <input type="text" maxlength="1" data-idx="4" />
+        <input type="text" maxlength="1" data-idx="5" />
+      </div>
+      <p class="code-hint">Or enter the 6-digit code from the email</p>
+
+      <button class="pill-btn" id="verify-btn">
+        <span>Verify & continue</span>
+        <span class="pill-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg></span>
+      </button>
+
+      <div class="footer-actions">
+        <button class="link-btn" id="resend">Didn't receive it? <strong>Resend email</strong></button>
+        <span class="divider-dot">·</span>
+        <a href="09-register.php" class="link-btn">Wrong email? <strong>Go back</strong></a>
+      </div>
+
+      <div class="status" id="status" hidden>
+        <span class="status-ico">✓</span>
+        <span class="status-text">Verified — redirecting to your dashboard…</span>
+      </div>
+    </div>
+
+    <p class="legal">Need help? <a href="07-contact.php">Contact support</a></p>
+  </main>
+
+  <script src="scripts/samsar-transitions.js"></script>
+  <script src="scripts/20-verify-email.js"></script>
+</body>
+
+</html>

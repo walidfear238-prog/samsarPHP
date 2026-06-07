@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAMSAR · About</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles/06-about.css" />
+  <link rel="stylesheet" href="styles/samsar-transitions.css" />
+</head>
+
+<body>
+  <div class="page-trans"><span></span><span></span><span></span></div>
+  <div class="cursor"></div>
+  <div class="cursor-dot"></div>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="index.php" class="brand"><svg class="brand-mark" viewBox="0 0 100 100">
+          <path
+            d="M22 44 L50 18 L78 44 L78 86 Q78 90 74 90 L26 90 Q22 90 22 86 Z M38 38 L62 38 L62 50 L38 50 Z M38 60 L62 60 L62 72 L38 72 Z"
+            fill-rule="evenodd" />
+        </svg><span class="brand-word">SAMSAR</span></a>
+      <nav class="nav-links"><a href="02-properties.php">Properties</a><a href="04-agencies.php">Agencies</a><a
+          href="06-about.php" class="active">About</a><a href="07-contact.php">Contact</a></nav>
+      <div class="nav-right"><a href="08-login.php" class="nav-text">Sign in</a><a href="10-register-choose.php"
+          class="btn btn-primary">Join SAMSAR <span class="arrow">→</span></a></div>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="container">
+        <span class="eyebrow reveal">About SAMSAR</span>
+        <h1 class="reveal" data-delay="60">The trusted broker,<br /><em>reimagined.</em></h1>
+        <p class="reveal" data-delay="120">In Morocco, the <em>samsar</em> has always been the soul of property — the
+          one who knows the door behind the door. We kept the trust. We rebuilt the rest.</p>
+      </div>
+    </section>
+
+    <section class="story">
+      <div class="container story-grid">
+        <div class="story-img reveal"><img
+            src="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=1200&q=85"
+            alt="Marrakech medina" /></div>
+        <div class="story-text">
+          <span class="eyebrow reveal">Origin</span>
+          <h2 class="reveal" data-delay="60">Born in Casablanca,<br />built for Morocco.</h2>
+          <p class="reveal" data-delay="120">SAMSAR was founded in 2026 by three Moroccan technologists who had each,
+            separately, tried to buy a home in Marrakech — and each, separately, lost weeks to opaque listings, phantom
+            commissions, and contradicting samsars.</p>
+          <p class="reveal" data-delay="180">We started as a quiet experiment: what if every listing was verified before
+            it went live, every commission was disclosed in writing, and every contract was offered in Arabic, French
+            and English? A year later, fourteen agencies and 1,200 listings later — SAMSAR is the answer.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="values">
+      <div class="container">
+        <span class="eyebrow reveal">What we believe</span>
+        <h2 class="reveal" data-delay="60">Three principles. No exceptions.</h2>
+        <div class="val-grid">
+          <div class="val reveal"><span class="num">01</span>
+            <h3>Verified before published</h3>
+            <p>Every title deed is cross-checked with the Conservation Foncière. Every photograph is matched to GPS
+              data. No exceptions.</p>
+          </div>
+          <div class="val reveal" data-delay="100"><span class="num">02</span>
+            <h3>Transparent commission</h3>
+            <p>A flat 2.5% commission, itemised in writing, disclosed before any visit. No referral kickbacks. No
+              surprise fees at closing.</p>
+          </div>
+          <div class="val reveal" data-delay="200"><span class="num">03</span>
+            <h3>Bilingual contracts</h3>
+            <p>Arabic, French, English. Drafted by a Moroccan notary you choose — never one we refer for a fee.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="team">
+      <div class="container">
+        <span class="eyebrow reveal">The team</span>
+        <h2 class="reveal" data-delay="60">A small studio in Casablanca.</h2>
+        <div class="team-grid">
+          <div class="member reveal"><img
+              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&q=80"
+              alt="Salma El Idrissi" /><strong>Salma El Idrissi</strong><span>Co-founder · Product</span></div>
+          <div class="member reveal" data-delay="80"><img
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80"
+              alt="Yassine Berrada" /><strong>Yassine Berrada</strong><span>Co-founder · Engineering</span></div>
+          <div class="member reveal" data-delay="160"><img
+              src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=500&q=80"
+              alt="Imane Cherkaoui" /><strong>Imane Cherkaoui</strong><span>Co-founder · Brokerage</span></div>
+          <div class="member reveal" data-delay="240"><img
+              src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=500&q=80"
+              alt="Karim Benjelloun" /><strong>Karim Benjelloun</strong><span>Head of Network</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="container cta-inner">
+        <h2 class="reveal">Ready to <em>start looking?</em></h2>
+        <a href="02-properties.php" class="btn btn-light">Browse properties <span class="arrow">→</span></a>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="container footer-inner"><span>© 2026 SAMSAR · Casablanca, Morocco</span></div>
+  </footer>
+  <script src="scripts/samsar-transitions.js"></script>
+  <script src="scripts/06-about.js"></script>
+  <script>
+    (function () {
+      if (window.SamsarTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var old = document.querySelector('.page-trans'); if (old) old.remove();
+        setTimeout(function () { SamsarTransition.play('flip-y', 'slow') }, 50);
+      }
+    })();
+  </script>
+</body>
+
+</html>

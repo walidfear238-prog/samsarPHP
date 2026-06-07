@@ -1,0 +1,355 @@
+/* =========================================================
+   SAMSAR · Page Transition System
+   6 animation types · 3 durations · CSS keyframes only
+   Include this file in every page's <head> after the main CSS.
+   ========================================================= */
+
+:root {
+  /* Configurable durations */
+  --samsar-dur-fast:   300ms;
+  --samsar-dur-normal: 550ms;
+  --samsar-dur-slow:   850ms;
+
+  /* Timing functions */
+  --samsar-ease-out:       cubic-bezier(0.16, 1, 0.3, 1);
+  --samsar-ease-in-out:    cubic-bezier(0.87, 0, 0.13, 1);
+  --samsar-ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --samsar-ease-in-out-cb: cubic-bezier(0.65, 0, 0.35, 1);
+  --samsar-ease-elastic:   cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ---------- SIMPLE PAGE-TO-PAGE SIDE SLIDE ---------- */
+.page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+}
+.page-transition .layer,
+.page-transition::after {
+  display: none !important;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+/* Hide every legacy overlay system */
+.page-trans {
+  display: none !important;
+}
+
+/* animate the actual page, not an overlay */
+body > *:not(.page-transition):not(script) {
+  will-change: transform, opacity, filter;
+}
+
+body.is-entering > *:not(.page-transition):not(script) {
+  animation: samsarPageEnter 520ms var(--samsar-ease-out) both;
+}
+
+body.is-leaving > *:not(.page-transition):not(script) {
+  animation: samsarPageLeave 380ms var(--samsar-ease-in-out-cb) both;
+}
+
+@keyframes samsarPageEnter {
+  0% {
+    transform: translate3d(42px, 0, 0);
+    opacity: 0;
+    filter: blur(6px);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes samsarPageLeave {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: translate3d(-42px, 0, 0);
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+/* ==========================================================
+   TYPE 1 — DIRECTIONAL SLIDES (translateX/Y)
+   Classes: .tx-slide-right, .tx-slide-left, .ty-slide-down, .ty-slide-up
+   ========================================================== */
+
+/* Slide from right → left (default, matches your reference) */
+body.is-entering .tx-slide-right .layer {
+  animation: slideOutLeft var(--samsar-dur-normal, 700ms) var(--samsar-ease-out) both;
+}
+body.is-entering .tx-slide-right .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .tx-slide-right .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes slideOutLeft {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-101%); }
+}
+
+/* Slide from left → right */
+body.is-entering .tx-slide-left .layer {
+  animation: slideOutRight var(--samsar-dur-normal, 700ms) var(--samsar-ease-out) both;
+}
+body.is-entering .tx-slide-left .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .tx-slide-left .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes slideOutRight {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(101%); }
+}
+
+/* Slide from bottom → top */
+body.is-entering .ty-slide-up .layer {
+  animation: slideOutUp var(--samsar-dur-normal, 700ms) var(--samsar-ease-out) both;
+}
+body.is-entering .ty-slide-up .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .ty-slide-up .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes slideOutUp {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-101%); }
+}
+
+/* Slide from top → bottom */
+body.is-entering .ty-slide-down .layer {
+  animation: slideOutDown var(--samsar-dur-normal, 700ms) var(--samsar-ease-out) both;
+}
+body.is-entering .ty-slide-down .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .ty-slide-down .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes slideOutDown {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(101%); }
+}
+
+/* Cover animation (applied when leaving a page) */
+body.is-leaving .tx-slide-right .layer,
+body.is-leaving .tx-slide-left .layer,
+body.is-leaving .ty-slide-up .layer,
+body.is-leaving .ty-slide-down .layer {
+  animation: coverSlide var(--samsar-dur-fast, 400ms) var(--samsar-ease-out) both;
+}
+body.is-leaving .layer:nth-child(2) { animation-delay: 0.06s; }
+body.is-leaving .layer:nth-child(3) { animation-delay: 0.12s; }
+@keyframes coverSlide {
+  0%   { transform: translateX(101%); }
+  100% { transform: translateX(0); }
+}
+
+/* ==========================================================
+   TYPE 2 — ORGANIC MORPH (scale + rotate + border-radius)
+   Class: .organic-morph
+   ========================================================== */
+body.is-entering .organic-morph .layer {
+  animation: morphReveal var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out) both;
+  border-radius: 0;
+}
+body.is-entering .organic-morph .layer:nth-child(1) { animation-delay: 0s; }
+body.is-entering .organic-morph .layer:nth-child(2) { animation-delay: 0.1s; }
+body.is-entering .organic-morph .layer:nth-child(3) { animation-delay: 0.2s; }
+@keyframes morphReveal {
+  0%   { transform: scale(0.3) rotate(-15deg); border-radius: 50%; opacity: 0; }
+  40%  { opacity: 1; border-radius: 30%; }
+  100% { transform: scale(1.2) rotate(0deg); border-radius: 0; }
+}
+body.is-leaving .organic-morph .layer {
+  animation: morphCover var(--samsar-dur-normal, 700ms) var(--samsar-ease-in-out) both;
+}
+body.is-leaving .organic-morph .layer:nth-child(2) { animation-delay: 0.07s; }
+body.is-leaving .organic-morph .layer:nth-child(3) { animation-delay: 0.14s; }
+@keyframes morphCover {
+  0%   { transform: scale(1) rotate(0deg); border-radius: 0; opacity: 1; }
+  60%  { border-radius: 50%; }
+  100% { transform: scale(0.2) rotate(20deg); border-radius: 50%; opacity: 0; }
+}
+
+/* ==========================================================
+   TYPE 3 — CLIP-PATH REVEALS (circle)
+   Classes: .clip-circle-center, .clip-circle-corner
+   ========================================================== */
+body.is-entering .clip-circle-center .layer {
+  animation: clipCircleCenter var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out) both;
+  clip-path: circle(0% at 50% 50%);
+}
+body.is-entering .clip-circle-center .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .clip-circle-center .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes clipCircleCenter {
+  0%   { clip-path: circle(0% at 50% 50%); }
+  100% { clip-path: circle(150% at 50% 50%); }
+}
+
+body.is-entering .clip-circle-corner .layer {
+  animation: clipCircleCorner var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out) both;
+  clip-path: circle(0% at 100% 0%);
+}
+body.is-entering .clip-circle-corner .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .clip-circle-corner .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes clipCircleCorner {
+  0%   { clip-path: circle(0% at 100% 0%); }
+  100% { clip-path: circle(180% at 100% 0%); }
+}
+
+body.is-leaving .clip-circle-center .layer,
+body.is-leaving .clip-circle-corner .layer {
+  animation: clipCover var(--samsar-dur-normal, 700ms) var(--samsar-ease-in-out) both;
+}
+body.is-leaving .layer:nth-child(2) { animation-delay: 0.07s; }
+body.is-leaving .layer:nth-child(3) { animation-delay: 0.14s; }
+@keyframes clipCover {
+  0%   { clip-path: circle(0% at 50% 50%); }
+  100% { clip-path: circle(150% at 50% 50%); }
+}
+
+/* ==========================================================
+   TYPE 4 — ZOOM + BLUR (opacity + scale + filter)
+   Class: .zoom-blur
+   ========================================================== */
+body.is-entering .zoom-blur .layer {
+  animation: zoomBlurReveal var(--samsar-dur-normal, 700ms) var(--samsar-ease-out) both;
+  opacity: 0;
+  filter: blur(30px);
+  transform: scale(1.15);
+}
+body.is-entering .zoom-blur .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .zoom-blur .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes zoomBlurReveal {
+  0%   { opacity: 0; transform: scale(1.15); filter: blur(30px); }
+  50%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(1); filter: blur(0); }
+}
+body.is-leaving .zoom-blur .layer {
+  animation: zoomBlurCover var(--samsar-dur-fast, 400ms) var(--samsar-ease-in-out) both;
+}
+body.is-leaving .zoom-blur .layer:nth-child(2) { animation-delay: 0.05s; }
+body.is-leaving .zoom-blur .layer:nth-child(3) { animation-delay: 0.1s; }
+@keyframes zoomBlurCover {
+  0%   { opacity: 1; transform: scale(1); filter: blur(0); }
+  50%  { opacity: 0.8; filter: blur(10px); }
+  100% { opacity: 1; transform: scale(1.05); filter: blur(0); }
+}
+
+/* ==========================================================
+   TYPE 5 — 3D FLIP (perspective + rotateY/X)
+   Classes: .flip-y, .flip-x, .flip-diagonal
+   ========================================================== */
+body.is-entering .flip-y .layer {
+  animation: flipYReveal var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out-cubic) both;
+  transform: perspective(1400px) rotateY(90deg) translateZ(0);
+  transform-origin: left center;
+}
+body.is-entering .flip-y .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .flip-y .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes flipYReveal {
+  0%   { transform: perspective(1400px) rotateY(0deg) translateZ(0); }
+  100% { transform: perspective(1400px) rotateY(-90deg) translateZ(0); }
+}
+
+body.is-entering .flip-x .layer {
+  animation: flipXReveal var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out-cubic) both;
+  transform: perspective(1400px) rotateX(90deg) translateZ(0);
+  transform-origin: center top;
+}
+body.is-entering .flip-x .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .flip-x .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes flipXReveal {
+  0%   { transform: perspective(1400px) rotateX(0deg) translateZ(0); }
+  100% { transform: perspective(1400px) rotateX(-90deg) translateZ(0); }
+}
+
+body.is-entering .flip-diagonal .layer {
+  animation: flipDiagReveal var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out-cubic) both;
+  transform: perspective(1400px) rotate3d(1, 1, 0, 90deg);
+  transform-origin: top left;
+}
+body.is-entering .flip-diagonal .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .flip-diagonal .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes flipDiagReveal {
+  0%   { transform: perspective(1400px) rotate3d(1, 1, 0, 0deg); }
+  100% { transform: perspective(1400px) rotate3d(1, 1, 0, -90deg); }
+}
+
+body.is-leaving .flip-y .layer,
+body.is-leaving .flip-x .layer,
+body.is-leaving .flip-diagonal .layer {
+  animation: flipCover var(--samsar-dur-normal, 700ms) var(--samsar-ease-in-out) both;
+}
+body.is-leaving .layer:nth-child(2) { animation-delay: 0.06s; }
+body.is-leaving .layer:nth-child(3) { animation-delay: 0.12s; }
+@keyframes flipCover {
+  0%   { transform: perspective(1400px) rotateY(-90deg); }
+  100% { transform: perspective(1400px) rotateY(0deg); }
+}
+
+/* ==========================================================
+   TYPE 6 — LIQUID WIPE (polygon clip-path)
+   Classes: .liquid-wipe-left, .liquid-wipe-right, .liquid-wave
+   ========================================================== */
+body.is-entering .liquid-wipe-left .layer {
+  animation: liquidWipeLeft var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out) both;
+  clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+}
+body.is-entering .liquid-wipe-left .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .liquid-wipe-left .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes liquidWipeLeft {
+  0%   { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+body.is-entering .liquid-wipe-right .layer {
+  animation: liquidWipeRight var(--samsar-dur-slow, 1200ms) var(--samsar-ease-out) both;
+  clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+}
+body.is-entering .liquid-wipe-right .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .liquid-wipe-right .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes liquidWipeRight {
+  0%   { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+body.is-entering .liquid-wave .layer {
+  animation: liquidWave var(--samsar-dur-slow, 1200ms) var(--samsar-ease-in-out-cb) both;
+  clip-path: polygon(0 40%, 20% 35%, 40% 45%, 60% 30%, 80% 40%, 100% 35%, 100% 100%, 0 100%);
+}
+body.is-entering .liquid-wave .layer:nth-child(2) { animation-delay: 0.08s; }
+body.is-entering .liquid-wave .layer:nth-child(3) { animation-delay: 0.16s; }
+@keyframes liquidWave {
+  0%   { clip-path: polygon(0 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 0 100%); }
+  50%  { clip-path: polygon(0 40%, 20% 35%, 40% 45%, 60% 30%, 80% 40%, 100% 35%, 100% 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 0 0, 100% 0, 100% 0, 100% 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+body.is-leaving .liquid-wipe-left .layer,
+body.is-leaving .liquid-wipe-right .layer,
+body.is-leaving .liquid-wave .layer {
+  animation: liquidCover var(--samsar-dur-normal, 700ms) var(--samsar-ease-in-out) both;
+}
+body.is-leaving .layer:nth-child(2) { animation-delay: 0.06s; }
+body.is-leaving .layer:nth-child(3) { animation-delay: 0.12s; }
+@keyframes liquidCover {
+  0%   { clip-path: polygon(0 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+/* ==========================================================
+   DURATION OVERRIDES
+   Add these classes alongside the animation type to change speed
+   ========================================================== */
+.dur-fast   { --samsar-dur-normal: 300ms;  --samsar-dur-slow: 300ms;  --samsar-dur-fast: 200ms; }
+.dur-normal { --samsar-dur-normal: 550ms;  --samsar-dur-slow: 550ms;  --samsar-dur-fast: 300ms; }
+.dur-slow   { --samsar-dur-normal: 850ms;  --samsar-dur-slow: 850ms;  --samsar-dur-fast: 500ms; }
+
+/* ==========================================================
+   REDUCED MOTION
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition { display: none !important; }
+  body { transition: none !important; }
+}
