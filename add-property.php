@@ -17,7 +17,38 @@ function clean_input($data)
     $data = htmlspecialchars($data);
     return $data;
 }
+//function for title error
+function title_errors($title){
+    if(!isset($title)){
+       $error = "property title required";
+    }
+    return $error;
+}
+//function for price
+function price_errors($price){
+    if(!preg_match("/[0-9]/" ,$price)){
+       $error ="price accept only numbers *0-9* ";
+    }elseif(empty($price)){
+       $error ="price required";
+    }
+      return $error;
+}
+//description errors
 
+function desc_errors($desc){
+    
+    if(empty($desc)){
+       $error ="discreption require";
+    }
+    return $error;
+}
+//district
+function district_errors($district){
+    if(empty($district)){  
+         $error ="district is required";    
+    }
+  return $error;
+}
 
 function uploadImage($file)
 {
@@ -175,19 +206,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
                 <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
-                        class="dashboard-badge grey" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">👥</span>Following</a>
+                        class="dashboard-badge red" id="bdg-fav">0</em></a>
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
                 <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
             <div class="dashboard-side-foot">
-                <div class="dashboard-user">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                        alt="Avatar" />
-                    <div><strong>Yassine A.</strong><span>User</span></div>
+                <!-- profile name and role and profile image -->
+                <?php
+            $id = $_SESSION['user_id'];
+
+            $stmt = $conn->prepare("SELECT firstname , role , profile_image FROM users where id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
+
+
+            ?>
+                <div class="dashboard-side-foot">
+                    <div class="dashboard-user">
+                        <?php
+                    echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
+                        "alt='profile picture'/>";
+
+
+                    echo " <div><strong>" . htmlspecialchars($user['firstname']) . "</strong><span>" .
+                        htmlspecialchars($user['role']) . "</span></div>";
+                    ?>
+                    </div>
+                    <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
-            </div>
         </aside>
 
         <main class="dashboard-main">
@@ -206,6 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label class="ap-field">
                             <span>Property Title *</span>
                             <input name="title" type="text" required placeholder="e.g. Villa Tazri — Palmeraie" />
+
                         </label>
                         <label class="ap-field">
                             <span>Property Type *</span>

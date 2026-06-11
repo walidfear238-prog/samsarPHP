@@ -45,16 +45,34 @@ if (!isset($_SESSION['user_id'])) {
                 <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
                 <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
-                        class="dashboard-badge grey" id="bdg-fav">0</em></a>
+                        class="dashboard-badge red" id="bdg-fav">0</em></a>
                 <a class="dashboard-link active" href="following.php"><span class="ico">࿄</span>Following</a>
                 <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
+
+            <!-- profile name and role and profile image -->
+            <?php
+            $id = $_SESSION['user_id'];
+
+            $stmt = $conn->prepare("SELECT firstname , role , profile_image FROM users where id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
+
+
+            ?>
             <div class="dashboard-side-foot">
                 <div class="dashboard-user">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                        alt="Avatar" />
-                    <div><strong>Yassine A.</strong><span>User</span></div>
+                    <?php
+                    echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
+                        "alt='profile picture'/>";
+
+
+                    echo " <div><strong>" . htmlspecialchars($user['firstname']) . "</strong><span>" .
+                        htmlspecialchars($user['role']) . "</span></div>";
+                    ?>
                 </div>
                 <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
             </div>

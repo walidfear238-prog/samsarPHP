@@ -57,7 +57,7 @@ if (!isset($_SESSION['user_id'])) {
                 <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
                 <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
-                        class="dashboard-badge grey" id="bdg-fav">0</em></a>
+                        class="dashboard-badge red" id="bdg-fav">0</em></a>
                 <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
                 <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
                         class="dashboard-badge red" id="bdg-notif">0</em></a>
