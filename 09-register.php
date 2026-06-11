@@ -13,7 +13,7 @@ ini_set('display_errors', 1);
 if (!$conn) {
   die("Database connection failed: " . mysqli_connect_error());
 }
-
+// function to sanitize user input
 function clean_input($data)
 {
   $data = trim($data);
@@ -22,15 +22,17 @@ function clean_input($data)
   return $data;
 }
 
+// function to validate signup form data
 function validate_signup($first_name, $last_name, $email, $password, $role, $agency_name, $city)
 {
   $errors = [];
-
+  // Validate first name
   if ($first_name == "") {
     $errors[] = "First name is required.";
   } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $first_name)) {
     $errors[] = "Only letters and white space allowed in first name.";
   }
+  // Validate last name
 
   if ($last_name == "") {
     $errors[] = "Last name is required.";
@@ -38,12 +40,14 @@ function validate_signup($first_name, $last_name, $email, $password, $role, $age
     $errors[] = "Only letters and white space allowed in last name.";
   }
 
+  // Validate email
   if ($email == "") {
     $errors[] = "Email is required.";
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = "Invalid email format.";
   }
 
+  // Validate password
   if ($password == "") {
     $errors[] = "Password is required.";
   } elseif (strlen($password) < 8) {
@@ -56,10 +60,10 @@ function validate_signup($first_name, $last_name, $email, $password, $role, $age
     $errors[] = "Password must contain at least one number.";
   }
 
-  $allowed_roles = ["user", "agency"];
-  if (empty($role) || !in_array($role, $allowed_roles)) {
-    $errors[] = "Please select a valid account type.";
-  }
+  /* $allowed_roles = ["user", "agency"];
+   if (empty($role) || !in_array($role, $allowed_roles)) {
+     $errors[] = "Please select a valid account type.";
+   }*/
 
   if ($role == "agency") {
     if (empty($agency_name)) {
@@ -75,27 +79,37 @@ function validate_signup($first_name, $last_name, $email, $password, $role, $age
 
 function upload_profile_picture($file)
 {
+
+  // Ensure uploads/profile/ directory exists
   $target_dir = "uploads/profile/";
   if (!file_exists($target_dir)) {
     mkdir($target_dir, 0777, true);
   }
 
+  // Generate unique filename to prevent overwriting
   $file_extension = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
   $unique_filename = time() . "_" . uniqid() . "." . $file_extension;
   $target_file = $target_dir . $unique_filename;
 
+  // Validate file type and size
   $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+  // Check if file is an actual image
   $check = getimagesize($file["tmp_name"]);
 
+
+  // Check if file is an actual image
   if ($check === false) {
     return ["error" => "File is not an image."];
   }
+  // Check file size (limit to 500KB)
   if ($file["size"] > 500000) {
     return ["error" => "Sorry, your file is too large."];
   }
+  // Allow only certain file formats
   if (!in_array($imageFileType, ["jpg", "jpeg", "png", "gif"])) {
     return ["error" => "Sorry, only JPG, JPEG, PNG & GIF files are allowed."];
   }
+  // Attempt to move uploaded file to target directory
   if (move_uploaded_file($file["tmp_name"], $target_file)) {
     return ["path" => $target_file];
   } else {
@@ -105,7 +119,7 @@ function upload_profile_picture($file)
 
 function create_user($conn, $first_name, $last_name, $email, $hashed_password, $role, $agency_name, $phone, $city, $profile_picture, $verification_code)
 {
-  // Add verification_code column to users table first!
+
   $stmt = $conn->prepare("INSERT INTO users 
         (firstname, lastname, email, password, role, agencyName, phone, city, profile_image, verification_code, is_verified) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)");
@@ -158,22 +172,22 @@ function send_verification_email($email, $code, $first_name)
 
     // Content
     $mail->isHTML(true);
-    $mail->Subject = "Verify Your Account - ma7laba";
+    $mail->Subject = "Verify Your Account - samsar";
     $mail->AltBody = "Your verification code is: $code";
     $mail->Body = "
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
-            <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;'>
-                <h1 style='color: white; margin: 0;'>Welcome to ma7laba!</h1>
+            <div style='background: linear-gradient(135deg, #bb2626 0%, #ff7698 100%); padding: 30px; text-align: center;'>
+                <h1 style='color: white; margin: 0;'>Welcome to samsar!</h1>
             </div>
-            <div style='padding: 30px; background: #f9fafb;'>
-                <p style='font-size: 16px; color: #374151;'>Hello <strong>$first_name</strong>,</p>
-                <p style='font-size: 16px; color: #374151;'>Thank you for signing up! Please use the verification code below to activate your account:</p>
+            <div style='padding: 30px; background: #e5e5e6;'>
+                <p style='font-size: 16px; color: #5a5a5a;'>Hello <strong>$first_name</strong>,</p>
+                <p style='font-size: 16px; color: #4d2626;'>Thank you for signing up! Please use the verification code below to activate your account:</p>
                 <div style='background: white; padding: 20px; text-align: center; margin: 20px 0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
-                    <h1 style='color: #667eea; font-size: 48px; letter-spacing: 10px; margin: 0;'>$code</h1>
+                    <h1 style='color: #ea6666; font-size: 48px; letter-spacing: 10px; margin: 0;'>$code</h1>
                 </div>
-                <p style='font-size: 14px; color: #6b7280;'>This code will expire in 10 minutes.</p>
-                <hr style='margin: 20px 0; border-color: #e5e7eb;'>
-                <p style='font-size: 12px; color: #9ca3af;'>If you didn't create an account, please ignore this email.</p>
+                <p style='font-size: 14px; color: #806b6b;'>This code will expire in 10 minutes.</p>
+                <hr style='margin: 20px 0; border-color: #ebe5e5;'>
+                <p style='font-size: 12px; color: #af9c9c;'>If you didn't create an account, please ignore this email.</p>
             </div>
         </div>
         ";
@@ -272,12 +286,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
   }
 
-  if (!empty($errors)) {
-    $_SESSION['errors'] = $errors;
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
+  //errors 
+  if (isset($_SESSION['errors']) && !empty($_SESSION['errors'])) {
+    echo '<div class="error-messages">';
+    foreach ($_SESSION['errors'] as $error) {
+      echo '<p class="error">' . htmlspecialchars($error) . '</p>';
+    }
+    echo '</div>';
+    unset($_SESSION['errors']);
   }
 }
+
+
+
 ?>
 
 <!DOCTYPE html>

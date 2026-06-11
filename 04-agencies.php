@@ -1,3 +1,8 @@
+<?php
+session_start();
+
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,17 +30,35 @@
             fill-rule="evenodd" />
         </svg><span class="brand-word">SAMSAR</span></a>
       <nav class="nav-links"><a href="02-properties.php">Properties</a><a href="04-agencies.php"
-          class="active">Agencies</a><a href="06-about.php">About</a><a href="07-contact.php">Contact</a></nav>
-      <div class="nav-right"><a href="08-login.php" class="nav-text">Sign in</a><a href="10-register-choose.php"
-          class="btn btn-primary">Join SAMSAR <span class="arrow">→</span></a></div>
-    </div>
+          class="active">Agencies</a><a href="06-about.php">About</a><a href="07-contact.php">Contact</a>
+      </nav>
+      <?php
+      if (isset($_SESSION['user_id'])) {
+
+        echo '<div class="nav-right">';
+        echo '<a href="dashboard.php" style="font-size:14px;font-weight:500">Dashboard</a>';
+
+
+        echo '<a href="logout.php" class="btn btn-secondary">Logout</a>';
+        echo '
+        </div>';
+
+      } else {
+        echo '            <div class="nav-right"><a href="08-login.php" class="nav-text">Sign in</a><a href="10-register-choose.php"
+                    class="btn btn-primary">Join SAMSAR <span class="arrow">→</span></a></div>
+        </div>';
+      }
+
+      ?>
+
   </header>
   <main>
     <section class="page-head">
       <div class="container">
         <span class="eyebrow reveal">Network</span>
         <h1 class="reveal" data-delay="60">The samsars<br /><em>of Morocco.</em></h1>
-        <p class="reveal" data-delay="120">14 vetted agencies, hundreds of brokers — every one of them verified by
+        <p class="reveal" data-delay="120">14 vetted agencies, hundreds of brokers — every one of them
+          verified by
           SAMSAR. Find the right partner for your city, your style, your timeline.</p>
         <div class="head-search reveal" data-delay="180">
           <input type="text" id="agency-search" placeholder="Search agencies by name or city…" />

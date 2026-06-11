@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,9 +30,30 @@
             <nav class="nav-links"><a href="02-properties.php">Properties</a><a href="04-agencies.php"
                     class="active">Agencies</a><a href="06-about.php">About</a><a href="07-contact.php">Contact</a>
             </nav>
-            <div class="nav-right"><a href="08-login.php" class="nav-text">Sign in</a><a href="10-register-choose.php"
+            <?php
+            if (isset($_SESSION['user_id'])) {
+                echo '<div class="nav-right">';
+                echo '<a href="dashboard.php" style="font-size:14px;font-weight:500">Dashboard</a>';
+
+
+                echo '<a href="logout.php" class="btn btn-secondary">Logout</a>';
+                echo '
+        </div>';
+            } else {
+                echo '            <div class="nav-right"><a href="08-login.php" class="nav-text">Sign in</a><a href="10-register-choose.php"
                     class="btn btn-primary">Join SAMSAR <span class="arrow">→</span></a></div>
-        </div>
+        </div>';
+            }
+
+
+            ?>
+
+
+
+
+
+
+
     </header>
 
     <main>

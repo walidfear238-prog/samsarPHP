@@ -1,3 +1,14 @@
+<?php
+
+session_start();
+// check if the user loged in
+require "db/connect.php";
+if (!isset($_SESSION['user_id'])) {
+    header('location: index.php');
+    exit;
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 

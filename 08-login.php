@@ -4,7 +4,8 @@ include "db/connect.php";
 
 // function for helping with input sanitization
 // function to clean the input 
-function test_input($data) {
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
@@ -15,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = test_input($_POST["email"]);
     $password = test_input($_POST["pw"]);
     // query to check if the user exists in the database usind oop
-    $stmt = $conn->prepare("SELECT id, name, email, password FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id, firstname, email, password FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -25,10 +26,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $row["password"])) {
             // password is correct, start a new session
             $_SESSION["user_id"] = $row["id"];
-            $_SESSION["user_name"] = $row["name"];
+            $_SESSION["user_name"] = $row["firstname"];
             $_SESSION["user_email"] = $row["email"];
             // redirect to the dashboard
-            header("Location: 10-dashboard.php");
+            header("Location: dashboard.php");
             exit();
         } else {
             // password is incorrect

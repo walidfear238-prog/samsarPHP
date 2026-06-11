@@ -1,0 +1,31 @@
+<?php
+session_start();
+
+$user_id = $_SESSION['user_id'];
+
+//insert properties in my_propeties jsone
+function get_my_properties($conn, $user_id)
+{
+    $stmt = $conn->prepare("
+        SELECT title, property_type, price, status, city, bedrooms, bathrooms, area
+        FROM properties
+        WHERE user_id = ?
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $properties = [];
+    while ($row = $result->fetch_assoc()) {
+        $properties[] = $row;
+    }
+
+     json_encode($properties);
+}
+
+
+
+
+
+
+
+?>
