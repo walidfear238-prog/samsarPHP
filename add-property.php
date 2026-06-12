@@ -1,4 +1,6 @@
 <?php
+
+
 session_start();
 require "db/connect.php";
 if (!isset($_SESSION['user_id'])) {
@@ -17,38 +19,42 @@ function clean_input($data)
     $data = htmlspecialchars($data);
     return $data;
 }
-//function for title error
-function title_errors($title){
-    if(!isset($title)){
-       $error = "property title required";
+/*function for title error
+function title_errors($title)
+{
+    if (!isset($title)) {
+        $error = "property title required";
     }
     return $error;
 }
 //function for price
-function price_errors($price){
-    if(!preg_match("/[0-9]/" ,$price)){
-       $error ="price accept only numbers *0-9* ";
-    }elseif(empty($price)){
-       $error ="price required";
+function price_errors($price)
+{
+    if (!preg_match("/[0-9]/", $price)) {
+        $error = "price accept only numbers *0-9* ";
+    } elseif (empty($price)) {
+        $error = "price required";
     }
-      return $error;
+    return $error;
 }
 //description errors
 
-function desc_errors($desc){
-    
-    if(empty($desc)){
-       $error ="discreption require";
+function desc_errors($desc)
+{
+
+    if (empty($desc)) {
+        $error = "discreption require";
     }
     return $error;
 }
 //district
-function district_errors($district){
-    if(empty($district)){  
-         $error ="district is required";    
+function district_errors($district)
+{
+    if (empty($district)) {
+        $error = "district is required";
     }
-  return $error;
-}
+    return $error;
+}*/
 
 function uploadImage($file)
 {
@@ -117,11 +123,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Handle multiple image uploads
     $uploaded_images = [];
 
-   if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
+    if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
         // Limit the number of files to process
         $max_files = 10; // Process max 10 files
         $file_count = min(count($_FILES['images']['name']), $max_files);
-        
+
         for ($i = 0; $i < $file_count; $i++) {
             // Check if file uploaded without errors
             if ($_FILES['images']['error'][$i] == 0) {
@@ -131,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     'error' => $_FILES['images']['error'][$i],
                     'size' => $_FILES['images']['size'][$i]
                 ];
-                
+
                 $img_name = uploadImage($file);
                 if (!empty($img_name)) {
                     $uploaded_images[] = $img_name;
@@ -214,26 +220,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="dashboard-side-foot">
                 <!-- profile name and role and profile image -->
                 <?php
-            $id = $_SESSION['user_id'];
+                $id = $_SESSION['user_id'];
 
-            $stmt = $conn->prepare("SELECT firstname , role , profile_image FROM users where id = ?");
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $user = $result->fetch_assoc();
+                $stmt = $conn->prepare("SELECT firstname , role , profile_image FROM users where id = ?");
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $user = $result->fetch_assoc();
 
 
-            ?>
+                ?>
                 <div class="dashboard-side-foot">
                     <div class="dashboard-user">
                         <?php
-                    echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
-                        "alt='profile picture'/>";
+                        echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
+                            "alt='profile picture'/>";
 
 
-                    echo " <div><strong>" . htmlspecialchars($user['firstname']) . "</strong><span>" .
-                        htmlspecialchars($user['role']) . "</span></div>";
-                    ?>
+                        echo " <div><strong>" . htmlspecialchars($user['firstname']) . "</strong><span>" .
+                            htmlspecialchars($user['role']) . "</span></div>";
+                        ?>
                     </div>
                     <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
                 </div>

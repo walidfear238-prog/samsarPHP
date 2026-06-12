@@ -10,13 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 
 
 
-//delete property function
-function delete_property($conn, $user_id, $property_id, $property_images)
-{
-    $stmt = $conn->prepare("DELETE from properties where id=? and user_id=?");
-    $stmt->bind_param("ii", $property_id, $user_id);
-    return $stmt->exicute;
-}
 
 
 
@@ -329,74 +322,66 @@ function delete_property($conn, $user_id, $property_id, $property_images)
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
     <script>
-    (function() {
-        const Store = window.SamsarStore;
-        const body = document.getElementById('mp-body');
-        const modal = document.getElementById('delete-modal');
-        let pendingId = null;
+    fetch("api/get-properties.php")
+        .then(res => res.json())
+        .then(data => {
+            const body = document.getElementById("mp-body");
 
-        function statusClass(s) {
-            if (s === 'rented') return 'rented';
-            if (s === 'sold') return 'sold';
-            return '';
-        }
+            body.innerHTML = data.map(p => `
+            <tr>
+                <td>
+                    <div class="mp-cell">
+                        <img src="uploads/${p.img || ''}" />
+                        <div>
+                            <strong>${p.title}</strong>
+                            <span>${p.city} · ${p.property_type}</span>
+                        </div>
+                    </div>
+                </td>
 
-        function render() {
-            const props = Store.get('properties', []);
-            if (!props.length) {
-                body.innerHTML =
-                    '<tr><td colspan="6" class="mp-empty"><h3>No properties yet</h3><p>Start by adding your first listing.</p></td></tr>';
-                return;
-            }
-            body.innerHTML = props.map(p => `
-      <tr>
-        <td>
-          <div class="mp-cell">
-            <img src="${p.img}" alt="${p.title}"/>
-            <div>
-              <strong>${p.title}</strong>
-              <span>${p.city} · ${p.type}</span>
-            </div>
-          </div>
-        </td>
-        <td><span class="mp-status ${statusClass(p.status)}">${p.status}</span></td>
-        <td><strong>${p.price}</strong></td>
-        <td>${p.beds} bd / ${p.baths} ba</td>
-        <td>${p.area} m²</td>
-        <td>
-          <div class="mp-actions">
-            <a href="03-property-details.php" class="mp-btn">View</a>
-            <a href="edit-property.php?id=${p.id}" class="mp-btn edit">Edit</a>
-            <button class="mp-btn del" data-del="${p.id}">Delete</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+                <td>${p.status}</td>
+                <td><strong>${p.price}</strong></td>
+                <td>${p.bedrooms} bd / ${p.bathrooms} ba</td>
+                <td>${p.area} m²</td>
 
-            body.querySelectorAll('[data-del]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    pendingId = parseInt(btn.dataset.del);
-                    modal.classList.add('is-open');
+                <td>
+                    <div class="mp-actions">
+                        <a href="edit-property.php?id=${p.id}" class="mp-btn edit">Edit</a>
+                        <button class="mp-btn del" data-del="${p.id}">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `).join("");
+        });
+
+
+
+    document.addEventListener("click", function(e) {
+        if (e.target.classList.contains("del")) {
+
+            const id = e.target.getAttribute("data-del");
+
+            if (!confirm("Are you sure you want to delete this property?")) return;
+
+            fetch("api/delete-property.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        property_id: id
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert("Delete failed");
+                    }
                 });
-            });
         }
-
-        document.getElementById('cancel-delete').addEventListener('click', () => modal.classList.remove('is-open'));
-        modal.addEventListener('click', e => {
-            if (e.target === modal) modal.classList.remove('is-open');
-        });
-        document.getElementById('confirm-delete').addEventListener('click', () => {
-            if (pendingId) {
-                const props = Store.get('properties', []).filter(p => p.id !== pendingId);
-                Store.set('properties', props);
-                render();
-                if (window.SamsarApp) SamsarApp.paintOverview();
-            }
-            modal.classList.remove('is-open');
-        });
-
-        render();
-    })();
+    });
     </script>
 </body>
 
