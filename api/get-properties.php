@@ -5,7 +5,6 @@ require "../db/connect.php";
 
 $user_id = $_SESSION['user_id'];
 
-//insert properties in my_propeties jsone
 function get_my_properties($conn, $user_id)
 {
     $stmt = $conn->prepare("
