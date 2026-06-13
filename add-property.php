@@ -233,8 +233,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="dashboard-side-foot">
                     <div class="dashboard-user">
                         <?php
-                        echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
-                            "alt='profile picture'/>";
+                        if(isset($user['profile_image'])){
+                                                   echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
+                            "alt='profile picture'/>"; 
+                        }else{
+                            echo "<img src='upload/property_images/1781142662___________________2026_04_16_182326.png'";
+                        }
+
 
 
                         echo " <div><strong>" . htmlspecialchars($user['firstname']) . "</strong><span>" .

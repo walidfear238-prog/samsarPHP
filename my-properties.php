@@ -233,8 +233,8 @@ if (!isset($_SESSION['user_id'])) {
     }
 
     .mp-btn.edit {
-        border-color: #C72C41;
-        color: #C72C41
+        border-color: #cfcfcf;
+        color: #2D7D5A
     }
 
     .mp-btn.edit:hover {
@@ -322,28 +322,56 @@ if (!isset($_SESSION['user_id'])) {
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
     <script>
+    // Define escapeHtml FIRST before using it
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // Fetch and display properties
     fetch("api/get-properties.php")
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            return res.json();
+        })
         .then(data => {
             const body = document.getElementById("mp-body");
+
+            if (!body) return;
+
+            if (!data || data.length === 0) {
+                body.innerHTML = `
+                <tr>
+                    <td colspan="6" class="mp-empty">
+                        <h3>No properties yet</h3>
+                        <p>Click "Add Property" to create your first listing.</p>
+                    </td>
+                </tr>
+            `;
+                return;
+            }
 
             body.innerHTML = data.map(p => `
             <tr>
                 <td>
                     <div class="mp-cell">
-                        <img src="uploads/${p.img || ''}" />
+                        <img src="uploads/property_images/${p.img || 'default.jpg'}" 
+                             onerror="this.src='uploads/property_images/default.jpg'" />
                         <div>
-                            <strong>${p.title}</strong>
-                            <span>${p.city} · ${p.property_type}</span>
+                            <strong>${escapeHtml(p.title)}</strong>
+                            <span>${escapeHtml(p.city)} · ${escapeHtml(p.property_type)}</span>
                         </div>
                     </div>
                 </td>
-
-                <td>${p.status}</td>
-                <td><strong>${p.price}</strong></td>
-                <td>${p.bedrooms} bd / ${p.bathrooms} ba</td>
-                <td>${p.area} m²</td>
-
+                <td><span class="mp-status ${p.status === 'rented' ? 'rented' : (p.status === 'sold' ? 'sold' : '')}">${escapeHtml(p.status || 'active')}</span></td>
+                <td><strong>${parseInt(p.price).toLocaleString()} MAD</strong></td>
+                <td>${p.bedrooms || 0} bd / ${p.bathrooms || 0} ba</td>
+                <td>${p.area || 0} m²</td>
                 <td>
                     <div class="mp-actions">
                         <a href="edit-property.php?id=${p.id}" class="mp-btn edit">Edit</a>
@@ -352,16 +380,40 @@ if (!isset($_SESSION['user_id'])) {
                 </td>
             </tr>
         `).join("");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const body = document.getElementById("mp-body");
+            if (body) {
+                body.innerHTML = `
+                <tr>
+                    <td colspan="6" class="mp-empty">
+                        <h3>Error loading properties</h3>
+                        <p>${error.message}</p>
+                        <p>Please check that api/get-properties.php exists and is working.</p>
+                    </td>
+                </tr>
+            `;
+            }
         });
 
+    // Delete functionality with modal
+    let propertyToDelete = null;
 
-
+    // Open modal when delete button is clicked
     document.addEventListener("click", function(e) {
         if (e.target.classList.contains("del")) {
+            propertyToDelete = e.target.getAttribute("data-del");
+            const modal = document.getElementById("delete-modal");
+            if (modal) modal.classList.add("is-open");
+        }
+    });
 
-            const id = e.target.getAttribute("data-del");
-
-            if (!confirm("Are you sure you want to delete this property?")) return;
+    // Confirm delete button
+    const confirmBtn = document.getElementById("confirm-delete");
+    if (confirmBtn) {
+        confirmBtn.addEventListener("click", function() {
+            if (!propertyToDelete) return;
 
             fetch("api/delete-property.php", {
                     method: "POST",
@@ -369,19 +421,71 @@ if (!isset($_SESSION['user_id'])) {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        property_id: id
+                        property_id: propertyToDelete
                     })
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error('Server error');
+                    return res.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        location.reload();
+                        // Remove the row from table
+                        const row = document.querySelector(`button[data-del="${propertyToDelete}"]`);
+                        if (row) {
+                            const tr = row.closest('tr');
+                            if (tr) tr.remove();
+                        }
+
+                        // Check if table is empty
+                        const tbody = document.getElementById("mp-body");
+                        if (tbody && tbody.children.length === 0) {
+                            tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="mp-empty">
+                                <h3>No properties yet</h3>
+                                <p>Click "Add Property" to create your first listing.</p>
+                            </td>
+                        </tr>
+                    `;
+                        }
                     } else {
-                        alert("Delete failed");
+                        alert(data.message || "Delete failed. Please try again.");
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("An error occurred while deleting the property.");
+                })
+                .finally(() => {
+                    const modal = document.getElementById("delete-modal");
+                    if (modal) modal.classList.remove("is-open");
+                    propertyToDelete = null;
                 });
-        }
-    });
+        });
+    }
+
+    // Cancel delete button
+    const cancelBtn = document.getElementById("cancel-delete");
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", function() {
+            const modal = document.getElementById("delete-modal");
+            if (modal) modal.classList.remove("is-open");
+            propertyToDelete = null;
+        });
+    }
+
+    // Close modal when clicking overlay
+    const modal = document.getElementById("delete-modal");
+    if (modal) {
+        modal.addEventListener("click", function(e) {
+            if (e.target === this) {
+                this.classList.remove("is-open");
+                propertyToDelete = null;
+            }
+        });
+    }
+    </script>
     </script>
 </body>
 

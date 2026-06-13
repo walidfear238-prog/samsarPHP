@@ -8,38 +8,38 @@ require 'db/connect.php';
 $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
-  $user_code = trim($_POST['code[0]'] . $_POST['code[1]'] . $_POST['code[2]'] . $_POST['code[3]'] . $_POST['code[4]'] . $_POST['code[5]']);
+    $user_code = trim($_POST['code[0]'] . $_POST['code[1]'] . $_POST['code[2]'] . $_POST['code[3]'] . $_POST['code[4]'] . $_POST['code[5]']);
 
-  // validate numeric input
-  if (!is_numeric($user_code)) {
-    $error_message = "Please enter a valid numeric code.";
-  } else {
-    $numeric_code = (int) $user_code;
-    
-    // check what code is being submitted
-    // echo "Submitted code: " . $numeric_code; // Uncomment for debugging
-
-    $stmt = $conn->prepare("SELECT * FROM users WHERE verification_code = ?");
-    $stmt->bind_param("i", $numeric_code);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-      // get the user ID to update by ID instead of verification_code
-      $user = $result->fetch_assoc();
-      $user_id = $user['id'];
-      
-      $stmt2 = $conn->prepare("UPDATE users SET is_verified = 1 WHERE id = ?");
-      $stmt2->bind_param("i", $user_id);
-      $stmt2->execute();
-
-      // redirect AFTER all processing, before any HTML output
-      header('Location: login.php');
-      exit(); // always call exit after header redirect
+    // validate numeric input
+    if (!is_numeric($user_code)) {
+        $error_message = "Please enter a valid numeric code.";
     } else {
-      $error_message = "Wrong verification code!";
+        $numeric_code = (int) $user_code;
+
+        // check what code is being submitted
+        // echo "Submitted code: " . $numeric_code; // Uncomment for debugging
+
+        $stmt = $conn->prepare("SELECT * FROM users WHERE verification_code = ?");
+        $stmt->bind_param("i", $numeric_code);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            // get the user ID to update by ID instead of verification_code
+            $user = $result->fetch_assoc();
+            $user_id = $user['id'];
+
+            $stmt2 = $conn->prepare("UPDATE users SET is_verified = 1 WHERE id = ?");
+            $stmt2->bind_param("i", $user_id);
+            $stmt2->execute();
+
+            // redirect AFTER all processing, before any HTML output
+            header('Location: 08-login.php');
+            exit(); // always call exit after header redirect
+        } else {
+            $error_message = "Wrong verification code!";
+        }
     }
-  }
 }
 
 
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
     <div class="ambient"><span class="orb orb-1"></span><span class="orb orb-2"></span></div>
 
     <main class="shell">
-        <a href="login.php" class="brand">
+        <a href="08-login.php" class="brand">
             <svg class="brand-mark" viewBox="0 0 100 100">
                 <path
                     d="M22 44 L50 18 L78 44 L78 86 Q78 90 74 90 L26 90 Q22 90 22 86 Z M38 38 L62 38 L62 50 L38 50 Z M38 60 L62 60 L62 72 L38 72 Z"
