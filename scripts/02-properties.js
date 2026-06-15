@@ -55,36 +55,24 @@
     function filteredList() {
         syncAdvancedFilters();
         return props.filter(p => {
-            // Type filter
             if (state.type !== 'all') {
                 const propType = (p.property_type || '').toLowerCase();
                 if (propType !== state.type) return false;
             }
-
-            // Status filter
             if (state.status !== 'all') {
                 const propStatus = (p.status || '').toLowerCase();
                 if (propStatus !== state.status) return false;
             }
             if (state.bd > 0 && (p.bedrooms || 0) < state.bd) return false;
-
-            // Bathrooms
             if (state.ba > 0 && (p.bathrooms || 0) < state.ba) return false;
-
-            // Price range
             const priceNum = parseInt(p.price) || 0;
             if (state.min > 0 && priceNum < state.min) return false;
             if (state.max < Infinity && priceNum > state.max) return false;
-
-            // Cities
             if (state.cities.length && p.city && !state.cities.includes(p.city.toLowerCase())) return false;
-
-            // Search query
             if (state.q.trim()) {
                 const searchText = ((p.title || '') + ' ' + (p.city || '') + ' ' + (p.property_type || '')).toLowerCase();
                 if (!searchText.includes(state.q.toLowerCase())) return false;
             }
-
             return true;
         });
     }
@@ -111,10 +99,71 @@
     }
 
     function getImageUrl(p) {
-        // Use the image from database (imgs field from your API)
         if (p.imgs) return p.imgs;
         if (p.img) return `uploads/property_images/${p.img}`;
         return 'https://placehold.co/600x400/eef2f5/8ba3b0?text=No+Image';
+    }
+
+    // Show small green toast message
+    function showToast(message, isError = false) {
+        // Remove existing toast if any
+        const existingToast = document.querySelector('.favorite-toast');
+        if (existingToast) existingToast.remove();
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = 'favorite-toast';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: ${isError ? '#dc3545' : '#28a745'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: 'Inter', sans-serif;
+        `;
+        
+        // Add animation styles if not already present
+        if (!document.querySelector('#toast-styles')) {
+            const style = document.createElement('style');
+            style.id = 'toast-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes fadeOut {
+                    from {
+                        opacity: 1;
+                    }
+                    to {
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(toast);
+        
+        // Auto remove after 2 seconds
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
     }
 
     // RENDER FUNCTION - displays properties from database
@@ -154,7 +203,7 @@
                     <div class="card-media">
                         <img src="${imgUrl}" alt="${title}" loading="lazy" onerror="this.src='https://placehold.co/600x400/eef2f5/8ba3b0?text=No+Image'"/>
                         <span class="card-badge ${badgeClass}">${badgeText}</span>
-                        <button class="card-fav" data-fav aria-label="Save">
+                        <button class="card-fav" data-fav data-property-id="${p.id}" aria-label="Save">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
@@ -191,10 +240,46 @@
 
         // Attach favorite button listeners
         grid.querySelectorAll('[data-fav]').forEach(btn => {
-            btn.addEventListener('click', e => {
+            btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                btn.classList.toggle('active');
+                
+                let property_id = this.getAttribute('data-property-id');
+                
+                if (!property_id) {
+                    console.error('No property ID found');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('property_id', property_id);
+                
+                fetch('api/favorits/add-to-favorit.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.classList.toggle('active');
+                        showToast('✓ Added to favorites');
+                    } else {
+                        if (data.message === 'User not logged in') {
+                            showToast('Please login to add favorites', true);
+                            setTimeout(() => {
+                                window.location.href = '08-login.php';
+                            }, 1500);
+                        } else if (data.message === 'Property already in favorites') {
+                            showToast('Property already in favorites', true);
+                        } else {
+                            showToast(data.message, true);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Error adding to favorites', true);
+                });
             });
         });
     }
@@ -204,9 +289,7 @@
         activeEl.classList.add('active');
     }
 
-    // Load properties from your existing API
     function loadProperties() {
-        // Use your existing API endpoint
         fetch("api/upload-all-properties.php")
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -327,7 +410,7 @@
     const nav = document.querySelector('.nav');
     if (nav) window.addEventListener('scroll', () => nav.classList.toggle('is-scrolled', window.scrollY > 10), { passive: true });
 
-    // Custom cursor (only if fine pointer and reduced motion not preferred)
+    // Custom cursor
     if (fine && !reduced) {
         const r = document.querySelector('.cursor'), d = document.querySelector('.cursor-dot');
         if (r && d) {

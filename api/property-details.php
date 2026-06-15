@@ -1,10 +1,9 @@
-<?php    
+<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json');
-
 require "../db/connect.php";
 
 // No authentication check - this is for public viewing
@@ -15,7 +14,13 @@ echo json_encode(['error' => 'Database connection failed']);
 exit;
 }
 
-// Get ALL properties not filtered by user_id
+//get property-id
+
+$p_detials = $_SESSION['p.id'] ;
+
+
+//get all proerties
+
 $stmt = $conn->prepare("
 SELECT
 p.id,
@@ -34,22 +39,8 @@ WHERE p.status IN ('available', 'rented', 'sold', 'pending', 'draft')
 ORDER BY p.id DESC
 ");
 
-if (!$stmt) {
-http_response_code(500);
-echo json_encode(['error' => 'Failed to prepare query']);
-exit;
-}
 
-$stmt->execute();
-$result = $stmt->get_result();
 
-$properties = [];
-while ($row = $result->fetch_assoc()) {
-$properties[] = $row;
-}
 
-$stmt->close();
-$conn->close();
 
-echo json_encode($properties);
 ?>

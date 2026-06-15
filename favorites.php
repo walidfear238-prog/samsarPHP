@@ -6,9 +6,12 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-
-
-
+$id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT firstname, role, profile_image FROM users WHERE id = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,25 +54,10 @@ if (!isset($_SESSION['user_id'])) {
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
 
-            <!-- profile name and role and profile image -->
-            <?php
-            $id = $_SESSION['user_id'];
-
-            $stmt = $conn->prepare("SELECT firstname , role , profile_image FROM users where id = ?");
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $user = $result->fetch_assoc();
-
-
-            ?>
             <div class="dashboard-side-foot">
                 <div class="dashboard-user">
                     <?php
-                    echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
-                        "alt='profile picture'/>";
-
-
+                    echo "<img src='" . htmlspecialchars($user['profile_image']) . "' alt='profile picture'/>";
                     echo " <div><strong>" . htmlspecialchars($user['firstname']) . "</strong><span>" .
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
@@ -92,140 +80,356 @@ if (!isset($_SESSION['user_id'])) {
     <style>
     .fav-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 18px
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
     }
 
     .fav-card {
         background: #fff;
         border: 1px solid #ececec;
-        border-radius: 14px;
+        border-radius: 16px;
         overflow: hidden;
-        transition: all .3s
+        transition: all 0.3s ease;
     }
 
     .fav-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 14px 30px -16px rgba(0, 0, 0, .15)
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.15);
     }
 
-    .fav-card img {
+    .fav-card-media {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+
+    .fav-card-media img {
         width: 100%;
-        height: 180px;
-        object-fit: cover
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+
+    .fav-card:hover .fav-card-media img {
+        transform: scale(1.05);
+    }
+
+    .fav-remove {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(0, 0, 0, 0.6);
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        font-size: 18px;
+        transition: all 0.2s;
+        z-index: 2;
+    }
+
+    .fav-remove:hover {
+        background: #C72C41;
+        transform: scale(1.1);
     }
 
     .fav-body {
-        padding: 16px
+        padding: 18px;
     }
 
-    .fav-body strong {
-        display: block;
+    .fav-loc {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 8px;
+    }
+
+    .fav-title {
         font-family: Fraunces, serif;
         font-size: 18px;
-        margin-bottom: 4px
+        margin: 0 0 12px 0;
     }
 
-    .fav-body span {
-        display: block;
-        font-size: 11px;
-        letter-spacing: .08em;
-        color: #888;
-        text-transform: uppercase;
-        margin-bottom: 10px
+    .fav-title a {
+        color: #1A1A1A;
+        text-decoration: none;
+    }
+
+    .fav-title a:hover {
+        color: #C72C41;
+    }
+
+    .fav-specs {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 16px;
     }
 
     .fav-price {
-        color: #C72C41;
+        font-size: 20px;
         font-weight: 600;
-        margin-bottom: 14px
+        color: #C72C41;
+        margin-bottom: 16px;
+    }
+
+    .fav-price small {
+        font-size: 11px;
+        font-weight: normal;
     }
 
     .fav-actions {
         display: flex;
-        gap: 8px;
-        justify-content: space-between
+        gap: 12px;
     }
 
     .fav-btn {
-        padding: 8px 12px;
+        flex: 1;
+        padding: 10px 16px;
         border-radius: 8px;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 500;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
         border: 1px solid #e5e5e5;
         background: #fff;
-        cursor: pointer;
-        transition: all .2s
     }
 
-    .fav-btn:hover {
-        border-color: #1A1A1A
+    .fav-btn.view {
+        color: #1A1A1A;
+    }
+
+    .fav-btn.view:hover {
+        border-color: #C72C41;
+        background: #C72C41;
+        color: white;
     }
 
     .fav-btn.unfav {
         color: #C72C41;
-        border-color: rgba(199, 44, 65, .3)
+        border-color: rgba(199, 44, 65, 0.3);
     }
 
     .fav-btn.unfav:hover {
         background: #C72C41;
-        color: #fff;
-        border-color: #C72C41
+        color: white;
+        border-color: #C72C41;
     }
 
     .fav-empty {
-        padding: 60px 20px;
+        grid-column: 1/-1;
         text-align: center;
-        color: #888
+        padding: 60px 20px;
+    }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 60px;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #C72C41;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     </style>
 
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
+
     <script>
     (function() {
-        const Store = window.SamsarStore;
         const grid = document.getElementById('fav-grid');
 
-        function render() {
-            const favs = Store.get('favorites', []);
-            const props = Store.get('properties', []);
-            const favProps = props.filter(p => favs.includes(p.id));
+        function formatPrice(price) {
+            if (!price) return '0';
+            return parseFloat(price).toLocaleString();
+        }
 
-            if (!favProps.length) {
-                grid.innerHTML =
-                    '<div class="content-card fav-empty" style="grid-column:1/-1"><h3 style="font-family:Fraunces,serif;margin:0 0 6px">No favorites yet</h3><p style="margin:0">Browse properties and tap the heart to save them here.</p></div>';
-                return;
-            }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
 
-            grid.innerHTML = favProps.map(p => `
-      <div class="fav-card">
-        <img src="${p.img}" alt="${p.title}"/>
-        <div class="fav-body">
-          <strong>${p.title}</strong>
-          <span>${p.city} · ${p.type}</span>
-          <div class="fav-price">${p.price}</div>
-          <div class="fav-actions">
-            <a class="fav-btn" href="03-property-details.php">View</a>
-            <button class="fav-btn unfav" data-unfav="${p.id}">Remove</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
+        function showToast(message, isError = false) {
+            const existing = document.querySelector('.toast-message');
+            if (existing) existing.remove();
 
-            grid.querySelectorAll('[data-unfav]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = parseInt(btn.dataset.unfav);
-                    const favs = Store.get('favorites', []).filter(x => x !== id);
-                    Store.set('favorites', favs);
-                    render();
-                    if (window.SamsarApp) SamsarApp.paintOverview();
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: ${isError ? '#dc3545' : '#28a745'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        function loadFavorites() {
+            grid.innerHTML =
+                '<div class="loading-spinner"><div class="spinner"></div><p>Loading favorites...</p></div>';
+
+            fetch('api/favorits/get-all-favorits.php')
+                .then(response => {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .then(properties => {
+                    console.log('Fetched properties:', properties);
+
+                    if (properties.error) {
+                        grid.innerHTML =
+                        `<div class="fav-empty"><h3>Error</h3><p>${properties.error}</p></div>`;
+                        return;
+                    }
+
+                    if (properties && properties.length > 0) {
+                        displayFavorites(properties);
+                        document.getElementById('bdg-fav').textContent = properties.length;
+                    } else {
+                        showEmptyState();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    grid.innerHTML =
+                        `<div class="fav-empty"><h3>Error Loading Favorites</h3><p>${error.message}</p></div>`;
+                });
+        }
+
+        function displayFavorites(properties) {
+            grid.innerHTML = properties.map((p, index) => {
+                const imagePath = p.img ? `uploads/property_images/${p.img}` : '';
+                return `
+                    <div class="fav-card" style="animation: fadeInUp 0.4s ease ${index * 0.05}s forwards; opacity:0;">
+                        <div class="fav-card-media">
+                            <img src="${imagePath}" 
+                                 alt="${escapeHtml(p.title)}"
+                                 onerror="this.src='https://placehold.co/600x400/eef2f5/8ba3b0?text=No+Image'">
+                            <button class="fav-remove" data-id="${p.id}">✕</button>
+                        </div>
+                        <div class="fav-body">
+                            <div class="fav-loc">📍 ${escapeHtml(p.city)} · ${escapeHtml(p.property_type)}</div>
+                            <h3 class="fav-title"><a href="03-property-details.php?id=${p.id}">${escapeHtml(p.title)}</a></h3>
+                            <div class="fav-specs">
+                                <span>${p.bedrooms || 0} bd</span>
+                                <span>${p.bathrooms || 0} ba</span>
+                                <span>${p.area || 0} m²</span>
+                            </div>
+                            <div class="fav-price">${formatPrice(p.price)} <small>MAD</small></div>
+                            <div class="fav-actions">
+                                <a href="03-property-details.php?id=${p.id}" class="fav-btn view">View Details →</a>
+                                <button class="fav-btn unfav" data-id="${p.id}">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.querySelectorAll('.fav-remove, .fav-btn.unfav').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const propertyId = this.getAttribute('data-id');
+                    if (confirm('Remove this property from favorites?')) {
+                        removeFromFavorites(propertyId, this.closest('.fav-card'));
+                    }
                 });
             });
         }
 
-        render();
+        function removeFromFavorites(propertyId, cardElement) {
+            const formData = new FormData();
+            formData.append('property_id', propertyId);
+
+            fetch('api/favorits/remove-favorite.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        cardElement.style.transition = 'all 0.3s ease';
+                        cardElement.style.transform = 'translateX(100%)';
+                        cardElement.style.opacity = '0';
+                        setTimeout(() => {
+                            cardElement.remove();
+                            showToast('✓ Removed from favorites');
+                            const remaining = document.querySelectorAll('.fav-card').length;
+                            document.getElementById('bdg-fav').textContent = remaining;
+                            if (remaining === 0) showEmptyState();
+                        }, 300);
+                    } else {
+                        showToast(data.message || 'Error removing from favorites', true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Error removing from favorites', true);
+                });
+        }
+
+        function showEmptyState() {
+            grid.innerHTML = `
+                <div class="fav-empty">
+                    <h3>No favorites yet</h3>
+                    <p>Start saving properties you love by clicking the heart icon.</p>
+                    <a href="02-properties.php" class="fav-btn view" style="display:inline-block;width:auto;padding:12px 24px;">Browse Properties →</a>
+                </div>
+            `;
+            document.getElementById('bdg-fav').textContent = '0';
+        }
+
+        loadFavorites();
     })();
     </script>
 </body>
