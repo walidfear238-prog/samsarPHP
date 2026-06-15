@@ -66,8 +66,6 @@
                 const propStatus = (p.status || '').toLowerCase();
                 if (propStatus !== state.status) return false;
             }
-
-            // Bedrooms
             if (state.bd > 0 && (p.bedrooms || 0) < state.bd) return false;
 
             // Bathrooms
