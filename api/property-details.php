@@ -1,29 +1,47 @@
-<?php    
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+<?php
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
+// ── FILE LOCATION ────────────────────────────────────────────────────────────
+// This file must live at:  samsar/api/property-details.php
+// "../db/connect.php" then resolves to samsar/db/connect.php
+
+// ── IMAGE PATH CONFIG ────────────────────────────────────────────────────────
+// Your property_images table stores bare filenames (e.g. "1781368227_photo.png")
+// without a folder prefix. Set the folder where those files actually live,
+// relative to the samsar/ root. Change this if your upload folder is different.
+define('PROPERTY_IMG_DIR', 'uploads/property/');
+
+// Helper: prefix a bare filename with PROPERTY_IMG_DIR.
+// Paths that already contain "/" are returned unchanged (already have a folder).
+function img_url(string $path): string {
+    if ($path === '') return '';
+    return (strpos($path, '/') === false) ? PROPERTY_IMG_DIR . $path : $path;
+}
+
 require "../db/connect.php";
 
-if (!$conn) {
+// ---------- 1. Connection check ----------
+if (!isset($conn) || !$conn) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['error' => 'Database connection failed. Check db/connect.php and make sure it creates $conn as a mysqli object.']);
     exit;
 }
 
+// ---------- 2. Property ID ----------
 $property_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
 if ($property_id <= 0) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid property ID']);
     exit;
 }
 
+// ---------- 3. Main property query ----------
 $stmt = $conn->prepare("
-    SELECT 
+    SELECT
         p.id,
         p.title,
         p.property_type,
@@ -37,60 +55,118 @@ $stmt = $conn->prepare("
         p.area,
         p.created_at,
         p.updated_at,
-        u.id as user_id,
+        u.id            AS user_id,
         u.firstname,
         u.lastname,
-        u.email as agent_email,
-        u.phone as agent_phone,
-        u.profile_image as agent_avatar,
+        u.email         AS agent_email,
+        u.phone         AS agent_phone,
+        u.profile_image AS agent_avatar,
         u.agencyName,
-        (SELECT JSON_ARRAYAGG(pi.image_path) 
-         FROM property_images pi 
-         WHERE pi.property_id = p.id) as images,
-        (SELECT pi.image_path 
-         FROM property_images pi 
-         WHERE pi.property_id = p.id 
-         ORDER BY pi.is_primary DESC, pi.id ASC 
-         LIMIT 1) as main_image
+        (
+            SELECT GROUP_CONCAT(pi.image_path ORDER BY pi.is_primary DESC, pi.id ASC SEPARATOR '||')
+            FROM property_images pi
+            WHERE pi.property_id = p.id
+        ) AS images_raw,
+        (
+            SELECT pi.image_path
+            FROM property_images pi
+            WHERE pi.property_id = p.id
+            ORDER BY pi.is_primary DESC, pi.id ASC
+            LIMIT 1
+        ) AS main_image
     FROM properties p
     LEFT JOIN users u ON p.user_id = u.id
-    WHERE p.id = ? 
-    AND p.status IN ('available', 'rented', 'sold', 'pending', 'draft')
+    WHERE p.id = ?
 ");
 
 if (!$stmt) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to prepare query: ' . $conn->error]);
+    echo json_encode(['error' => 'Query prepare failed: ' . $conn->error]);
     exit;
 }
 
 $stmt->bind_param("i", $property_id);
-$stmt->execute();
+
+if (!$stmt->execute()) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Query execute failed: ' . $stmt->error]);
+    exit;
+}
+
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
     http_response_code(404);
-    echo json_encode(['error' => 'Property not found']);
+    echo json_encode(['error' => "Property #$property_id not found in database"]);
     exit;
 }
 
 $property = $result->fetch_assoc();
+$stmt->close();
 
-// Parse images
-if ($property['images']) {
-    $property['images'] = json_decode($property['images'], true);
-    $property['images'] = array_filter($property['images']);
+// ---------- 4. Similar properties ----------
+$similar = [];
+$sim_stmt = $conn->prepare("
+    SELECT
+        p.id,
+        p.title,
+        p.property_type,
+        p.price,
+        p.city,
+        p.bedrooms,
+        (
+            SELECT pi.image_path
+            FROM property_images pi
+            WHERE pi.property_id = p.id
+            ORDER BY pi.is_primary DESC, pi.id ASC
+            LIMIT 1
+        ) AS main_image
+    FROM properties p
+    WHERE p.id != ?
+      AND (p.property_type = ? OR p.city = ?)
+    ORDER BY p.created_at DESC
+    LIMIT 3
+");
+
+if ($sim_stmt) {
+    $sim_stmt->bind_param("iss", $property_id, $property['property_type'], $property['city']);
+    if ($sim_stmt->execute()) {
+        $sim_result = $sim_stmt->get_result();
+        while ($row = $sim_result->fetch_assoc()) {
+            // Fix image path for each similar property
+            $row['main_image'] = img_url((string)($row['main_image'] ?? ''));
+            $similar[] = $row;
+        }
+    }
+    $sim_stmt->close();
+}
+
+$conn->close();
+
+// ---------- 5. Parse & fix image paths ----------
+// The property_images table stores bare filenames with no folder prefix.
+// We add the folder here so the browser can actually find the files.
+if (!empty($property['images_raw'])) {
+    $raw = array_values(array_filter(explode('||', $property['images_raw'])));
+    $property['images'] = array_map(fn($p) => img_url($p), $raw);
 } else {
     $property['images'] = [];
 }
+unset($property['images_raw']);
 
-// Ensure main_image exists
-if (empty($property['main_image']) && !empty($property['images'])) {
+// Fix main_image path
+$property['main_image'] = img_url((string)($property['main_image'] ?? ''));
+
+// Fallback: use first image if main_image is empty
+if ($property['main_image'] === '' && !empty($property['images'])) {
     $property['main_image'] = $property['images'][0];
 }
 
-// Build agent name
-$property['agentName'] = trim(($property['firstname'] ?? '') . ' ' . ($property['lastname'] ?? ''));
+// ---------- 6. Agent name ----------
+$first = trim($property['firstname'] ?? '');
+$last  = trim($property['lastname']  ?? '');
+$property['agentName'] = trim("$first $last");
+
 if (empty($property['agentName']) && !empty($property['agencyName'])) {
     $property['agentName'] = $property['agencyName'];
 }
@@ -98,8 +174,8 @@ if (empty($property['agentName'])) {
     $property['agentName'] = 'Agency';
 }
 
-$stmt->close();
-$conn->close();
+// ---------- 7. Attach similar ----------
+$property['similar'] = $similar;
 
-echo json_encode($property);
-?>
+// ---------- 8. Output ----------
+echo json_encode($property, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
