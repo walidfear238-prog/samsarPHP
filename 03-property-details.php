@@ -14,11 +14,9 @@ session_start();
         href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/03-property-details.css" />
-    <link rel="stylesheet" href="styles/samsar-transitions.css" />
 </head>
 
 <body>
-    <div class="page-trans"><span></span><span></span><span></span></div>
     <div class="cursor"></div>
     <div class="cursor-dot"></div>
 
@@ -58,7 +56,7 @@ session_start();
     <main>
         <div class="container">
             <!-- Breadcrumb -->
-            <nav class="crumbs reveal">
+            <nav class="crumbs">
                 <a href="index.php">Home</a> /
                 <a href="02-properties.php">Properties</a> /
                 <span id="breadcrumb-title">Loading...</span>
@@ -66,12 +64,12 @@ session_start();
 
             <!-- Hero Section -->
             <section class="hero-prop">
-                <div class="title-block reveal">
+                <div class="title-block">
                     <span class="eyebrow" id="property-location">Loading location...</span>
                     <h1 id="property-title">Loading...</h1>
                     <p class="meta-line" id="property-meta">Loading property details...</p>
                 </div>
-                <div class="price-block reveal" data-delay="80">
+                <div class="price-block">
                     <span class="price" id="property-price">Loading...</span>
                     <div class="actions">
                         <button class="btn btn-ghost" id="detail-save-btn">
@@ -87,7 +85,7 @@ session_start();
             </section>
 
             <!-- Gallery -->
-            <section class="gallery reveal" data-delay="120">
+            <section class="gallery">
                 <div class="g-main">
                     <img id="g-main-img" src="" alt="Property main image" />
                 </div>
@@ -100,7 +98,7 @@ session_start();
             <div class="layout">
                 <section class="content">
                     <!-- Key Facts -->
-                    <div class="key-facts reveal">
+                    <div class="key-facts">
                         <div><span>Bedrooms</span><strong id="fact-bedrooms">-</strong></div>
                         <div><span>Bathrooms</span><strong id="fact-bathrooms">-</strong></div>
                         <div><span>Living area</span><strong id="fact-area">-</strong></div>
@@ -110,7 +108,7 @@ session_start();
                     </div>
 
                     <!-- Description -->
-                    <section class="block reveal">
+                    <section class="block">
                         <h2>Description</h2>
                         <div id="property-description">
                             <p>Loading description...</p>
@@ -118,7 +116,7 @@ session_start();
                     </section>
 
                     <!-- Features -->
-                    <section class="block reveal">
+                    <section class="block">
                         <h2>Features</h2>
                         <ul class="features" id="property-features">
                             <li>Loading features...</li>
@@ -127,7 +125,7 @@ session_start();
                 </section>
 
                 <aside class="sidebar">
-                    <div class="agency-card reveal">
+                    <div class="agency-card">
                         <div class="agency-head">
                             <img id="agent-avatar" src="" alt="Agent" />
                             <div>
@@ -162,7 +160,7 @@ session_start();
 
             <!-- Similar Properties -->
             <section class="similar">
-                <h2 class="reveal">Similar properties</h2>
+                <h2>Similar properties</h2>
                 <div class="sim-grid" id="similar-properties">
                     <!-- Similar properties will be populated by JavaScript -->
                 </div>
@@ -176,18 +174,19 @@ session_start();
         </div>
     </footer>
 
-    <script src="scripts/samsar-transitions.js"></script>
+    <!-- ============================================ -->
+    <!-- IMPORTANT: The script tag MUST be here       -->
+    <!-- ============================================ -->
     <script src="scripts/03-property-details.js"></script>
+
+    <!-- Debug: Check if script loaded -->
     <script>
-    (function() {
-        if (window.SamsarTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            var old = document.querySelector('.page-trans');
-            if (old) old.remove();
-            setTimeout(function() {
-                SamsarTransition.play('liquid-wipe-right', 'slow');
-            }, 50);
-        }
-    })();
+    console.log('Page loaded, checking for external JS...');
+    var scripts = document.querySelectorAll('script');
+    console.log('Number of script tags:', scripts.length);
+    for (var i = 0; i < scripts.length; i++) {
+        console.log('Script ' + i + ':', scripts[i].src || 'inline');
+    }
     </script>
 </body>
 

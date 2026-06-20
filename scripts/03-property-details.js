@@ -1,3 +1,7 @@
+
+console.log('=== JS FILE LOADED ===');
+
+
 (function () {
   'use strict';
 
@@ -44,7 +48,6 @@
 
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  // Force-reveal everything still hidden after content is injected.
   function revealAll() {
     document.querySelectorAll('.reveal:not(.is-in)').forEach(el => {
       el.style.transitionDelay = (el.dataset.delay || 0) + 'ms';
@@ -135,22 +138,19 @@
     return new Intl.NumberFormat('fr-MA').format(price);
   }
 
-  // ── FIX: Helper to get correct image URL ──────────────────────────────────
   function getImageUrl(filename) {
     if (!filename) return 'https://placehold.co/600x400/f5f0eb/8ba3b0?text=No+Image';
-    
-    // If it's already a full URL, return it
-    if (filename.startsWith('http://') || filename.startsWith('https://')) {
-      return filename;
-    }
-    
-    // If it already has the uploads path, return as is
-    if (filename.startsWith('uploads/')) {
-      return filename;
-    }
-    
-    // Otherwise, prepend the uploads path for property images
+    if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+    if (filename.startsWith('uploads/')) return filename;
     return `uploads/property_images/${filename}`;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   // ── Similar properties ───────────────────────────────────────────────────────
@@ -168,11 +168,7 @@
       return `
       <a href="03-property-details.php?id=${p.id}" class="sim-card">
         <div class="sim-img">
-          <img
-            src="${imageSrc}"
-            alt="${escHtml(p.title || 'Property')}"
-            loading="lazy"
-          />
+          <img src="${imageSrc}" alt="${escHtml(p.title || 'Property')}" loading="lazy" />
         </div>
         <span>${escHtml((p.property_type || 'Property').toUpperCase())}</span>
         <h3>${escHtml(p.title || 'Untitled')}</h3>
@@ -182,24 +178,12 @@
     `}).join('');
   }
 
-  // Minimal HTML escaping to prevent XSS from DB data
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
   // ── Main populate ────────────────────────────────────────────────────────────
   function populatePropertyDetails(p) {
-    // Page title
     document.title = `${p.title || 'Property'} · SAMSAR`;
 
-    // Breadcrumb
     set('breadcrumb-title', p.title, 'Property');
 
-    // Hero
     const locationParts = [p.city, p.district].filter(Boolean);
     set('property-location', locationParts.join(' · '), 'Morocco');
     set('property-title', p.title, 'Untitled Property');
@@ -219,11 +203,9 @@
         : 'Price on request';
     }
 
-    // ── FIX: Gallery with proper image paths ──────────────────────────────────
-    const mainImg      = document.getElementById('g-main-img');
+    const mainImg = document.getElementById('g-main-img');
     const thumbContainer = document.getElementById('g-thumbs');
     
-    // Process images to add correct paths
     let images = Array.isArray(p.images) ? p.images.filter(Boolean) : [];
     images = images.map(img => getImageUrl(img));
     
@@ -246,7 +228,6 @@
       }
     }
 
-    // Key facts
     set('fact-bedrooms', p.bedrooms);
     set('fact-bathrooms', p.bathrooms);
     set('fact-area',  p.area ? `${p.area} m²` : null);
@@ -271,7 +252,6 @@
       });
     }
 
-    // Description
     const descEl = document.getElementById('property-description');
     if (descEl) {
       if (p.description && p.description.trim()) {
@@ -286,7 +266,6 @@
       }
     }
 
-    // Features
     const featuresList = document.getElementById('property-features');
     if (featuresList) {
       const features = [
@@ -302,11 +281,9 @@
         : '<li style="color:#999">No features listed.</li>';
     }
 
-    // ── FIX: Agent card with proper avatar path ──────────────────────────────
     const agentImg = document.getElementById('agent-avatar');
     if (agentImg) {
       if (p.agent_avatar) {
-        // If agent_avatar already has the path, use it, otherwise prepend
         if (p.agent_avatar.startsWith('uploads/') || p.agent_avatar.startsWith('http')) {
           agentImg.src = p.agent_avatar;
         } else {
@@ -339,10 +316,8 @@
 
     if (saveBtn && p.id) saveBtn.dataset.propertyId = p.id;
 
-    // Populate similar properties from API response
     populateSimilarProperties(p.similar || []);
 
-    // Force-reveal everything now that content is in the DOM
     setTimeout(revealAll, 80);
   }
 
@@ -362,9 +337,7 @@
     }
 
     try {
-      // ── FIX: Correct API path ──────────────────────────────────────────────
-const res = await fetch(`api/property-details.php?id=${id}`);
-
+      const res = await fetch(`api/property-details.php?id=${id}`);
       const text = await res.text();
 
       if (!res.ok) {
@@ -405,3 +378,6 @@ const res = await fetch(`api/property-details.php?id=${id}`);
 
   loadPropertyDetails();
 })();
+
+
+

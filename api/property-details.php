@@ -13,12 +13,14 @@ header('Access-Control-Allow-Origin: *');
 // Your property_images table stores bare filenames (e.g. "1781368227_photo.png")
 // without a folder prefix. Set the folder where those files actually live,
 // relative to the samsar/ root. Change this if your upload folder is different.
-define('PROPERTY_IMG_DIR', 'uploads/property/');
+define('PROPERTY_IMG_DIR', 'uploads/property_images/');
 
 // Helper: prefix a bare filename with PROPERTY_IMG_DIR.
 // Paths that already contain "/" are returned unchanged (already have a folder).
-function img_url(string $path): string {
-    if ($path === '') return '';
+function img_url(string $path): string
+{
+    if ($path === '')
+        return '';
     return (strpos($path, '/') === false) ? PROPERTY_IMG_DIR . $path : $path;
 }
 
@@ -134,7 +136,7 @@ if ($sim_stmt) {
         $sim_result = $sim_stmt->get_result();
         while ($row = $sim_result->fetch_assoc()) {
             // Fix image path for each similar property
-            $row['main_image'] = img_url((string)($row['main_image'] ?? ''));
+            $row['main_image'] = img_url((string) ($row['main_image'] ?? ''));
             $similar[] = $row;
         }
     }
@@ -155,7 +157,7 @@ if (!empty($property['images_raw'])) {
 unset($property['images_raw']);
 
 // Fix main_image path
-$property['main_image'] = img_url((string)($property['main_image'] ?? ''));
+$property['main_image'] = img_url((string) ($property['main_image'] ?? ''));
 
 // Fallback: use first image if main_image is empty
 if ($property['main_image'] === '' && !empty($property['images'])) {
@@ -164,7 +166,7 @@ if ($property['main_image'] === '' && !empty($property['images'])) {
 
 // ---------- 6. Agent name ----------
 $first = trim($property['firstname'] ?? '');
-$last  = trim($property['lastname']  ?? '');
+$last = trim($property['lastname'] ?? '');
 $property['agentName'] = trim("$first $last");
 
 if (empty($property['agentName']) && !empty($property['agencyName'])) {
