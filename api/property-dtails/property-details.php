@@ -5,18 +5,10 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// ── FILE LOCATION ────────────────────────────────────────────────────────────
-// This file must live at:  samsar/api/property-details.php
-// "../db/connect.php" then resolves to samsar/db/connect.php
 
-// ── IMAGE PATH CONFIG ────────────────────────────────────────────────────────
-// Your property_images table stores bare filenames (e.g. "1781368227_photo.png")
-// without a folder prefix. Set the folder where those files actually live,
-// relative to the samsar/ root. Change this if your upload folder is different.
 define('PROPERTY_IMG_DIR', 'uploads/property_images/');
 
-// Helper: prefix a bare filename with PROPERTY_IMG_DIR.
-// Paths that already contain "/" are returned unchanged (already have a folder).
+
 function img_url(string $path): string
 {
     if ($path === '')
@@ -26,14 +18,14 @@ function img_url(string $path): string
 
 require "../db/connect.php";
 
-// ---------- 1. Connection check ----------
+//   Connection check 
 if (!isset($conn) || !$conn) {
     http_response_code(500);
     echo json_encode(['error' => 'Database connection failed. Check db/connect.php and make sure it creates $conn as a mysqli object.']);
     exit;
 }
 
-// ---------- 2. Property ID ----------
+//  Property ID 
 $property_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($property_id <= 0) {
     http_response_code(400);
@@ -41,7 +33,7 @@ if ($property_id <= 0) {
     exit;
 }
 
-// ---------- 3. Main property query ----------
+//  Main property query 
 $stmt = $conn->prepare("
     SELECT
         p.id,
@@ -106,7 +98,7 @@ if ($result->num_rows === 0) {
 $property = $result->fetch_assoc();
 $stmt->close();
 
-// ---------- 4. Similar properties ----------
+//  Similar properties 
 $similar = [];
 $sim_stmt = $conn->prepare("
     SELECT
@@ -145,9 +137,8 @@ if ($sim_stmt) {
 
 $conn->close();
 
-// ---------- 5. Parse & fix image paths ----------
-// The property_images table stores bare filenames with no folder prefix.
-// We add the folder here so the browser can actually find the files.
+//  Parse & fix image paths 
+
 if (!empty($property['images_raw'])) {
     $raw = array_values(array_filter(explode('||', $property['images_raw'])));
     $property['images'] = array_map(fn($p) => img_url($p), $raw);
@@ -156,15 +147,14 @@ if (!empty($property['images_raw'])) {
 }
 unset($property['images_raw']);
 
-// Fix main_image path
+
 $property['main_image'] = img_url((string) ($property['main_image'] ?? ''));
 
-// Fallback: use first image if main_image is empty
+
 if ($property['main_image'] === '' && !empty($property['images'])) {
     $property['main_image'] = $property['images'][0];
 }
 
-// ---------- 6. Agent name ----------
 $first = trim($property['firstname'] ?? '');
 $last = trim($property['lastname'] ?? '');
 $property['agentName'] = trim("$first $last");
@@ -176,8 +166,7 @@ if (empty($property['agentName'])) {
     $property['agentName'] = 'Agency';
 }
 
-// ---------- 7. Attach similar ----------
 $property['similar'] = $similar;
 
-// ---------- 8. Output ----------
+ 
 echo json_encode($property, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
