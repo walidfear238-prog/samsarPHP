@@ -42,23 +42,23 @@ session_start();
                 <a href="07-contact.php">Contact</a>
             </nav>
             <?php
-      if (isset($_SESSION["user_id"])) {
-        // User is logged in, show dashboard link and logout option
-        echo '<div class="nav-right">';
-        echo '<a href="dashboard.php" style="font-size:14px;font-weight:500">Dashboard</a>';
+            if (isset($_SESSION["user_id"])) {
+                // User is logged in, show dashboard link and logout option
+                echo '<div class="nav-right">';
+                echo '<a href="dashboard.php" style="font-size:14px;font-weight:500">Dashboard</a>';
 
 
-        echo '<a href="logout.php" class="btn btn-secondary">Logout</a>';
-        echo '
+                echo '<a href="logout.php" class="btn btn-secondary">Logout</a>';
+                echo '
         </div>';
-      } else {
-        // User is not logged in, show sign in and register options
-        echo '            <div class="nav-right">
+            } else {
+                // User is not logged in, show sign in and register options
+                echo '            <div class="nav-right">
                 <a href="08-login.php" class="nav-text">Sign in</a>
                 <a href="09-register.php" class="btn btn-primary">Join SAMSAR <span class="arrow">→</span></a>
             </div>';
-      }
-      ?>
+            }
+            ?>
 
 
 
@@ -69,16 +69,15 @@ session_start();
     </header>
 
     <main>
+
         <section class="page-head">
-            <div class="container">
-                <span class="eyebrow reveal">Marketplace</span>
-                <h1 class="reveal" data-delay="60">Every Moroccan home,<br /><em>in one place.</em></h1>
-                <p class="reveal" data-delay="120">Browse 1,284 verified listings from Marrakech to Tangier — riads,
+            <div> <span>Marketplace</span>
+                <h1>Every Moroccan home,<br /><em>in one place.</em></h1>
+                <p>Browse 1,284 verified listings from Marrakech to Tangier — riads,
                     villas,
                     apartments and land — brokered by the SAMSAR network.</p>
             </div>
         </section>
-
         <div class="container layout">
             <!-- LEFT FILTER SIDEBAR -->
             <aside class="filter-side">
@@ -157,7 +156,8 @@ session_start();
                     <div class="fp-group">
                         <label class="fp-label">City</label>
                         <div class="check-list">
-                            <label class="ck"><input type="checkbox" data-city="marrakech" /> <span>Marrakech</span>
+                            <label class="ck"><input type="checkbox" data-city="marrakech" />
+                                <span>Marrakech</span>
                                 <em>412</em></label>
                             <label class="ck"><input type="checkbox" data-city="casablanca" />
                                 <span>Casablanca</span>
@@ -168,7 +168,8 @@ session_start();
                                 <em>164</em></label>
                             <label class="ck"><input type="checkbox" data-city="fes" /> <span>Fès</span>
                                 <em>120</em></label>
-                            <label class="ck"><input type="checkbox" data-city="essaouira" /> <span>Essaouira</span>
+                            <label class="ck"><input type="checkbox" data-city="essaouira" />
+                                <span>Essaouira</span>
                                 <em>94</em></label>
                         </div>
                     </div>
@@ -191,8 +192,8 @@ session_start();
                         </div>
                     </div>
 
-                    <button class="btn btn-primary apply-btn" type="button" id="apply-filters">Apply filters <span
-                            class="arrow">→</span></button>
+                    <button class="btn btn-primary apply-btn" type="button" id="apply-filters">Apply filters
+                        <span class="arrow">→</span></button>
                 </div>
             </aside>
 
