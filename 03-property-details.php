@@ -132,7 +132,7 @@ session_start();
                                 <strong id="agent-name">Loading...</strong>
                                 <span id="agent-location">Listing agency</span>
                             </div>
-                            <button class="follow-btn" data-follow>Follow</button>
+                            <button data-follow class="btn-follow">Follow</button>
                         </div>
                         <p class="agency-bio" id="agent-bio">Loading agent information...</p>
                         <form class="agency-form" id="contact-form">
@@ -174,12 +174,8 @@ session_start();
         </div>
     </footer>
 
-    <!-- ============================================ -->
-    <!-- IMPORTANT: The script tag MUST be here       -->
-    <!-- ============================================ -->
-    <script src="scripts/03-property-details.js"></script>
 
-    <!-- Debug: Check if script loaded -->
+    <script src="scripts/03-property-details.js"></script>
     <script>
     console.log('Page loaded, checking for external JS...');
     var scripts = document.querySelectorAll('script');

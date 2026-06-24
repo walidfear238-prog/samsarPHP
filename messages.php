@@ -6,9 +6,15 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Get current user ID
+$user_id = $_SESSION['user_id'];
 
-
-
+// Get user info
+$stmt = $conn->prepare("SELECT firstname, role, profile_image FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,28 +57,13 @@ if (!isset($_SESSION['user_id'])) {
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
 
-            <!-- profile name and role and profile image -->
-            <?php
-            $id = $_SESSION['user_id'];
-
-            $stmt = $conn->prepare("SELECT firstname , role , profile_image FROM users where id = ?");
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $user = $result->fetch_assoc();
-
-
-            ?>
             <div class="dashboard-side-foot">
                 <div class="dashboard-user">
-                    <?php
-                    echo "<img src='" . htmlspecialchars($user['profile_image']) . "'" .
-                        "alt='profile picture'/>";
-
-
-                    echo " <div><strong>" . htmlspecialchars($user['firstname']) . "</strong><span>" .
-                        htmlspecialchars($user['role']) . "</span></div>";
-                    ?>
+                    <img src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="profile picture" />
+                    <div>
+                        <strong><?php echo htmlspecialchars($user['firstname']); ?></strong>
+                        <span><?php echo htmlspecialchars($user['role']); ?></span>
+                    </div>
                 </div>
                 <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
             </div>
@@ -87,7 +78,9 @@ if (!isset($_SESSION['user_id'])) {
             </header>
 
             <div class="chat-layout">
-                <aside class="chat-list" id="chat-list"></aside>
+                <aside class="chat-list" id="chat-list">
+                    <div class="loading">Loading conversations...</div>
+                </aside>
                 <section class="chat-window" id="chat-window">
                     <div class="chat-empty">
                         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5">
@@ -125,7 +118,9 @@ if (!isset($_SESSION['user_id'])) {
         padding: 14px;
         border-radius: 12px;
         cursor: pointer;
-        transition: background .2s
+        transition: background .2s;
+        position: relative;
+        align-items: center;
     }
 
     .chat-item:hover {
@@ -164,16 +159,26 @@ if (!isset($_SESSION['user_id'])) {
         text-overflow: ellipsis
     }
 
-    .chat-item.unread strong::after {
-        content: "•";
-        color: #C72C41;
-        margin-left: 6px
+    .chat-item .unread-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #C72C41;
+        color: #fff;
+        border-radius: 50%;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        min-width: 20px;
+        text-align: center;
     }
 
     .chat-item-meta {
         text-align: right;
         font-size: 11px;
-        color: #888
+        color: #888;
+        margin-left: auto;
+        min-width: 40px;
     }
 
     .chat-window {
@@ -249,7 +254,7 @@ if (!isset($_SESSION['user_id'])) {
         border-radius: 16px;
         font-size: 14px;
         line-height: 1.4;
-        animation: pop .3s var(--ease)
+        animation: pop .3s ease
     }
 
     .bubble.them {
@@ -278,6 +283,11 @@ if (!isset($_SESSION['user_id'])) {
             opacity: 0;
             transform: translateY(6px) scale(.97)
         }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1)
+        }
     }
 
     .chat-form {
@@ -294,7 +304,8 @@ if (!isset($_SESSION['user_id'])) {
         border: 1px solid #e5e5e5;
         border-radius: 999px;
         font-size: 14px;
-        background: #fff
+        background: #fff;
+        outline: none;
     }
 
     .chat-form input:focus {
@@ -315,97 +326,396 @@ if (!isset($_SESSION['user_id'])) {
     .chat-form button:hover {
         background: #A50034
     }
+
+    .chat-form button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 20px;
+        color: #999;
+    }
     </style>
 
+    <!-- Load external scripts FIRST (these control the cursor) -->
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
+
+    <!-- Pass user data to JavaScript -->
+    <script>
+    window.currentUserId = <?php echo json_encode($user_id); ?>;
+    window.userName = <?php echo json_encode($user['firstname']); ?>;
+    </script>
+
+    <!-- Chat functionality - wrapped in try/catch to prevent errors from breaking other JS -->
     <script>
     (function() {
-        const Store = window.SamsarStore;
-        const list = document.getElementById('chat-list');
-        const win = document.getElementById('chat-window');
-        let activeId = null;
+        'use strict';
 
-        function renderList() {
-            const convos = Store.get('conversations', []);
-            list.innerHTML = convos.map(c => {
-                const last = c.messages[c.messages.length - 1];
-                return `
-        <div class="chat-item ${c.unread ? 'unread' : ''} ${activeId === c.id ? 'active' : ''}" data-id="${c.id}">
-          <img src="${c.avatar}" alt="${c.name}"/>
-          <div class="chat-item-info">
-            <strong>${c.name}</strong>
-            <p>${last ? last.text : 'No messages yet'}</p>
-          </div>
-          <div class="chat-item-meta">${last ? last.ts : ''}</div>
-        </div>`;
-            }).join('');
+        try {
+            // Main chat functionality
+            const list = document.getElementById('chat-list');
+            const win = document.getElementById('chat-window');
+            let activeId = null;
+            let pollingInterval = null;
+            const currentUserId = window.currentUserId || 0;
+            const API_BASE = '/api/chat/';
 
-            list.querySelectorAll('.chat-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    activeId = parseInt(el.dataset.id);
-                    // Mark as read
-                    const convos = Store.get('conversations', []);
-                    const c = convos.find(x => x.id === activeId);
-                    if (c) c.unread = 0;
-                    Store.set('conversations', convos);
-                    renderList();
-                    openChat(activeId);
+            // Format timestamp
+            function formatTime(timestamp) {
+                if (!timestamp) return '';
+                try {
+                    const date = new Date(timestamp);
+                    return date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            // Get user initials for avatar fallback
+            function getInitials(name) {
+                if (!name) return '?';
+                const parts = name.split(' ');
+                if (parts.length >= 2) {
+                    return (parts[0][0] || '') + (parts[1][0] || '');
+                }
+                return name.substring(0, 2).toUpperCase();
+            }
+
+            // Fetch all users for chat list
+            async function fetchUsers() {
+                try {
+                    const response = await fetch(API_BASE + 'get_users.php');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        renderUserList(data.data);
+                        // Update badge count
+                        const totalUnread = data.data.reduce((sum, user) => sum + (user.unread_count || 0), 0);
+                        const badge = document.getElementById('bdg-msg');
+                        if (badge) badge.textContent = totalUnread;
+                        return data.data;
+                    } else {
+                        console.error('Failed to fetch users:', data.message);
+                        if (list) list.innerHTML = '<div class="loading">Error loading users</div>';
+                        return [];
+                    }
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                    if (list) list.innerHTML = '<div class="loading">Error connecting to server</div>';
+                    return [];
+                }
+            }
+
+            // Render user list
+            function renderUserList(users) {
+                if (!list) return;
+
+                if (!users || users.length === 0) {
+                    list.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: #999;">
+                            <p>No users found to chat with</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = users.map(function(user) {
+                    const hasUnread = user.unread_count > 0;
+                    const lastMsg = user.last_message || 'No messages yet';
+                    const lastTime = user.last_message_time ? formatTime(user.last_message_time) : '';
+                    const avatar = user.profile_image || '';
+                    const initials = getInitials((user.firstname || '') + ' ' + (user.lastname || ''));
+                    const fullName = (user.firstname || '') + ' ' + (user.lastname || '');
+
+                    return `
+                        <div class="chat-item ${hasUnread ? 'unread' : ''} ${activeId === user.id ? 'active' : ''}" 
+                             data-id="${user.id}"
+                             data-name="${fullName}"
+                             data-avatar="${avatar}">
+                            ${avatar ? `<img src="${avatar}" alt="${fullName}" />` : `<div style="width:44px;height:44px;border-radius:50%;background:#C72C41;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:16px;flex-shrink:0;">${initials}</div>`}
+                            <div class="chat-item-info">
+                                <strong>${fullName}</strong>
+                                <p>${lastMsg}</p>
+                            </div>
+                            <div class="chat-item-meta">
+                                ${lastTime}
+                                ${hasUnread ? `<div class="unread-badge">${user.unread_count}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Add click event listeners
+                list.querySelectorAll('.chat-item').forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        const userId = parseInt(this.dataset.id);
+                        const userName = this.dataset.name;
+                        const userAvatar = this.dataset.avatar;
+                        activeId = userId;
+                        openChat(userId, userName, userAvatar);
+                        // Update active state
+                        list.querySelectorAll('.chat-item').forEach(function(item) {
+                            item.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        // Remove unread badge
+                        const badge = this.querySelector('.unread-badge');
+                        if (badge) badge.remove();
+                        // Update badge count
+                        const totalUnread = document.querySelectorAll('.unread-badge').length;
+                        const badgeEl = document.getElementById('bdg-msg');
+                        if (badgeEl) badgeEl.textContent = totalUnread;
+                    });
                 });
-            });
-        }
+            }
 
-        function openChat(id) {
-            const convos = Store.get('conversations', []);
-            const c = convos.find(x => x.id === id);
-            if (!c) return;
-            win.innerHTML = `
-      <div class="chat-head">
-        <img src="${c.avatar}" alt="${c.name}"/>
-        <div>
-          <strong>${c.name}</strong>
-          <span>Online</span>
-        </div>
-      </div>
-      <div class="chat-body" id="chat-body">
-        ${c.messages.map(m => `
-          <div class="bubble ${m.me ? 'me' : 'them'}">
-            ${m.text}
-            <small>${m.ts}</small>
-          </div>
-        `).join('')}
-      </div>
-      <form class="chat-form" id="chat-form">
-        <input type="text" id="chat-input" placeholder="Type a message…" autocomplete="off" required/>
-        <button type="submit">Send</button>
-      </form>
-    `;
-            const body = document.getElementById('chat-body');
-            body.scrollTop = body.scrollHeight;
-            document.getElementById('chat-form').addEventListener('submit', e => {
-                e.preventDefault();
+            // Fetch conversation messages
+            async function fetchMessages(userId, limit, offset) {
+                limit = limit || 50;
+                offset = offset || 0;
+                try {
+                    const response = await fetch(API_BASE + 'get_conversation.php?user_id=' + userId +
+                        '&limit=' + limit + '&offset=' + offset);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Mark messages as read automatically
+                        markMessagesAsRead(userId);
+                        return data.data.map(function(msg) {
+                            return {
+                                id: msg.id,
+                                text: msg.message,
+                                ts: formatTime(msg.created_at),
+                                me: msg.sender_id == currentUserId,
+                                sender_id: msg.sender_id,
+                                is_read: msg.is_read
+                            };
+                        });
+                    }
+                    return [];
+                } catch (error) {
+                    console.error('Error fetching messages:', error);
+                    return [];
+                }
+            }
+
+            // Send a message
+            async function sendMessage(receiverId, message) {
+                try {
+                    const response = await fetch(API_BASE + 'send_message.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            receiver_id: receiverId,
+                            message: message
+                        })
+                    });
+
+                    const data = await response.json();
+                    return data.success;
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    return false;
+                }
+            }
+
+            // Mark messages as read
+            async function markMessagesAsRead(senderId) {
+                try {
+                    const response = await fetch(API_BASE + 'mark_messages_read.php', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sender_id: senderId
+                        })
+                    });
+
+                    const data = await response.json();
+                    return data.success;
+                } catch (error) {
+                    console.error('Error marking messages as read:', error);
+                    return false;
+                }
+            }
+
+            // Open chat window
+            function openChat(userId, userName, userAvatar) {
+                if (!win) return;
+
+                win.innerHTML = `
+                    <div style="display: flex; flex-direction: column; height: 100%;">
+                        <div class="chat-head">
+                            ${userAvatar ? `<img src="${userAvatar}" alt="${userName}" />` : `<div style="width:42px;height:42px;border-radius:50%;background:#C72C41;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:16px;flex-shrink:0;">${getInitials(userName)}</div>`}
+                            <div>
+                                <strong>${userName}</strong>
+                                <span>Online</span>
+                            </div>
+                        </div>
+                        <div class="chat-body" id="chat-body">
+                            <div class="loading">Loading messages...</div>
+                        </div>
+                        <form class="chat-form" id="chat-form">
+                            <input type="text" id="chat-input" placeholder="Type a message…" autocomplete="off" required />
+                            <button type="submit" id="send-btn">Send</button>
+                        </form>
+                    </div>
+                `;
+
+                // Load messages
+                loadMessages(userId);
+
+                // Handle form submission
+                const form = document.getElementById('chat-form');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const input = document.getElementById('chat-input');
+                        const btn = document.getElementById('send-btn');
+                        const text = input.value.trim();
+                        if (!text || !activeId) return;
+
+                        // Disable input while sending
+                        input.disabled = true;
+                        btn.disabled = true;
+                        btn.textContent = 'Sending...';
+
+                        sendMessage(activeId, text).then(function(sent) {
+                            if (sent) {
+                                input.value = '';
+                                // Reload messages
+                                loadMessages(activeId);
+                            } else {
+                                alert('Failed to send message. Please try again.');
+                            }
+
+                            input.disabled = false;
+                            btn.disabled = false;
+                            btn.textContent = 'Send';
+                            input.focus();
+                        });
+                    });
+                }
+
+                // Enter key to send
                 const input = document.getElementById('chat-input');
-                const text = input.value.trim();
-                if (!text) return;
-                const convos = Store.get('conversations', []);
-                const target = convos.find(x => x.id === id);
-                if (!target) return;
-                const now = new Date();
-                const ts =
-                    `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-                target.messages.push({
-                    me: true,
-                    text,
-                    ts
+                if (input) {
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            const form = document.getElementById('chat-form');
+                            if (form) form.dispatchEvent(new Event('submit'));
+                        }
+                    });
+                }
+            }
+
+            // Load messages into chat window
+            async function loadMessages(userId) {
+                const body = document.getElementById('chat-body');
+                if (!body) return;
+
+                body.innerHTML = '<div class="loading">Loading messages...</div>';
+
+                const messages = await fetchMessages(userId);
+
+                if (messages.length === 0) {
+                    body.innerHTML = `
+                        <div style="text-align: center; padding: 40px 0; color: #999;">
+                            <p>No messages yet. Say hello! 👋</p>
+                        </div>
+                    `;
+                } else {
+                    body.innerHTML = messages.map(function(m) {
+                        return `
+                            <div class="bubble ${m.me ? 'me' : 'them'}">
+                                ${m.text}
+                                <small>${m.ts || ''}</small>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // Scroll to bottom
+                body.scrollTop = body.scrollHeight;
+            }
+
+            // Poll for new messages
+            function startPolling() {
+                if (pollingInterval) clearInterval(pollingInterval);
+
+                pollingInterval = setInterval(function() {
+                    // Refresh user list
+                    fetchUsers().then(function(users) {
+                        // If a chat is open, refresh messages
+                        if (activeId) {
+                            // Get user info from the list
+                            var activeItem = list ? list.querySelector('.chat-item[data-id="' +
+                                activeId + '"]') : null;
+                            if (activeItem) {
+                                var userName = activeItem.dataset.name;
+                                var userAvatar = activeItem.dataset.avatar;
+                                // Check if there are new messages
+                                var userData = null;
+                                if (users) {
+                                    for (var i = 0; i < users.length; i++) {
+                                        if (users[i].id === activeId) {
+                                            userData = users[i];
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (userData && userData.unread_count > 0) {
+                                    openChat(activeId, userName, userAvatar);
+                                }
+                            }
+                        }
+                    });
+                }, 5000); // Poll every 5 seconds
+            }
+
+            // Stop polling
+            function stopPolling() {
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+            }
+
+            // Initialize chat
+            function init() {
+                fetchUsers().then(function() {
+                    startPolling();
                 });
-                Store.set('conversations', convos);
-                input.value = '';
-                openChat(id);
-            });
+
+                // Clean up on page unload
+                window.addEventListener('beforeunload', function() {
+                    stopPolling();
+                });
+            }
+
+            // Start the chat when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        } catch (error) {
+            console.error('Chat initialization error:', error);
         }
 
-        renderList();
     })();
     </script>
 </body>
