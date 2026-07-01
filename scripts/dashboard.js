@@ -62,16 +62,16 @@
   const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
 
   function paintOverview(){
-    const props = Store.get('properties', []);
-    const favs = Store.get('favorites', []);
-    const convos = Store.get('conversations', []);
-    const notifs = Store.get('notifications', []);
-    const following = Store.get('following', []);
+    const props      = Store.get('properties', []);
+    const favs       = Store.get('favorites', []);
+    const convos     = Store.get('conversations', []);
+    const notifs     = Store.get('notifications', []);
+    const following  = Store.get('following', []);
 
-    setText('stat-listings', props.length);
-    setText('stat-followers', following.length * 14); // demo
-    setText('stat-favorites', favs.length);
-    setText('stat-notifications', notifs.filter(n=>!n.read).length);
+    setText('stat-listings',     props.length);
+    setText('stat-followers',    following.length * 14); // demo multiplier
+    setText('stat-favorites',    favs.length);
+    setText('stat-notifications',notifs.filter(n=>!n.read).length);
 
     // Notifications dropdown list
     const notifList = document.getElementById('notif-list');
@@ -87,20 +87,30 @@
     }
 
     // Sidebar badge counts
-    setText('bdg-msg', convos.filter(c=>c.unread).length);
-    setText('bdg-fav', favs.length);
-    setText('bdg-notif', notifs.filter(n=>!n.read).length);
-    setText('bdg-notif-2', notifs.filter(n=>!n.read).length);
+    // FIX: Only set bdg-msg from localStorage when chat.js is NOT active
+    // (i.e. not on messages.php). On messages.php, chat.js manages this badge
+    // via real API data and will overwrite us anyway — but skipping it here
+    // prevents the brief flash of stale demo counts.
+    if (!window.currentUserId || !document.getElementById('chat-list')) {
+      setText('bdg-msg', convos.filter(c=>c.unread).length);
+    }
+
+    setText('bdg-fav',      favs.length);
+    setText('bdg-notif',    notifs.filter(n=>!n.read).length);
+    setText('bdg-notif-2',  notifs.filter(n=>!n.read).length);
   }
 
   paintOverview();
 
   // ---------- LOGOUT ----------
+  // FIX: Was redirecting to '08-login.php', which only goes to the login page
+  // without destroying the PHP session. Now correctly points to logout.php,
+  // which calls session_destroy() before redirecting.
   document.querySelectorAll('[data-logout]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
-      if(window.SamsarTransition) SamsarTransition.leave(() => location.href = '08-login.php');
-      else location.href = '08-login.php';
+      if(window.SamsarTransition) SamsarTransition.leave(() => location.href = 'logout.php');
+      else location.href = 'logout.php';
     });
   });
 
@@ -112,12 +122,12 @@
     const isFollowing = fbtn.classList.toggle('following');
     fbtn.textContent = isFollowing ? 'Following' : 'Follow';
     if(isFollowing){
-      fbtn.style.background = '#C72C41';
-      fbtn.style.color = '#fff';
+      fbtn.style.background  = '#C72C41';
+      fbtn.style.color       = '#fff';
       fbtn.style.borderColor = '#C72C41';
     } else {
-      fbtn.style.background = '';
-      fbtn.style.color = '';
+      fbtn.style.background  = '';
+      fbtn.style.color       = '';
       fbtn.style.borderColor = '';
     }
   });
