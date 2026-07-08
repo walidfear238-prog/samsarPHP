@@ -4,7 +4,7 @@ require __DIR__ . "/../../db/connect.php";
 
 header('Content-Type: application/json');
 
-// ── Auth ───────────────────────────────────────────────────────────────────
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ── Input ──────────────────────────────────────────────────────────────────
+//input validation
 $follower_id  = (int) $_SESSION['user_id'];
 $following_id = isset($_POST['following_id']) ? (int) $_POST['following_id'] : 0;
 
@@ -31,7 +31,7 @@ if ($following_id === $follower_id) {
     exit;
 }
 
-// ── Target user exists ────────────────────────────────────────────────────
+//check if user exist
 $chk = $conn->prepare("SELECT id FROM users WHERE id = ?");
 $chk->bind_param("i", $following_id);
 $chk->execute();
@@ -41,7 +41,7 @@ if ($chk->get_result()->num_rows === 0) {
     exit;
 }
 
-// ── Already following ─────────────────────────────────────────────────────
+//check if already following
 $dup = $conn->prepare("SELECT id FROM following WHERE follower_id = ? AND following_id = ?");
 $dup->bind_param("ii", $follower_id, $following_id);
 $dup->execute();
@@ -51,7 +51,7 @@ if ($dup->get_result()->num_rows > 0) {
     exit;
 }
 
-// ── Insert ─────────────────────────────────────────────────────────────────
+//Insert
 $stmt = $conn->prepare("INSERT INTO following (follower_id, following_id) VALUES (?, ?)");
 $stmt->bind_param("ii", $follower_id, $following_id);
 

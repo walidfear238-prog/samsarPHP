@@ -1,74 +1,86 @@
 <?php
+require __DIR__ . '/_bootstrap.php';
 
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+$pairsStmt = $conn->prepare("
+    SELECT
+        CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS other_id,
+        property_id,
+        MAX(created_at) AS last_time
+    FROM messages
+    WHERE sender_id = ? OR receiver_id = ?
+    GROUP BY other_id, property_id
+    ORDER BY last_time DESC
+");
+$pairsStmt->bind_param("iii", $CHAT_USER_ID, $CHAT_USER_ID, $CHAT_USER_ID);
+$pairsStmt->execute();
+$pairs = $pairsStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$pairsStmt->close();
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit(); }
+$conversations = [];
 
-require_once '../../db/connect.php';
+foreach ($pairs as $pair) {
+    $otherId    = (int) $pair['other_id'];
+    $propertyId = $pair['property_id'] !== null ? (int) $pair['property_id'] : null;
 
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'User not authenticated']);
-    exit();
+    // Last message in this thread
+    $lm = $conn->prepare("
+        SELECT sender_id, message, created_at
+        FROM messages
+        WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))
+          AND property_id <=> ?
+        ORDER BY created_at DESC, id DESC
+        LIMIT 1
+    ");
+    $lm->bind_param("iiiii", $CHAT_USER_ID, $otherId, $otherId, $CHAT_USER_ID, $propertyId);
+    $lm->execute();
+    $lastMsg = $lm->get_result()->fetch_assoc();
+    $lm->close();
+
+    // Unread count (messages the other person sent to me, still unread)
+    $uc = $conn->prepare("
+        SELECT COUNT(*) AS n FROM messages
+        WHERE sender_id = ? AND receiver_id = ? AND property_id <=> ? AND is_read = 0
+    ");
+    $uc->bind_param("iii", $otherId, $CHAT_USER_ID, $propertyId);
+    $uc->execute();
+    $unread = (int) ($uc->get_result()->fetch_assoc()['n'] ?? 0);
+    $uc->close();
+
+    // Other user's info
+    $u = $conn->prepare("SELECT firstname, lastname, profile_image, role FROM users WHERE id = ?");
+    $u->bind_param("i", $otherId);
+    $u->execute();
+    $user = $u->get_result()->fetch_assoc();
+    $u->close();
+
+    if (!$user) continue; // other user was deleted — skip this thread
+
+    // Property title, if this thread is tied to a listing
+    $propertyTitle = null;
+    if ($propertyId) {
+        $p = $conn->prepare("SELECT title FROM properties WHERE id = ?");
+        $p->bind_param("i", $propertyId);
+        $p->execute();
+        $propRow = $p->get_result()->fetch_assoc();
+        $p->close();
+        $propertyTitle = $propRow['title'] ?? null;
+    }
+
+    $conversations[] = [
+        'conversation_id'   => $otherId . '_' . ($propertyId ?: 0),
+        'property_id'       => $propertyId,
+        'property_title'    => $propertyTitle,
+        'last_message'      => $lastMsg['message'] ?? null,
+        'last_message_time' => $lastMsg['created_at'] ?? null,
+        'last_sender_id'    => isset($lastMsg['sender_id']) ? (int) $lastMsg['sender_id'] : null,
+        'other_user_id'     => $otherId,
+        'other_firstname'   => $user['firstname'],
+        'other_lastname'    => $user['lastname'],
+        'other_avatar'      => $user['profile_image'],
+        'other_role'        => $user['role'],
+        'unread_count'      => $unread,
+    ];
 }
-$user_id = (int)$_SESSION['user_id'];
 
-try {
-
-    $query = "
-        SELECT
-            c.id                  AS conversation_id,
-            c.property_id,
-            p.title               AS property_title,
-            c.last_message,
-            c.last_message_time,
-
-            -- Determine the other party
-            CASE WHEN c.user_id = ? THEN c.agency_id ELSE c.user_id END AS other_user_id,
-
-            u.firstname           AS other_firstname,
-            u.lastname            AS other_lastname,
-            u.profile_image       AS other_avatar,
-            u.role                AS other_role,
-
-            -- Who sent the last message? (for 'You: …' prefix)
-            (SELECT sender_id
-             FROM messages m2
-             WHERE m2.conversation_id = c.id
-             ORDER BY m2.created_at DESC, m2.id DESC
-             LIMIT 1) AS last_sender_id,
-
-            -- Unread count: messages the other person sent that I haven't read
-            (SELECT COUNT(*)
-             FROM messages m3
-             WHERE m3.conversation_id = c.id
-               AND m3.sender_id != ?
-               AND m3.is_read = 0) AS unread_count
-
-        FROM conversations c
-        LEFT JOIN properties p ON p.id = c.property_id
-        LEFT JOIN users u
-            ON u.id = CASE WHEN c.user_id = ? THEN c.agency_id ELSE c.user_id END
-        WHERE c.user_id = ? OR c.agency_id = ?
-        ORDER BY c.last_message_time DESC
-    ";
-
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("iiiii", $user_id, $user_id, $user_id, $user_id, $user_id);
-    $stmt->execute();
-    $conversations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-    http_response_code(200);
-    echo json_encode(['success' => true, 'data' => $conversations]);
-
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Failed to get conversations: ' . $e->getMessage()]);
-}
-?>
+json_out(true, $conversations);

@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ── Input ──────────────────────────────────────────────────────────────────
 $follower_id  = (int) $_SESSION['user_id'];
 $following_id = isset($_POST['following_id']) ? (int) $_POST['following_id'] : 0;
 
@@ -25,7 +24,7 @@ if ($following_id <= 0) {
     exit;
 }
 
-// ── Delete ─────────────────────────────────────────────────────────────────
+
 $stmt = $conn->prepare("DELETE FROM following WHERE follower_id = ? AND following_id = ?");
 $stmt->bind_param("ii", $follower_id, $following_id);
 

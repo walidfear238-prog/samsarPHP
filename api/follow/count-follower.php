@@ -12,7 +12,7 @@ if ($user_id <= 0) {
     exit;
 }
 
-// ── Query ──────────────────────────────────────────────────────────────────
+
 $stmt = $conn->prepare("SELECT COUNT(*) AS count FROM following WHERE following_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
