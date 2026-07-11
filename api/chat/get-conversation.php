@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/_bootstrap.php';
+// Thread token "{other_user_id}_{property_id}" — property_id 0 means NULL/no listing.
 
 $token = isset($_GET['conversation_id']) ? (string) $_GET['conversation_id'] : '';
 $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 50;
@@ -18,7 +19,9 @@ if (!$other_user_id) {
     json_out(false, 'Invalid conversation_id', 400);
 }
 
-
+// No separate "ownership" check needed: the WHERE clause only ever
+// matches rows where the logged-in user is the sender or the receiver,
+// so a user can never see anyone else's messages by guessing a token.
 $stmt = $conn->prepare("
     SELECT id, sender_id, receiver_id, property_id, message, is_read, created_at
     FROM messages

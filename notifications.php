@@ -6,9 +6,9 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-
-
-
+// Used by the inline script below so fetch paths resolve correctly whether
+// SAMSAR lives at the web root or in a subdirectory like /samsar/.
+$samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
 ?>
 
 <!DOCTYPE html>
@@ -23,6 +23,10 @@ if (!isset($_SESSION['user_id'])) {
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <script>
+    // Resolves API paths correctly regardless of subdirectory.
+    window.SAMSAR_BASE = <?php echo json_encode($samsar_base); ?>;
+    </script>
 </head>
 
 <body>
@@ -32,7 +36,8 @@ if (!isset($_SESSION['user_id'])) {
     <div class="dashboard-shell">
         <aside class="dashboard-sidebar">
             <a class="dashboard-brand" href="index.php">
-                <svg class="brand-mark" viewBox="0 0 1080 1080" fill="currentColor" aria-hidden="true">
+                <svg width="25" height="25
+                " class="brand-mark" viewBox="0 0 1080 1080" fill="currentColor" aria-hidden="true">
                     <path
                         d="M734.34,464.81v-21.85c0-2.87-1.34-5.57-3.62-7.31l-152.36-116.23c-17.21-13.13-40.93-13.69-58.74-1.39l-170,117.41c-2.48,1.72-3.97,4.54-3.97,7.56v48.22c0,5.08,4.11,9.19,9.19,9.19h517.47c5.08,0,9.19,4.11,9.19,9.19v362.76c0,5.08-4.11,9.19-9.19,9.19H207.68c-5.08,0-9.19-4.11-9.19-9.19v-189.17c0-5.08,4.11-9.19,9.19-9.19h128.79c5.08,0,9.19,4.11,9.19,9.19v42c0,5.08,4.11,9.19,9.19,9.19h370.3c5.08,0,9.19-4.11,9.19-9.19v-68.42c0-5.08-4.11-9.19-9.19-9.19H207.68c-5.08,0-9.19-4.11-9.19-9.19v-272.61c0-3.02,1.48-5.85,3.97-7.56l223.99-154.69,97.47-67.32c17.82-12.3,41.53-11.74,58.74,1.39l94.18,71.86,57.49,43.85,143.55,109.51c2.28,1.74,3.62,4.44,3.62,7.31v94.68c0,5.08-4.11,9.19-9.19,9.19h-128.79c-5.08,0-9.19-4.11-9.19-9.19Z" />
                 </svg>
@@ -88,7 +93,7 @@ if (!isset($_SESSION['user_id'])) {
                 <button class="btn btn-ghost" id="mark-read">Mark all as read</button>
             </header>
             <div class="content-card" style="padding:0;overflow:hidden">
-                <ul class="notif-list" id="notif-list"></ul>
+                <ul class="notif-list" id="notif-list-full"></ul>
             </div>
         </main>
     </div>
@@ -157,6 +162,13 @@ if (!isset($_SESSION['user_id'])) {
         text-align: center;
         color: #888
     }
+
+    .notif-hint {
+        font-size: 11px;
+        color: #C72C41;
+        display: block;
+        margin-top: 2px
+    }
     </style>
 
     <script src="scripts/samsar-transitions.js"></script>
@@ -164,49 +176,129 @@ if (!isset($_SESSION['user_id'])) {
     <script src="scripts/dashboard.js"></script>
     <script>
     (function() {
-        const Store = window.SamsarStore;
-        const list = document.getElementById('notif-list');
+        const BASE = (window.SAMSAR_BASE || '').replace(/\/+$/, '');
+        const list = document.getElementById('notif-list-full');
+        const markAllBtn = document.getElementById('mark-read');
 
-        function render() {
-            const notifs = Store.get('notifications', []);
+        function timeAgo(dateStr) {
+            if (!dateStr) return '';
+            const then = new Date(dateStr.replace(' ', 'T'));
+            const diff = Math.max(0, Math.floor((Date.now() - then.getTime()) / 1000));
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+            return Math.floor(diff / 86400) + 'd';
+        }
+
+        function esc(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Build the URL a notification should jump to when clicked.
+        // Returns null for notifications with no clickable target.
+        function targetUrl(n) {
+            if (!n.link) return null;
+            // Message notifications link to "otherUserId_propertyId"
+            if (n.type === 'message' && /^[0-9]+_[0-9]+$/.test(n.link)) {
+                return BASE + '/messages.php?open=' + encodeURIComponent(n.link);
+            }
+            // Favorite notifications link to the favorited property.
+            if (n.type === 'favorite' && /^property:\d+$/.test(n.link)) {
+                return BASE + '/03-property-details.php?id=' + n.link.split(':')[1];
+            }
+            // Follow notifications link to the follower's agency profile.
+            if (n.type === 'follow' && /^user:\d+$/.test(n.link)) {
+                return BASE + '/05-agency-profile.php?id=' + n.link.split(':')[1];
+            }
+            return null;
+        }
+
+        function render(notifs) {
             if (!notifs.length) {
                 list.innerHTML = '<li class="notif-empty">No notifications yet.</li>';
                 return;
             }
-            list.innerHTML = notifs.map(n => `
-      <li class="notif-item ${n.read ? '' : 'unread'}" data-id="${n.id}">
+            list.innerHTML = notifs.map(n => {
+                const url = targetUrl(n);
+                const hint = url ? '<span class="notif-hint">Click to open →</span>' : '';
+                return `
+      <li class="notif-item ${n.read ? '' : 'unread'}" data-id="${n.id}" data-url="${esc(url || '')}">
         <span class="notif-dot"></span>
         <div style="flex:1">
-          <p>${n.text}</p>
-          <span class="notif-time">${n.time} ago</span>
+          <p>${n.title ? '<strong>' + esc(n.title) + '</strong> ' : ''}${esc(n.text)}</p>
+          <span class="notif-time">${timeAgo(n.created_at)} ago</span>
+          ${hint}
         </div>
       </li>
-    `).join('');
+    `;
+            }).join('');
 
             list.querySelectorAll('.notif-item').forEach(item => {
                 item.addEventListener('click', () => {
-                    const id = parseInt(item.dataset.id);
-                    const notifs = Store.get('notifications', []);
-                    const n = notifs.find(x => x.id === id);
-                    if (n) n.read = true;
-                    Store.set('notifications', notifs);
-                    render();
-                    if (window.SamsarApp) SamsarApp.paintOverview();
+                    const id = parseInt(item.dataset.id, 10);
+                    const url = item.dataset.url;
+                    markRead(id, url);
                 });
             });
         }
 
-        document.getElementById('mark-read').addEventListener('click', () => {
-            const notifs = Store.get('notifications', []).map(n => ({
-                ...n,
-                read: true
-            }));
-            Store.set('notifications', notifs);
-            render();
-            if (window.SamsarApp) SamsarApp.paintOverview();
-        });
+        // Loads this user's notifications from the real backend (session-scoped, auth-checked server-side)
+        function load() {
+            fetch(BASE + '/api/get-notifications.php?limit=100')
+                .then(r => {
+                    if (r.status === 401) {
+                        list.innerHTML = '<li class="notif-empty">Please sign in to view notifications.</li>';
+                        return [];
+                    }
+                    return r.ok ? r.json() : [];
+                })
+                .then(notifs => {
+                    if (Array.isArray(notifs)) render(notifs);
+                })
+                .catch(() => {
+                    list.innerHTML = '<li class="notif-empty">Couldn\'t load notifications.</li>';
+                });
+        }
 
-        render();
+        // Keeps the sidebar badge / unread count in sync with the database after any change
+        function syncBadges() {
+            if (window.SamsarApp && typeof window.SamsarApp.refreshMessagingData === 'function') {
+                window.SamsarApp.refreshMessagingData();
+            }
+        }
+
+        // Persists read state to the database. If `url` is provided,
+        // the user is navigated there AFTER the read-state is recorded.
+        function markRead(id, url) {
+            fetch(BASE + '/api/mark-notification-read.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(id ? {
+                        id
+                    } : {})
+                })
+                .then(r => r.ok ? r.json() : null)
+                .then(() => {
+                    syncBadges();
+                    if (url) {
+                        // Small delay so the badge update has time to flush
+                        setTimeout(() => {
+                            window.location.href = url;
+                        }, 120);
+                    } else {
+                        load();
+                    }
+                })
+                .catch(() => {});
+        }
+
+        markAllBtn.addEventListener('click', () => markRead(null, null));
+
+        load();
     })();
     </script>
 </body>

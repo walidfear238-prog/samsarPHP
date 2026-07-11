@@ -27,6 +27,11 @@ $user = $result->fetch_assoc();
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <script>
+    window.currentUserId = <?php echo (int) $id; ?>;
+    window.SAMSAR_BASE =
+        <?php echo json_encode(rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/')); ?>;
+    </script>
 </head>
 
 <body>
@@ -37,7 +42,8 @@ $user = $result->fetch_assoc();
         <aside class="dashboard-sidebar">
             <a class="dashboard-brand" href="index.php">
                 <svg class="dashboard-brand-mark" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
+                    <path
+                        d="M734.34,464.81v-21.85c0-2.87-1.34-5.57-3.62-7.31l-152.36-116.23c-17.21-13.13-40.93-13.69-58.74-1.39l-170,117.41c-2.48,1.72-3.97,4.54-3.97,7.56v48.22c0,5.08,4.11,9.19,9.19,9.19h517.47c5.08,0,9.19,4.11,9.19,9.19v362.76c0,5.08-4.11,9.19-9.19,9.19H207.68c-5.08,0-9.19-4.11-9.19-9.19v-189.17c0-5.08,4.11-9.19,9.19-9.19h128.79c5.08,0,9.19,4.11,9.19,9.19v42c0,5.08,4.11,9.19,9.19,9.19h370.3c5.08,0,9.19-4.11,9.19-9.19v-68.42c0-5.08-4.11-9.19-9.19-9.19H207.68c-5.08,0-9.19-4.11-9.19-9.19v-272.61c0-3.02,1.48-5.85,3.97-7.56l223.99-154.69,97.47-67.32c17.82-12.3,41.53-11.74,58.74,1.39l94.18,71.86,57.49,43.85,143.55,109.51c2.28,1.74,3.62,4.44,3.62,7.31v94.68c0,5.08-4.11,9.19-9.19,9.19h-128.79c-5.08,0-9.19-4.11-9.19-9.19Z" />
                 </svg>
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
@@ -309,189 +315,7 @@ $user = $result->fetch_assoc();
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
-    <script>
-    (function() {
-        const list = document.getElementById('chat-list');
-        const win = document.getElementById('chat-window');
-        let activeId = null;
-        let conversations = [];
-        let knownMessageIds = new Set();
-        let pollTimer = null;
-        let sending = false;
-
-        function timeAgo(dateStr) {
-            if (!dateStr) return '';
-            const then = new Date(dateStr.replace(' ', 'T'));
-            const diff = Math.max(0, Math.floor((Date.now() - then.getTime()) / 1000));
-            if (diff < 60) return 'now';
-            if (diff < 3600) return Math.floor(diff / 60) + 'm';
-            if (diff < 86400) return Math.floor(diff / 3600) + 'h';
-            return Math.floor(diff / 86400) + 'd';
-        }
-
-        function formatTime(dateStr) {
-            if (!dateStr) return '';
-            const d = new Date(dateStr.replace(' ', 'T'));
-            return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        function loadConversations() {
-            return fetch('api/get-conversations.php')
-                .then(r => r.ok ? r.json() : [])
-                .then(data => {
-                    if (!Array.isArray(data)) return;
-                    conversations = data;
-                    renderList();
-                })
-                .catch(() => {});
-        }
-
-        function renderList() {
-            list.innerHTML = conversations.map(c => `
-        <div class="chat-item ${c.unread_count > 0 ? 'unread' : ''} ${activeId === c.id ? 'active' : ''}" data-id="${c.id}">
-          <img src="${c.avatar}" alt="${c.name}"/>
-          <div class="chat-item-info">
-            <strong>${escapeHtml(c.name)}</strong>
-            <p>${c.last_message ? escapeHtml(c.last_message) : 'No messages yet'}</p>
-          </div>
-          <div class="chat-item-meta">${timeAgo(c.last_message_time)}</div>
-        </div>`).join('');
-
-            list.querySelectorAll('.chat-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    activeId = parseInt(el.dataset.id);
-                    openChat(activeId);
-                });
-            });
-        }
-
-        function renderMessages(c, messages) {
-            win.innerHTML = `
-      <div class="chat-head">
-        <img src="${c.avatar}" alt="${c.name}"/>
-        <div>
-          <strong>${escapeHtml(c.name)}</strong>
-          <span>${c.property_title ? escapeHtml(c.property_title) : ''}</span>
-        </div>
-      </div>
-      <div class="chat-body" id="chat-body">
-        ${messages.map(m => `
-          <div class="bubble ${m.me ? 'me' : 'them'}" data-mid="${m.id}">
-            ${escapeHtml(m.text)}
-            <small>${formatTime(m.created_at)}</small>
-          </div>
-        `).join('')}
-      </div>
-      <form class="chat-form" id="chat-form">
-        <input type="text" id="chat-input" placeholder="Type a message…" autocomplete="off" required/>
-        <button type="submit">Send</button>
-      </form>
-    `;
-            const body = document.getElementById('chat-body');
-            body.scrollTop = body.scrollHeight;
-            knownMessageIds = new Set(messages.map(m => m.id));
-
-            document.getElementById('chat-form').addEventListener('submit', e => {
-                e.preventDefault();
-                const input = document.getElementById('chat-input');
-                const text = input.value.trim();
-                if (!text || sending) return;
-                sending = true;
-                const btn = document.querySelector('#chat-form button');
-                if (btn) btn.disabled = true;
-
-                fetch('api/send-message.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            conversation_id: activeId,
-                            message: text
-                        })
-                    })
-                    .then(r => r.ok ? r.json() : null)
-                    .then(msg => {
-                        if (!msg || msg.error) return;
-                        if (knownMessageIds.has(msg.id)) return;
-                        knownMessageIds.add(msg.id);
-                        const bubble = document.createElement('div');
-                        bubble.className = 'bubble me';
-                        bubble.dataset.mid = msg.id;
-                        bubble.innerHTML =
-                            `${escapeHtml(msg.text)}<small>${formatTime(msg.created_at)}</small>`;
-                        body.appendChild(bubble);
-                        body.scrollTop = body.scrollHeight;
-                        input.value = '';
-                        loadConversations();
-                    })
-                    .catch(() => {})
-                    .finally(() => {
-                        sending = false;
-                        if (btn) btn.disabled = false;
-                        input.focus();
-                    });
-            });
-        }
-
-        function openChat(id) {
-            const c = conversations.find(x => x.id === id);
-            if (!c) return;
-            fetch('api/get-messages.php?conversation_id=' + encodeURIComponent(id))
-                .then(r => r.ok ? r.json() : null)
-                .then(messages => {
-                    if (!Array.isArray(messages)) return;
-                    renderMessages(c, messages);
-                    c.unread_count = 0;
-                    renderList();
-                    if (window.SamsarApp) SamsarApp.refreshMessagingData();
-                })
-                .catch(() => {});
-        }
-
-        function pollActiveChat() {
-            if (activeId === null) return;
-            fetch('api/get-messages.php?conversation_id=' + encodeURIComponent(activeId))
-                .then(r => r.ok ? r.json() : null)
-                .then(messages => {
-                    if (!Array.isArray(messages)) return;
-                    const body = document.getElementById('chat-body');
-                    if (!body) return;
-                    let appended = false;
-                    messages.forEach(m => {
-                        if (!knownMessageIds.has(m.id)) {
-                            knownMessageIds.add(m.id);
-                            const bubble = document.createElement('div');
-                            bubble.className = 'bubble ' + (m.me ? 'me' : 'them');
-                            bubble.dataset.mid = m.id;
-                            bubble.innerHTML =
-                                `${escapeHtml(m.text)}<small>${formatTime(m.created_at)}</small>`;
-                            body.appendChild(bubble);
-                            appended = true;
-                        }
-                    });
-                    if (appended) {
-                        body.scrollTop = body.scrollHeight;
-                        if (window.SamsarApp) SamsarApp.refreshMessagingData();
-                    }
-                })
-                .catch(() => {});
-        }
-
-        loadConversations();
-        pollTimer = setInterval(() => {
-            loadConversations();
-            pollActiveChat();
-        }, 4000);
-        window.addEventListener('beforeunload', () => clearInterval(pollTimer));
-    })();
-    </script>
+    <script src="scripts/chat.js"></script>
 </body>
 
 </html>

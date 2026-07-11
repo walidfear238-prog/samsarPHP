@@ -22,25 +22,130 @@
     const nav = document.querySelector('.nav');
     addEventListener('scroll', () => nav.classList.toggle('is-scrolled', scrollY > 40), { passive: true });
 
-    // listings
-    const list = [
-        { t: 'Villa Tazri', l: 'Palmeraie', p: '12,400,000', img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=600&q=80' },
-        { t: 'Riad Yasmine', l: 'Medina', p: '5,200,000', img: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=600&q=80' },
-        { t: 'Villa Ourika', l: 'Ourika Valley', p: '8,900,000', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80' },
-        { t: 'Riad Bahia', l: 'Medina', p: '4,100,000', img: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=600&q=80' },
-    ];
-    document.getElementById('prop-grid').innerHTML = list.map((p, i) => `
-  <a class="p-card" href="03-property-details.php" style="transition-delay:${i * 70}ms">
-   <div class="p-img"><img src="${p.img}" alt="${p.t}" loading="lazy"/></div>
-   <div class="p-body">
-    <span class="p-loc">${p.l} · Marrakech</span>
-    <h3 class="p-title">${p.t}</h3>
-    <span class="p-price">${p.p} <small>MAD</small></span>
-   </div>
-  </a>`).join('');
-
     const io = new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { const d = e.target.dataset.delay || 0; e.target.style.transitionDelay = d + 'ms'; e.target.classList.add('is-in'); o.unobserve(e.target) } }), { threshold: .1 });
-    document.querySelectorAll('.reveal,.p-card').forEach(el => io.observe(el));
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    function setText(id, val, fallback) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = (val !== null && val !== undefined && val !== '') ? val : (fallback !== undefined ? fallback : '–');
+    }
+
+    // Resolve stored paths the same way the rest of the app does
+    function logoUrl(path) {
+        if (!path) return null;
+        if (/^https?:\/\//.test(path)) return path;
+        if (path.startsWith('uploads/')) return path;
+        return 'uploads/profile/' + path;
+    }
+    function propImgUrl(path) {
+        if (!path) return null;
+        if (/^https?:\/\//.test(path)) return path;
+        if (path.startsWith('uploads/')) return path;
+        return 'uploads/property_images/' + path;
+    }
+    const PLACEHOLDER = 'https://placehold.co/600x450/f5f0eb/8ba3b0?text=No+Image';
+
+    function formatPrice(price) {
+        const n = parseFloat(price);
+        return Number.isFinite(n) ? new Intl.NumberFormat('fr-MA').format(n) : (price || '0');
+    }
+
+    // Only this agency's own properties - real data from the database
+    function renderProperties(properties) {
+        const grid = document.getElementById('prop-grid');
+        if (!grid) return;
+        if (!properties.length) {
+            grid.innerHTML = '<p style="grid-column:1/-1;color:var(--graphite)">No listings yet.</p>';
+            return;
+        }
+        grid.innerHTML = properties.map((p, i) => {
+            const img = propImgUrl(p.img) || PLACEHOLDER;
+            const loc = [p.district, p.city].filter(Boolean).join(' · ') || 'Morocco';
+            return `
+  <a class="p-card" href="03-property-details.php?id=${p.id}" style="transition-delay:${i * 70}ms">
+   <div class="p-img"><img src="${img}" alt="${p.title || ''}" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER}'"/></div>
+   <div class="p-body">
+    <span class="p-loc">${loc}</span>
+    <h3 class="p-title">${p.title || 'Property'}</h3>
+    <span class="p-price">${formatPrice(p.price)} <small>MAD</small></span>
+   </div>
+  </a>`;
+        }).join('');
+        document.querySelectorAll('.p-card').forEach(el => io.observe(el));
+    }
+
+    function renderNotFound() {
+        setText('prof-eyebrow', 'SAMSAR');
+        setText('prof-name', 'Agency not found');
+        setText('prof-location', '');
+        setText('about-text', 'This agency profile is not available.');
+        const grid = document.getElementById('prop-grid');
+        if (grid) grid.innerHTML = '<p style="grid-column:1/-1;color:var(--graphite)">This agency could not be found.</p>';
+    }
+
+    // Load the real agency (by id) and its own properties from the database
+    const agencyId = new URLSearchParams(location.search).get('id');
+
+    if (!agencyId) {
+        renderNotFound();
+    } else {
+        fetch(`api/get-agency-details.php?id=${encodeURIComponent(agencyId)}`)
+            .then(res => { if (!res.ok) throw new Error('not found'); return res.json(); })
+            .then(a => {
+                document.title = `${a.name} · SAMSAR`;
+
+                const logoEl = document.getElementById('prof-logo');
+                if (logoEl) {
+                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=C72C41&color=fff&size=200`;
+                    logoEl.src = logoUrl(a.logo) || fallback;
+                    logoEl.alt = a.name + ' logo';
+                    logoEl.onerror = () => { logoEl.onerror = null; logoEl.src = fallback; };
+                }
+
+                setText('prof-eyebrow', (a.is_verified ? 'Verified samsar' : 'SAMSAR agency') + (a.joinYear ? ` · Since ${a.joinYear}` : ''));
+                setText('prof-name', a.name, 'Agency');
+                setText('prof-location', [a.city, ...(a.districts || [])].filter(Boolean).join(' · '), 'Morocco');
+
+                setText('stat-listings', a.listingsCount ?? 0);
+                setText('stat-years', `${a.yearsOnPlatform ?? 0} yrs`);
+                setText('stat-rating', '—');
+                setText('stat-reviews', '0 reviews');
+                setText('stat-languages', '—');
+
+                setText('tab-listings-count', a.listingsCount ?? 0);
+                setText('tab-reviews-count', 0);
+
+                setText('about-heading', `About ${a.name}`);
+                const listingsWord = a.listingsCount === 1 ? 'listing' : 'listings';
+                setText('about-text', `${a.name} is a real estate agency on SAMSAR${a.city ? `, based in ${a.city}` : ''}${a.joinYear ? `, on the platform since ${a.joinYear}` : ''}, with ${a.listingsCount ?? 0} active ${listingsWord}.`);
+
+                const specEl = document.getElementById('about-specialties');
+                if (specEl) {
+                    specEl.innerHTML = (a.specialties && a.specialties.length)
+                        ? a.specialties.map(s => `<li>${s}</li>`).join('')
+                        : '<li>No specialties listed yet.</li>';
+                }
+
+                const reviewsEl = document.getElementById('reviews-list');
+                if (reviewsEl) reviewsEl.innerHTML = '<p style="color:var(--graphite)">No reviews yet.</p>';
+
+                const phoneEl = document.getElementById('contact-phone');
+                if (phoneEl) {
+                    if (a.phone) { phoneEl.textContent = a.phone; phoneEl.href = `tel:${a.phone.replace(/\s+/g, '')}`; }
+                    else { phoneEl.textContent = '–'; phoneEl.removeAttribute('href'); }
+                }
+                const emailEl = document.getElementById('contact-email');
+                if (emailEl) {
+                    if (a.email) { emailEl.textContent = a.email; emailEl.href = `mailto:${a.email}`; }
+                    else { emailEl.textContent = '–'; emailEl.removeAttribute('href'); }
+                }
+                setText('contact-office', a.city, '–');
+                setText('contact-hours', '–');
+
+                renderProperties(a.properties || []);
+            })
+            .catch(() => renderNotFound());
+    }
 
     // tabs
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {

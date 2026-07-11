@@ -1,6 +1,9 @@
 <?php
 require __DIR__ . '/_bootstrap.php';
-
+// Groups messages by (other_user_id, property_id) pair — that pair IS the
+// "conversation" in this schema. Simple two-step approach (find pairs,
+// then enrich each) chosen over one giant window-function query for
+// clarity/debuggability at this project's scale.
 
 $pairsStmt = $conn->prepare("
     SELECT

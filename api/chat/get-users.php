@@ -1,6 +1,10 @@
 <?php
 require __DIR__ . '/_bootstrap.php';
-
+// (Currently unused by the frontend, kept for a future "start new
+// conversation" picker.) Returns other users plus whether any message
+// history already exists with each — a single "existing_conversation_id"
+// doesn't make sense anymore since the same user pair can have several
+// separate threads (one per property, plus one general thread).
 
 $query = "
     SELECT

@@ -1,6 +1,15 @@
 <?php
+/**
+ * Standalone diagnostic page for the chat system.
+ * Open this directly in your browser:
+ *   http://localhost/<your-folder>/api/chat/diagnose.php
+ *
+ * It does NOT depend on _bootstrap.php on purpose — this needs to work
+ * even if the bootstrap/connection layer itself is the thing that's broken.
+ * It prints a plain, human-readable pass/fail report and never dies silently.
+ */
 
-ini_set('display_errors', '1'); 
+ini_set('display_errors', '1'); // we WANT to see raw PHP errors on this page
 error_reporting(E_ALL);
 
 $rows = [];
@@ -29,7 +38,8 @@ step('db/connect.php exists', file_exists($connectFile), $connectFile);
 
 if (file_exists($connectFile)) {
     try {
-
+        // Don't let a die() inside connect.php kill this whole diagnostic —
+        // include it, then check the resulting $conn variable.
         include $connectFile;
         if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
             step('Database connection', true, 'Connected successfully to database "' . ($dbname ?? '?') . '"');
@@ -42,7 +52,7 @@ if (file_exists($connectFile)) {
     }
 }
 
-
+// ── 4. Required tables exist ─────────────────────────────────────────────
 $requiredTables = ['users', 'properties', 'conversations', 'messages', 'notifications'];
 $tableStatus = [];
 if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
@@ -54,7 +64,9 @@ if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
     }
 }
 
-
+// ── 5. Real insert/rollback test (proves INSERT actually works) ─────────
+// Uses REAL existing ids so it doesn't trip foreign-key constraints —
+// picks any existing user/property rather than inventing fake ones.
 if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
     $missing = array_keys(array_filter($tableStatus, fn($ok) => !$ok));
     if (!empty($missing)) {
@@ -95,7 +107,7 @@ if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
     }
 }
 
-
+// ── 6. Real data check ────────────────────────────────────────────────────
 if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error && !empty($tableStatus['conversations']) && !empty($tableStatus['messages'])) {
     try {
         $res = $conn->query("SELECT COUNT(*) AS n FROM conversations");
@@ -111,7 +123,7 @@ if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error && !empty($
     }
 }
 
-
+// ── 7. Debug log file ─────────────────────────────────────────────────────
 $logFile = __DIR__ . '/chat-debug.log';
 if (file_exists($logFile)) {
     $lines = @file($logFile);
@@ -120,81 +132,35 @@ if (file_exists($logFile)) {
     $tail = '(no log file yet — it is created automatically the first time you use a chat feature)';
 }
 
-?>
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html>
-
 <head>
-    <meta charset="utf-8">
-    <title>SAMSAR Chat Diagnostics</title>
-    <style>
-    body {
-        font-family: -apple-system, Segoe UI, Arial, sans-serif;
-        max-width: 820px;
-        margin: 40px auto;
-        padding: 0 20px;
-        color: #222;
-    }
-
-    h1 {
-        font-size: 20px;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 16px;
-    }
-
-    td,
-    th {
-        padding: 8px 10px;
-        border-bottom: 1px solid #e5e5e5;
-        text-align: left;
-        font-size: 14px;
-        vertical-align: top;
-    }
-
-    .ok {
-        color: #1a7f37;
-        font-weight: 600;
-    }
-
-    .fail {
-        color: #c0392b;
-        font-weight: 600;
-    }
-
-    pre {
-        background: #f6f6f6;
-        padding: 14px;
-        border-radius: 8px;
-        overflow-x: auto;
-        font-size: 12px;
-        white-space: pre-wrap;
-    }
-    </style>
+<meta charset="utf-8">
+<title>SAMSAR Chat Diagnostics</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Arial, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 20px; color: #222; }
+  h1 { font-size: 20px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  td, th { padding: 8px 10px; border-bottom: 1px solid #e5e5e5; text-align: left; font-size: 14px; vertical-align: top; }
+  .ok { color: #1a7f37; font-weight: 600; }
+  .fail { color: #c0392b; font-weight: 600; }
+  pre { background: #f6f6f6; padding: 14px; border-radius: 8px; overflow-x: auto; font-size: 12px; white-space: pre-wrap; }
+</style>
 </head>
-
 <body>
-    <h1>SAMSAR Chat System — Diagnostics</h1>
-    <table>
-        <tr>
-            <th>Check</th>
-            <th>Result</th>
-            <th>Detail</th>
-        </tr>
-        <?php foreach ($rows as [$label, $ok, $detail]): ?>
-        <tr>
-            <td><?= htmlspecialchars($label) ?></td>
-            <td class="<?= $ok ? 'ok' : 'fail' ?>"><?= $ok ? 'OK' : 'FAIL' ?></td>
-            <td><?= htmlspecialchars((string) $detail) ?></td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
+<h1>SAMSAR Chat System — Diagnostics</h1>
+<table>
+<tr><th>Check</th><th>Result</th><th>Detail</th></tr>
+<?php foreach ($rows as [$label, $ok, $detail]): ?>
+<tr>
+  <td><?= htmlspecialchars($label) ?></td>
+  <td class="<?= $ok ? 'ok' : 'fail' ?>"><?= $ok ? 'OK' : 'FAIL' ?></td>
+  <td><?= htmlspecialchars((string) $detail) ?></td>
+</tr>
+<?php endforeach; ?>
+</table>
 
-    <h2 style="font-size:16px;margin-top:32px;">Last 25 lines of chat-debug.log</h2>
-    <pre><?= htmlspecialchars($tail) ?></pre>
+<h2 style="font-size:16px;margin-top:32px;">Last 25 lines of chat-debug.log</h2>
+<pre><?= htmlspecialchars($tail) ?></pre>
 </body>
-
 </html>

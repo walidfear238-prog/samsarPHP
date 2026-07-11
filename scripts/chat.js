@@ -149,7 +149,7 @@
         // Attach click handlers
         listEl.querySelectorAll('.chat-item').forEach(el => {
             el.addEventListener('click', function () {
-                const id    = parseInt(this.dataset.conv);
+                const id    = this.dataset.conv; // opaque thread token, e.g. "26_201" — do NOT parseInt
                 const first = this.dataset.first;
                 const last  = this.dataset.last;
                 const avt   = this.dataset.avatar;
@@ -382,7 +382,7 @@
                     if (!convs) return;
                     const c = convs.find(x => String(x.conversation_id) === String(openId));
                     if (c) openChat(
-                        parseInt(c.conversation_id),
+                        c.conversation_id, // opaque thread token, e.g. "26_201" — do NOT parseInt
                         c.other_firstname || '',
                         c.other_lastname  || '',
                         c.other_avatar    || ''

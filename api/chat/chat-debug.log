@@ -1,0 +1,88 @@
+[2026-07-10 18:03:16] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-10 18:03:16] RESPONSE 200 :: {"success":true,"data":[]}
+[2026-07-10 18:04:49] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-10 18:04:49] RESPONSE 200 :: {"success":true,"data":[]}
+[2026-07-10 18:05:04] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-10 18:05:04] RESPONSE 200 :: {"success":true,"data":[]}
+[2026-07-10 18:05:05] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-10 18:05:05] RESPONSE 200 :: {"success":true,"data":[]}
+[2026-07-10 18:05:40] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-10 18:05:40] RESPONSE 200 :: {"success":true,"data":[]}
+[2026-07-10 18:05:54] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-10 18:05:54] RESPONSE 200 :: {"success":true,"data":[]}
+[2026-07-10 18:05:55] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-10 18:05:55] RESPONSE 200 :: {"success":true,"data":[]}
+[2026-07-11 10:58:13] REQUEST POST /samsar/api/chat/send-message.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 10:58:13] RESPONSE 201 :: {"success":true,"data":{"id":8,"conversation_id":"27_42","sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"}}
+[2026-07-11 12:09:48] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:09:48] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"salam 3alikom","last_message_time":"2026-07-11 01:58:13","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:09:49] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=27_42&limit=50 :: {"session_user_id":29,"get":{"conversation_id":"27_42","limit":"50"}}
+[2026-07-11 12:09:49] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"}]}
+[2026-07-11 12:09:49] REQUEST PUT /samsar/api/chat/mark-messages-as-read.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:09:49] RESPONSE 200 :: {"message":"0 messages marked as read","success":true,"data":{"marked_count":0}}
+[2026-07-11 12:09:49] REQUEST PUT /samsar/api/chat/mark-messages-as-read.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:09:49] RESPONSE 200 :: {"message":"0 messages marked as read","success":true,"data":{"marked_count":0}}
+[2026-07-11 12:09:54] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:09:54] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"salam 3alikom","last_message_time":"2026-07-11 01:58:13","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:09:54] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=27_42&limit=50 :: {"session_user_id":29,"get":{"conversation_id":"27_42","limit":"50"}}
+[2026-07-11 12:09:54] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"}]}
+[2026-07-11 12:09:57] REQUEST POST /samsar/api/chat/send-message.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:09:57] RESPONSE 201 :: {"success":true,"data":{"id":9,"conversation_id":"27_42","sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":false,"created_at":"2026-07-11 03:09:57"}}
+[2026-07-11 12:09:57] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:09:57] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:09:59] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=27_42&limit=50 :: {"session_user_id":29,"get":{"conversation_id":"27_42","limit":"50"}}
+[2026-07-11 12:09:59] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":false,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:09:59] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:09:59] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:10:04] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=27_42&limit=50 :: {"session_user_id":29,"get":{"conversation_id":"27_42","limit":"50"}}
+[2026-07-11 12:10:04] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":false,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:10:04] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:10:04] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:10:09] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:10:09] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:10:09] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=27_42&limit=50 :: {"session_user_id":29,"get":{"conversation_id":"27_42","limit":"50"}}
+[2026-07-11 12:10:09] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":false,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:10:14] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:10:14] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:10:14] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=27_42&limit=50 :: {"session_user_id":29,"get":{"conversation_id":"27_42","limit":"50"}}
+[2026-07-11 12:10:14] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":false,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:10:19] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=27_42&limit=50 :: {"session_user_id":29,"get":{"conversation_id":"27_42","limit":"50"}}
+[2026-07-11 12:10:19] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":false,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:10:19] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":29,"get":[]}
+[2026-07-11 12:10:19] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"27_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":27,"other_firstname":"Walid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695131_6a51071b6f6f0.jpeg","other_role":"user","unread_count":0}]}
+[2026-07-11 12:12:19] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:19] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":2}]}
+[2026-07-11 12:12:22] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=29_42&limit=50 :: {"session_user_id":27,"get":{"conversation_id":"29_42","limit":"50"}}
+[2026-07-11 12:12:22] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":false,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":false,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:12:22] REQUEST PUT /samsar/api/chat/mark-messages-as-read.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:22] RESPONSE 200 :: {"message":"2 messages marked as read","success":true,"data":{"marked_count":2}}
+[2026-07-11 12:12:22] REQUEST PUT /samsar/api/chat/mark-messages-as-read.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:22] RESPONSE 200 :: {"message":"0 messages marked as read","success":true,"data":{"marked_count":0}}
+[2026-07-11 12:12:26] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:26] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}
+[2026-07-11 12:12:28] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=29_42&limit=50 :: {"session_user_id":27,"get":{"conversation_id":"29_42","limit":"50"}}
+[2026-07-11 12:12:28] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":true,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":true,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:12:28] REQUEST PUT /samsar/api/chat/mark-messages-as-read.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:28] RESPONSE 200 :: {"message":"0 messages marked as read","success":true,"data":{"marked_count":0}}
+[2026-07-11 12:12:28] REQUEST PUT /samsar/api/chat/mark-messages-as-read.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:28] RESPONSE 200 :: {"message":"0 messages marked as read","success":true,"data":{"marked_count":0}}
+[2026-07-11 12:12:33] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:33] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}
+[2026-07-11 12:12:33] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=29_42&limit=50 :: {"session_user_id":27,"get":{"conversation_id":"29_42","limit":"50"}}
+[2026-07-11 12:12:33] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":true,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":true,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:12:38] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:38] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"WA3ALIKOM SALAM","last_message_time":"2026-07-11 03:09:57","last_sender_id":29,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}
+[2026-07-11 12:12:38] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=29_42&limit=50 :: {"session_user_id":27,"get":{"conversation_id":"29_42","limit":"50"}}
+[2026-07-11 12:12:38] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":true,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":true,"created_at":"2026-07-11 03:09:57"}]}
+[2026-07-11 12:12:39] REQUEST POST /samsar/api/chat/send-message.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:39] RESPONSE 201 :: {"success":true,"data":{"id":10,"conversation_id":"29_42","sender_id":27,"receiver_id":29,"property_id":42,"message":"mr7ba akhoya","is_read":false,"created_at":"2026-07-11 03:12:39"}}
+[2026-07-11 12:12:39] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:39] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"mr7ba akhoya","last_message_time":"2026-07-11 03:12:39","last_sender_id":27,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}
+[2026-07-11 12:12:43] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:43] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"mr7ba akhoya","last_message_time":"2026-07-11 03:12:39","last_sender_id":27,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}
+[2026-07-11 12:12:43] REQUEST GET /samsar/api/chat/get-conversation.php?conversation_id=29_42&limit=50 :: {"session_user_id":27,"get":{"conversation_id":"29_42","limit":"50"}}
+[2026-07-11 12:12:43] RESPONSE 200 :: {"success":true,"data":[{"id":8,"sender_id":29,"receiver_id":27,"property_id":42,"message":"salam 3alikom","is_read":true,"created_at":"2026-07-11 01:58:13"},{"id":9,"sender_id":29,"receiver_id":27,"property_id":42,"message":"WA3ALIKOM SALAM","is_read":true,"created_at":"2026-07-11 03:09:57"},{"id":10,"sender_id":27,"receiver_id":29,"property_id":42,"message":"mr7ba akhoya","is_read":false,"created_at":"2026-07-11 03:12:39"}]}
+[2026-07-11 12:12:49] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:12:49] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"mr7ba akhoya","last_message_time":"2026-07-11 03:12:39","last_sender_id":27,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}
+[2026-07-11 12:13:03] REQUEST POST /samsar/api/chat/send-message.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 12:13:03] RESPONSE 400 :: {"success":false,"message":"You cannot message yourself"}

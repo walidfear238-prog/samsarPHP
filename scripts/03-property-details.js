@@ -28,6 +28,7 @@
     CHECK_FOLLOW : 'api/follow/check-follow.php',    // GET  ?user_id=
     FOLLOW       : 'api/follow/follow.php',           // POST following_id
     UNFOLLOW     : 'api/follow/unfollow.php',         // POST following_id
+    SEND_MESSAGE : 'api/chat/send-message.php',       // POST { property_id, message } — chat system
   };
 
 
@@ -412,7 +413,13 @@
   // ─────────────────────────────────────────────────────────────────────────
   // POPULATE PAGE WITH API DATA
   // ─────────────────────────────────────────────────────────────────────────
+  // Holds the last-loaded property so the chat contact form (initContactForm)
+  // knows which property_id to attach the message to.
+  let currentProperty = null;
+
   function populate(p) {
+    currentProperty = p;
+
     document.title = `${p.title || 'Property'} · SAMSAR`;
 
     // ── Breadcrumb + hero ────────────────────────────────────────────────────
@@ -650,15 +657,68 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────
-  // CONTACT FORM  (basic — prevents default, shows toast)
+  // CONTACT FORM  (sends a real message via the chat system)
   // ─────────────────────────────────────────────────────────────────────────
   function initContactForm() {
     const form = document.getElementById('contact-form');
     if (!form) return;
-    form.addEventListener('submit', e => {
+
+    const msgField  = form.querySelector('textarea');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      toast('Message sent! The agent will contact you soon.', 'success', 3500);
-      form.reset();
+
+      const propertyId  = currentProperty && currentProperty.id;
+      const messageText = (msgField ? msgField.value : '').trim();
+
+      if (!propertyId) {
+        toast('Property is still loading — please try again in a moment.', 'error', 3500);
+        return;
+      }
+      if (!messageText) {
+        toast('Please write a message before sending.', 'error', 3000);
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const r = await fetch(API.SEND_MESSAGE, {
+          method     : 'POST',
+          credentials: 'same-origin',
+          headers    : { 'Content-Type': 'application/json' },
+          body       : JSON.stringify({ property_id: propertyId, message: messageText }),
+        });
+
+        const raw = await r.text();
+        console.log(`[SAMSAR] ${API.SEND_MESSAGE} response [${r.status}]:`, raw.slice(0, 300));
+
+        if (r.status === 401) {
+          toast('Please sign in to message the agent.', 'error', 3500);
+          return;
+        }
+
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          throw new Error(`Unexpected server response (HTTP ${r.status}).`);
+        }
+
+        if (!r.ok || !data.success) {
+          throw new Error(data.message || `Could not send message (HTTP ${r.status}).`);
+        }
+
+        toast('Message sent! The agent will get back to you soon.', 'success', 3500);
+        form.reset();
+
+      } catch (err) {
+        console.error('[SAMSAR] contact form send failed:', err.message);
+        toast(err.message || 'Could not send message. Please try again.', 'error', 3500);
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     });
   }
 
