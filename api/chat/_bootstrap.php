@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../php/lang.php';
 /**
  * Shared bootstrap for every api/chat/*.php endpoint.
  *
@@ -76,7 +77,7 @@ register_shutdown_function(function () {
     }
     echo json_encode([
         'success' => false,
-        'message' => 'Server error — see api/chat/chat-debug.log for the full trace.',
+        'message' => t('api.err.server_error_log'),
         'debug'   => [
             'php_error'       => $error['message'] ?? null,
             'php_error_file'  => $error['file'] ?? null,
@@ -109,14 +110,14 @@ chat_log('REQUEST ' . $_SERVER['REQUEST_METHOD'] . ' ' . ($_SERVER['REQUEST_URI'
 require_once __DIR__ . '/../../db/connect.php';
 
 if (!isset($conn) || !($conn instanceof mysqli)) {
-    json_out(false, 'Database connection object missing after db/connect.php.', 500);
+    json_out(false, t('api.err.db_connection_missing'), 500);
 }
 if ($conn->connect_error) {
-    json_out(false, 'Database connection failed: ' . $conn->connect_error, 500);
+    json_out(false, t('api.err.db_connection_failed') . ': ' . $conn->connect_error, 500);
 }
 
 if (!isset($_SESSION['user_id'])) {
-    json_out(false, 'User not authenticated', 401);
+    json_out(false, t('api.err.not_authenticated'), 401);
 }
 
 $CHAT_USER_ID = (int) $_SESSION['user_id'];

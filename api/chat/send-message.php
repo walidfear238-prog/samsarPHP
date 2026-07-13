@@ -14,12 +14,12 @@ $raw  = file_get_contents("php://input");
 $data = json_decode($raw);
 
 if ($data === null && trim($raw) !== '') {
-    json_out(false, 'Malformed JSON body received: ' . substr($raw, 0, 200), 400);
+    json_out(false, t('api.err.malformed_json') . ': ' . substr($raw, 0, 200), 400);
 }
 
 $message_text = isset($data->message) ? trim((string) $data->message) : '';
 if ($message_text === '') {
-    json_out(false, 'Message cannot be empty', 400);
+    json_out(false, t('api.message.err.empty'), 400);
 }
 
 $other_user_id = null;
@@ -32,7 +32,7 @@ if (!empty($data->conversation_id)) {
     $property_id   = (isset($parts[1]) && (int) $parts[1] > 0) ? (int) $parts[1] : null;
 
     if (!$other_user_id) {
-        json_out(false, 'Invalid conversation_id', 400);
+        json_out(false, t('api.err.invalid_conversation_id'), 400);
     }
 
 } elseif (!empty($data->property_id)) {
@@ -48,7 +48,7 @@ if (!empty($data->conversation_id)) {
     $pstmt->close();
 
     if (!$prop) {
-        json_out(false, 'Property not found', 404);
+        json_out(false, t('api.err.property_not_found_alt'), 404);
     }
     $other_user_id = (int) $prop['user_id'];
 
@@ -57,11 +57,11 @@ if (!empty($data->conversation_id)) {
     $other_user_id = (int) $data->receiver_id;
 
 } else {
-    json_out(false, 'Missing conversation_id, property_id, or receiver_id', 400);
+    json_out(false, t('api.err.missing_conv_fields'), 400);
 }
 
 if ($other_user_id === $CHAT_USER_ID) {
-    json_out(false, 'You cannot message yourself', 400);
+    json_out(false, t('api.err.cannot_message_self'), 400);
 }
 
 // Confirm the recipient actually exists
@@ -69,7 +69,7 @@ $check = $conn->prepare("SELECT id FROM users WHERE id = ?");
 $check->bind_param("i", $other_user_id);
 $check->execute();
 if ($check->get_result()->num_rows === 0) {
-    json_out(false, 'Recipient not found', 404);
+    json_out(false, t('api.err.recipient_not_found'), 404);
 }
 $check->close();
 

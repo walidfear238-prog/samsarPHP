@@ -86,3 +86,5 @@
 [2026-07-11 12:12:49] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"mr7ba akhoya","last_message_time":"2026-07-11 03:12:39","last_sender_id":27,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}
 [2026-07-11 12:13:03] REQUEST POST /samsar/api/chat/send-message.php :: {"session_user_id":27,"get":[]}
 [2026-07-11 12:13:03] RESPONSE 400 :: {"success":false,"message":"You cannot message yourself"}
+[2026-07-11 20:55:01] REQUEST GET /samsar/api/chat/get-conversations-list.php :: {"session_user_id":27,"get":[]}
+[2026-07-11 20:55:01] RESPONSE 200 :: {"success":true,"data":[{"conversation_id":"29_42","property_id":42,"property_title":"villa marakkech","last_message":"mr7ba akhoya","last_message_time":"2026-07-11 03:12:39","last_sender_id":27,"other_user_id":29,"other_firstname":"hamid","other_lastname":"Fear","other_avatar":"uploads\/profile\/1783695590_6a5108e68b3e0.png","other_role":"user","unread_count":0}]}

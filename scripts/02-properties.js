@@ -85,10 +85,10 @@
 
     function getStatusBadge(p) {
         const status = (p.status || '').toLowerCase();
-        if (status === 'rent') return 'For Rent';
-        if (status === 'rented') return 'Rented';
-        if (status === 'sold') return 'Sold';
-        return 'For Sale';
+        if (status === 'rent') return window.t ? window.t('card.forrent') : 'For Rent';
+        if (status === 'rented') return window.t ? window.t('propstatus.rented') : 'Rented';
+        if (status === 'sold') return window.t ? window.t('propstatus.sold') : 'Sold';
+        return window.t ? window.t('card.forsale') : 'For Sale';
     }
 
     function getBadgeClass(p) {
@@ -178,8 +178,8 @@
                         <circle cx="11" cy="11" r="8" stroke="currentColor"/>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     </svg>
-                    <h3>No properties found</h3>
-                    <p>Try removing one or more filters to see more listings.</p>
+                    <h3>${window.t ? window.t('properties.js.empty.title') : 'No properties found'}</h3>
+                    <p>${window.t ? window.t('properties.js.empty.text') : 'Try removing one or more filters to see more listings.'}</p>
                 </div>
             `;
             if (countEl) countEl.textContent = '0';
@@ -187,9 +187,9 @@
         }
 
         grid.innerHTML = list.map((p, i) => {
-            const title = escapeHtml(p.title) || 'Property';
-            const city = escapeHtml(p.city) || 'Morocco';
-            const propertyType = escapeHtml(p.property_type) || 'Property';
+            const title = escapeHtml(p.title) || (window.t ? window.t('properties.js.default_title') : 'Property');
+            const city = escapeHtml(p.city) || (window.t ? window.t('properties.js.default_city') : 'Morocco');
+            const propertyType = escapeHtml(p.property_type) || (window.t ? window.t('properties.js.default_title') : 'Property');
             const bedrooms = p.bedrooms || 0;
             const bathrooms = p.bathrooms || 0;
             const area = p.area || 0;
@@ -221,14 +221,14 @@
                             <a href="03-property-details.php?id=${p.id}">${title}</a>
                         </h3>
                         <div class="card-specs">
-                            <span>${bedrooms} ${bedrooms === 1 ? 'bd' : 'bd'}</span>
-                            <span>${bathrooms} ${bathrooms === 1 ? 'ba' : 'ba'}</span>
+                            <span>${bedrooms} ${window.t ? window.t('unit.bd') : 'bd'}</span>
+                            <span>${bathrooms} ${window.t ? window.t('unit.ba') : 'ba'}</span>
                             <span>${area} m²</span>
                         </div>
                         <div class="card-foot">
-                            <span class="card-price">${price} <small>MAD</small></span>
+                            <span class="card-price">${price} <small>${window.t ? window.t('unit.mad') : 'MAD'}</small></span>
                             <a class="view-details" href="03-property-details.php?id=${p.id}">
-                                View details <span class="arrow">→</span>
+                                ${window.t ? window.t('card.viewdetails') : 'View details'} <span class="arrow">→</span>
                             </a>
                         </div>
                     </div>
@@ -262,15 +262,15 @@
                 .then(data => {
                     if (data.success) {
                         this.classList.toggle('active');
-                        showToast('✓ Added to favorites');
+                        showToast(window.t ? ('✓ ' + window.t('properties.js.added_fav')) : '✓ Added to favorites');
                     } else {
-                        if (data.message === 'User not logged in') {
-                            showToast('Please login to add favorites', true);
+                        if (data.message === 'User not logged in' || data.message === (window.t ? window.t('api.err.user_not_logged_in') : '')) {
+                            showToast(window.t ? window.t('properties.js.login_to_fav') : 'Please login to add favorites', true);
                             setTimeout(() => {
                                 window.location.href = '08-login.php';
                             }, 1500);
-                        } else if (data.message === 'Property already in favorites') {
-                            showToast('Property already in favorites', true);
+                        } else if (data.message === 'Property already in favorites' || data.message === (window.t ? window.t('api.favorites.already') : '')) {
+                            showToast(window.t ? window.t('api.favorites.already') : 'Property already in favorites', true);
                         } else {
                             showToast(data.message, true);
                         }
@@ -278,7 +278,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showToast('Error adding to favorites', true);
+                    showToast(window.t ? window.t('properties.js.add_fav_error') : 'Error adding to favorites', true);
                 });
             });
         });
@@ -301,12 +301,12 @@
                     render();
                 } else {
                     console.error('Invalid data format from API');
-                    showError('No properties found in database');
+                    showError(window.t ? window.t('properties.js.no_data') : 'No properties found in database');
                 }
             })
             .catch(error => {
                 console.error('Error loading properties:', error);
-                showError('Failed to load properties. Please check the API connection.');
+                showError(window.t ? window.t('properties.js.load_failed') : 'Failed to load properties. Please check the API connection.');
             });
     }
 
@@ -319,7 +319,7 @@
                     <line x1="12" y1="8" x2="12" y2="12"/>
                     <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="none"/>
                 </svg>
-                <h3>Error</h3>
+                <h3>${window.t ? window.t('common.error') : 'Error'}</h3>
                 <p>${message}</p>
             </div>
         `;

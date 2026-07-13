@@ -47,13 +47,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Sign in</title>
+    <title data-i18n-doctitle="login.title">SAMSAR · Sign in</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/08-login.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -80,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     alt="Marrakech medina rooftops at golden hour" />
             </div>
             <div class="pc-foot">
-                <span class="pc-caption">Marrakech medina · captured at sunrise</span>
+                <span class="pc-caption" data-i18n="login.photo_caption">Marrakech medina · captured at sunrise</span>
             </div>
         </aside>
 
@@ -88,24 +91,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <section class="form-side">
             <div class="form-inner">
                 <header class="form-head">
-                    <h1>Welcome back to<br /><em>SAMSAR.</em></h1>
+                    <h1><span data-i18n="login.title1">Welcome back to</span><br /><em data-i18n="login.title2">SAMSAR.</em></h1>
                     <div class="head-actions">
-                        <a href="index.php" class="circle-btn" aria-label="Back">←</a>
-                        <span class="head-text">New here? <a href="09-register.php" class="head-link"
-                                data-transition="clip-circle-corner" data-duration="slow">Join free</a></span>
+                        <a href="index.php" class="circle-btn" aria-label="Back" data-i18n-aria-label="common.back">←</a>
+                        <span class="head-text"><span data-i18n="login.newhere">New here?</span> <a href="09-register.php" class="head-link"
+                                data-transition="clip-circle-corner" data-duration="slow" data-i18n="login.joinfree">Join free</a></span>
                     </div>
                 </header>
 
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="form">
                     <label class="floating">
                         <input name="email" type="email" id="email" required />
-                        <span>Email address</span>
+                        <span data-i18n="login.email">Email address</span>
                     </label>
 
                     <label class="floating">
                         <input name="pw" type="password" id="pw" required />
-                        <span>Password</span>
-                        <button type="button" class="eye" id="pw-toggle" aria-label="Show password">
+                        <span data-i18n="login.password">Password</span>
+                        <button type="button" class="eye" id="pw-toggle" aria-label="Show password" data-i18n-aria-label="login.show_password">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="1.6">
                                 <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
@@ -115,29 +118,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </label>
 
                     <div class="form-aux">
-                        <label class="check"><input name="keep_signed_in" type="checkbox" checked /><span>Keep me signed
+                        <label class="check"><input name="keep_signed_in" type="checkbox" checked /><span data-i18n="login.keepsignedin">Keep me signed
                                 in</span></label>
-                        <a href="#" class="forgot">Forgot password?</a>
+                        <a href="#" class="forgot" data-i18n="login.forgot">Forgot password?</a>
                     </div>
 
                     <button class="pill-btn" type="submit">
-                        <span>Sign in to SAMSAR</span>
+                        <span data-i18n="login.submit">Sign in to SAMSAR</span>
                         <span class="pill-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2">
                                 <path d="M5 12h14M13 6l6 6-6 6" />
                             </svg></span>
                     </button>
 
-                    <div class="divider"><span>or continue with</span></div>
+                    <div class="divider"><span data-i18n="login.orcontinue">or continue with</span></div>
                     <div class="socials">
-                        <button type="button" class="social-btn"><span class="s-ico">G</span> Google</button>
-                        <button type="button" class="social-btn"><span class="s-ico"></span> Apple</button>
-                        <button type="button" class="social-btn"><span class="s-ico">f</span> Facebook</button>
+                        <button type="button" class="social-btn"><span class="s-ico">G</span> <span data-i18n="login.google">Google</span></button>
+                        <button type="button" class="social-btn"><span class="s-ico"></span> <span data-i18n="login.apple">Apple</span></button>
+                        <button type="button" class="social-btn"><span class="s-ico">f</span> <span data-i18n="login.facebook">Facebook</span></button>
                     </div>
 
-                    <p class="legal">By signing in, you agree to SAMSAR's <a href="#">Terms of Service</a>, <a
-                            href="#">Privacy
-                            Policy</a> and <a href="#">Data Usage Properties</a>.</p>
+                    <p class="legal"><span data-i18n="login.legal1">By signing in, you agree to SAMSAR's</span> <a href="#" data-i18n="login.terms">Terms of Service</a>, <a
+                            href="#" data-i18n="login.privacy">Privacy
+                            Policy</a> <span data-i18n="login.legal2">and</span> <a href="#" data-i18n="login.datausage">Data Usage Properties</a>.</p>
                 </form>
             </div>
         </section>

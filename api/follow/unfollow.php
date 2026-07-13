@@ -1,18 +1,19 @@
 <?php
 session_start();
 require __DIR__ . "/../../db/connect.php";
+require_once __DIR__ . "/../../php/lang.php";
 
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => t('api.err.unauthorized')]);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    echo json_encode(['success' => false, 'message' => t('api.err.method_not_allowed')]);
     exit;
 }
 
@@ -20,7 +21,7 @@ $follower_id  = (int) $_SESSION['user_id'];
 $following_id = isset($_POST['following_id']) ? (int) $_POST['following_id'] : 0;
 
 if ($following_id <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+    echo json_encode(['success' => false, 'message' => t('api.err.invalid_user_id')]);
     exit;
 }
 
@@ -37,12 +38,12 @@ if ($stmt->execute()) {
 
         echo json_encode([
             'success'         => true,
-            'message'         => 'Unfollowed successfully',
+            'message'         => t('api.unfollow.success'),
             'followers_count' => $count
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'You were not following this user']);
+        echo json_encode(['success' => false, 'message' => t('api.unfollow.err.notfollowing')]);
     }
 } else {
-    echo json_encode(['success' => false, 'message' => 'Failed to unfollow. Please try again.']);
+    echo json_encode(['success' => false, 'message' => t('api.unfollow.err.failed')]);
 }

@@ -3,11 +3,12 @@ session_start();
 header('Content-Type: application/json');
 
 require '../../db/connect.php';
+require_once __DIR__ . '/../../php/lang.php';
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode([
         "success" => false,
-        "message" => "User not logged in"
+        "message" => t('api.err.user_not_logged_in')
     ]);
     exit;
 }
@@ -15,7 +16,7 @@ if (!isset($_SESSION['user_id'])) {
 if (!isset($_POST['property_id'])) {
     echo json_encode([
         "success" => false,
-        "message" => "Property ID is required"
+        "message" => t('api.property.err.id_required')
     ]);
     exit;
 }
@@ -29,12 +30,12 @@ $stmt->bind_param("ii", $user_id, $property_id);
 if ($stmt->execute()) {
     echo json_encode([
         "success" => true,
-        "message" => "Removed from favorites successfully"
+        "message" => t('api.favorites.remove_success')
     ]);
 } else {
     echo json_encode([
         "success" => false,
-        "message" => "Database error: " . $conn->error
+        "message" => t('api.err.database') . ": " . $conn->error
     ]);
 }
 

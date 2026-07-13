@@ -244,13 +244,13 @@
       if (saved) {
         this.style.cssText = 'background:var(--crimson,#C72C41);color:#fff;border-color:var(--crimson,#C72C41)';
         if (svg)  svg.setAttribute('fill', 'currentColor');
-        if (span) span.textContent = ' Saved';
-        toast('Property saved!', 'success');
+        if (span) span.textContent = ' ' + (window.t ? window.t('propdetails.js.saved') : 'Saved');
+        toast(window.t ? window.t('propdetails.js.saved_toast') : 'Property saved!', 'success');
       } else {
         this.style.cssText = '';
         if (svg)  svg.setAttribute('fill', 'none');
-        if (span) span.textContent = ' Save';
-        toast('Removed from saved.');
+        if (span) span.textContent = ' ' + (window.t ? window.t('propdetails.save') : 'Save');
+        toast(window.t ? window.t('propdetails.js.removed_saved') : 'Removed from saved.');
       }
     });
   }
@@ -262,7 +262,8 @@
 
   function applyFollowUI(btn, following) {
     btn.classList.toggle('following', following);
-    btn.textContent  = following ? 'Following' : 'Follow';
+    const dt5 = window.t || function(k, f){ return f; };
+    btn.textContent  = following ? dt5('propdetails.following', 'Following') : dt5('propdetails.follow', 'Follow');
     btn.style.background  = following ? 'var(--crimson,#C72C41)' : '';
     btn.style.color       = following ? '#fff' : '';
     btn.style.borderColor = following ? 'var(--crimson,#C72C41)' : '';
@@ -354,19 +355,19 @@
           if (r.status === 401) {
             // Not logged in
             applyFollowUI(this, currentlyFollowing);
-            toast('Please sign in to follow this agent.', 'warning');
+            toast(window.t ? window.t('propdetails.js.signin_to_follow') : 'Please sign in to follow this agent.', 'warning');
           } else if (d && d.success) {
             isFollowing = !currentlyFollowing;
-            toast(currentlyFollowing ? 'Unfollowed.' : 'Now following!', 'success');
+            toast(currentlyFollowing ? (window.t ? window.t('propdetails.js.unfollowed') : 'Unfollowed.') : (window.t ? window.t('propdetails.js.now_following') : 'Now following!'), 'success');
           } else {
             // Server returned success:false with a message
             applyFollowUI(this, currentlyFollowing);
-            toast(d?.message || 'Something went wrong.', 'error');
+            toast(d?.message || (window.t ? window.t('common.something_wrong') : 'Something went wrong.'), 'error');
           }
         } catch (err) {
           console.error('[SAMSAR] Follow network/parse error:', err.message);
           applyFollowUI(this, currentlyFollowing);
-          toast('Network error. Please try again.', 'error');
+          toast(window.t ? window.t('common.network_error') : 'Network error. Please try again.', 'error');
         } finally {
           this.disabled = false;
         }
@@ -383,13 +384,13 @@
     if (!el) return;
 
     if (!list || !list.length) {
-      el.innerHTML = '<p style="color:#999;grid-column:1/-1;text-align:center;padding:20px 0">No similar properties found.</p>';
+      el.innerHTML = '<p style="color:#999;grid-column:1/-1;text-align:center;padding:20px 0">' + (window.t ? window.t('propdetails.js.no_similar') : 'No similar properties found.') + '</p>';
       return;
     }
 
     el.innerHTML = list.map(p => {
       const src   = imgUrl(p.main_image) || PLACEHOLDER_SIM;
-      const price = p.price ? `${fmt(p.price)} MAD` : 'Price on request';
+      const price = p.price ? `${fmt(p.price)} ${window.t ? window.t('unit.mad') : 'MAD'}` : (window.t ? window.t('propdetails.js.price_on_request') : 'Price on request');
       return `
         <a href="03-property-details.php?id=${esc(p.id)}" class="sim-card">
           <div class="sim-img">
@@ -399,7 +400,7 @@
                  onerror="this.src='${PLACEHOLDER_SIM}'" />
           </div>
           <span class="sim-type">${esc((p.property_type || 'Property').toUpperCase())}</span>
-          <h3>${esc(p.title || 'Untitled')}</h3>
+          <h3>${esc(p.title || (window.t ? window.t('propdetails.js.untitled_short') : 'Untitled'))}</h3>
           <span class="sim-city">${esc(p.city || '')}</span>
           <strong>${esc(price)}</strong>
         </a>`;
@@ -420,19 +421,20 @@
   function populate(p) {
     currentProperty = p;
 
-    document.title = `${p.title || 'Property'} · SAMSAR`;
+    document.title = `${p.title || (window.t ? window.t('properties.js.default_title') : 'Property')} · SAMSAR`;
 
     // ── Breadcrumb + hero ────────────────────────────────────────────────────
-    setText('breadcrumb-title', p.title, 'Property');
+    const dt = window.t || function(k, f){ return f; };
+    setText('breadcrumb-title', p.title, dt('properties.js.default_title', 'Property'));
     setText('property-location',
       [p.city, p.district].filter(Boolean).join(' · '),
-      'Morocco'
+      dt('properties.js.default_city', 'Morocco')
     );
-    setText('property-title', p.title, 'Untitled Property');
+    setText('property-title', p.title, dt('propdetails.js.untitled', 'Untitled Property'));
 
     const meta = [
-      p.bedrooms  ? `${p.bedrooms} bed`   : null,
-      p.bathrooms ? `${p.bathrooms} bath`  : null,
+      p.bedrooms  ? `${p.bedrooms} ${dt('propdetails.js.bed', 'bed')}`   : null,
+      p.bathrooms ? `${p.bathrooms} ${dt('propdetails.js.bath', 'bath')}`  : null,
       p.area      ? `${p.area} m²`         : null,
       p.property_type || null,
     ].filter(Boolean).join(' · ');
@@ -441,8 +443,8 @@
     const priceEl = document.getElementById('property-price');
     if (priceEl) {
       priceEl.innerHTML = p.price
-        ? `${fmt(p.price)} <small>MAD</small>`
-        : 'Price on request';
+        ? `${fmt(p.price)} <small>${dt('unit.mad', 'MAD')}</small>`
+        : dt('propdetails.js.price_on_request', 'Price on request');
     }
 
     // ── Gallery ──────────────────────────────────────────────────────────────
@@ -479,9 +481,10 @@
 
     const statusEl = document.getElementById('fact-status');
     if (statusEl) {
+      const dt2 = window.t || function(k, f){ return f; };
       const labels = {
-        available: 'Available', sale: 'For Sale', rent: 'For Rent',
-        sold: 'Sold', rented: 'Rented', pending: 'Pending', draft: 'Draft',
+        available: dt2('propstatus.available_alt', 'Available'), sale: dt2('card.forsale', 'For Sale'), rent: dt2('card.forrent', 'For Rent'),
+        sold: dt2('propstatus.sold', 'Sold'), rented: dt2('propstatus.rented_alt', 'Rented'), pending: dt2('propstatus.pending', 'Pending'), draft: dt2('propstatus.draft', 'Draft'),
       };
       const colors = {
         available: '#22c55e', sale: '#22c55e',
@@ -508,26 +511,27 @@
           .map(para => `<p>${esc(para.trim())}</p>`)
           .join('');
       } else {
-        descEl.innerHTML = '<p style="color:#999">No description provided for this property.</p>';
+        descEl.innerHTML = '<p style="color:#999">' + (window.t ? window.t('propdetails.js.no_description') : 'No description provided for this property.') + '</p>';
       }
     }
 
     // ── Features ─────────────────────────────────────────────────────────────
     const featEl = document.getElementById('property-features');
     if (featEl) {
+      const dt3 = window.t || function(k, f){ return f; };
       const feats = [
-        p.bedrooms    && `${p.bedrooms} Bedrooms`,
-        p.bathrooms   && `${p.bathrooms} Bathrooms`,
-        p.area        && `${p.area} m² Total Area`,
-        p.property_type && `Type: ${p.property_type}`,
-        p.city        && `City: ${p.city}`,
-        p.district    && `District: ${p.district}`,
-        p.status      && `Status: ${p.status}`,
+        p.bedrooms    && `${p.bedrooms} ${dt3('propdetails.bedrooms', 'Bedrooms')}`,
+        p.bathrooms   && `${p.bathrooms} ${dt3('propdetails.bathrooms', 'Bathrooms')}`,
+        p.area        && `${p.area} m² ${dt3('propdetails.js.total_area', 'Total Area')}`,
+        p.property_type && `${dt3('propdetails.propertytype_short', 'Type')}: ${p.property_type}`,
+        p.city        && `${dt3('properties.filters.city', 'City')}: ${p.city}`,
+        p.district    && `${dt3('addproperty.district', 'District')}: ${p.district}`,
+        p.status      && `${dt3('propdetails.status', 'Status')}: ${p.status}`,
       ].filter(Boolean);
 
       featEl.innerHTML = feats.length
         ? feats.map(f => `<li>${esc(f)}</li>`).join('')
-        : '<li style="color:#999">No features listed.</li>';
+        : '<li style="color:#999">' + dt3('propdetails.js.no_features', 'No features listed.') + '</li>';
     }
 
     // ── Agent card ───────────────────────────────────────────────────────────
@@ -546,14 +550,15 @@
       };
     }
 
-    setText('agent-name',     p.agentName, 'Agency');
-    setText('agent-location', p.city ? `Listing agency · ${p.city}` : 'Listing agency');
+    const dt4 = window.t || function(k, f){ return f; };
+    setText('agent-name',     p.agentName, dt4('agencyprofile.js.not_found_short', 'Agency'));
+    setText('agent-location', p.city ? `${dt4('propdetails.listing_agency', 'Listing agency')} · ${p.city}` : dt4('propdetails.listing_agency', 'Listing agency'));
 
     const bio = p.agencyName
-      ? `${p.agencyName} — Specialists in ${p.property_type || 'luxury'} properties in ${p.city || 'Morocco'}.`
+      ? `${p.agencyName} — ${dt4('propdetails.js.specialists_in', 'Specialists in')} ${p.property_type || dt4('propdetails.js.luxury', 'luxury')} ${dt4('propdetails.js.properties_in', 'properties in')} ${p.city || dt4('properties.js.default_city', 'Morocco')}.`
       : p.agentName
-        ? `${p.agentName} — Professional real estate agent.`
-        : 'Professional real estate agency.';
+        ? `${p.agentName} — ${dt4('propdetails.js.professional_agent', 'Professional real estate agent.')}`
+        : dt4('propdetails.js.professional_agency', 'Professional real estate agency.');
     setText('agent-bio', bio);
 
     // ── WhatsApp link ─────────────────────────────────────────────────────────
@@ -594,14 +599,14 @@
     c.insertAdjacentHTML('beforeend', `
       <div style="text-align:center;padding:80px 20px">
         <div style="font-size:48px;margin-bottom:16px">🏠</div>
-        <h2 style="color:#dc3545;margin-bottom:8px">Unable to load property</h2>
+        <h2 style="color:#dc3545;margin-bottom:8px">${window.t ? window.t('propdetails.js.unable_to_load') : 'Unable to load property'}</h2>
         <p style="color:#666;font-size:13px;max-width:480px;margin:0 auto 24px;line-height:1.6">
           ${esc(msg)}
         </p>
         <a href="02-properties.php"
            style="display:inline-block;padding:12px 32px;background:#1a1a1a;
                   color:#fff;text-decoration:none;border-radius:4px;font-size:14px">
-          Back to listings
+          ${window.t ? window.t('propdetails.js.back_to_listings') : 'Back to listings'}
         </a>
       </div>`);
   }
@@ -614,7 +619,7 @@
     const id = new URLSearchParams(location.search).get('id');
 
     if (!id) {
-      showError('No property ID in the URL. Add ?id=123 to the address bar.');
+      showError(window.t ? window.t('propdetails.js.no_id_in_url') : 'No property ID in the URL. Add ?id=123 to the address bar.');
       return;
     }
 
@@ -673,11 +678,11 @@
       const messageText = (msgField ? msgField.value : '').trim();
 
       if (!propertyId) {
-        toast('Property is still loading — please try again in a moment.', 'error', 3500);
+        toast(window.t ? window.t('propdetails.js.still_loading') : 'Property is still loading — please try again in a moment.', 'error', 3500);
         return;
       }
       if (!messageText) {
-        toast('Please write a message before sending.', 'error', 3000);
+        toast(window.t ? window.t('propdetails.js.write_message_first') : 'Please write a message before sending.', 'error', 3000);
         return;
       }
 
@@ -695,7 +700,7 @@
         console.log(`[SAMSAR] ${API.SEND_MESSAGE} response [${r.status}]:`, raw.slice(0, 300));
 
         if (r.status === 401) {
-          toast('Please sign in to message the agent.', 'error', 3500);
+          toast(window.t ? window.t('propdetails.js.signin_to_message') : 'Please sign in to message the agent.', 'error', 3500);
           return;
         }
 
@@ -710,12 +715,12 @@
           throw new Error(data.message || `Could not send message (HTTP ${r.status}).`);
         }
 
-        toast('Message sent! The agent will get back to you soon.', 'success', 3500);
+        toast(window.t ? window.t('propdetails.js.message_sent') : 'Message sent! The agent will get back to you soon.', 'success', 3500);
         form.reset();
 
       } catch (err) {
         console.error('[SAMSAR] contact form send failed:', err.message);
-        toast(err.message || 'Could not send message. Please try again.', 'error', 3500);
+        toast(err.message || (window.t ? window.t('propdetails.js.send_failed') : 'Could not send message. Please try again.'), 'error', 3500);
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

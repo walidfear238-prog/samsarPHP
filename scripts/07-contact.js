@@ -26,7 +26,7 @@
  form.addEventListener('submit',e=>{
   e.preventDefault();
   const b=form.querySelector('button[type="submit"]'),o=b.textContent;
-  b.textContent='Sent — we\'ll reply within 24h ✓';b.disabled=true;
+  b.textContent=window.t?window.t('contact.js.sent'):'Sent — we\'ll reply within 24h ✓';b.disabled=true;
   setTimeout(()=>{b.textContent=o;b.disabled=false;form.reset()},2000);
  });
 })();

@@ -1,11 +1,12 @@
 <?php
+require_once __DIR__ . '/../php/lang.php';
 session_start();
 header('Content-Type: application/json');
 require "../db/connect.php";
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['error' => t('api.err.unauthorized')]);
     exit;
 }
 
@@ -14,7 +15,7 @@ $conversation_id = isset($_GET['conversation_id']) ? (int) $_GET['conversation_i
 
 if (!$conversation_id) {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing conversation_id']);
+    echo json_encode(['error' => t('api.err.missing_conversation_id')]);
     exit;
 }
 
@@ -26,7 +27,7 @@ $check->close();
 
 if (!$owns) {
     http_response_code(403);
-    echo json_encode(['error' => 'Forbidden']);
+    echo json_encode(['error' => t('api.err.forbidden')]);
     exit;
 }
 

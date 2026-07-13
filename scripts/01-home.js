@@ -268,7 +268,7 @@
         const btn = form.querySelector("button[type='submit']");
         if (btn) {
           const orig = btn.textContent;
-          btn.textContent = "Sent — we'll be in touch ✓";
+          btn.textContent = window.t ? window.t('home.modal.sent') : "Sent — we'll be in touch ✓";
           btn.disabled = true;
           setTimeout(() => {
             closeModal();

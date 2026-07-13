@@ -17,7 +17,7 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Notifications</title>
+    <title data-i18n-doctitle="notifications.title">SAMSAR · Notifications</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
@@ -27,6 +27,9 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
     // Resolves API paths correctly regardless of subdirectory.
     window.SAMSAR_BASE = <?php echo json_encode($samsar_base); ?>;
     </script>
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -44,17 +47,17 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link active" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link active" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
             <!-- profile name and role and profile image -->
@@ -80,17 +83,17 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Notifications</h1>
-                    <p>Updates from your properties and social activity.</p>
+                    <h1 data-i18n="dash.notifications">Notifications</h1>
+                    <p data-i18n="notifications.subtitle">Updates from your properties and social activity.</p>
                 </div>
-                <button class="btn btn-ghost" id="mark-read">Mark all as read</button>
+                <button class="btn btn-ghost" id="mark-read" data-i18n="notifications.markallread">Mark all as read</button>
             </header>
             <div class="content-card" style="padding:0;overflow:hidden">
                 <ul class="notif-list" id="notif-list-full"></ul>
@@ -184,10 +187,10 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
             if (!dateStr) return '';
             const then = new Date(dateStr.replace(' ', 'T'));
             const diff = Math.max(0, Math.floor((Date.now() - then.getTime()) / 1000));
-            if (diff < 60) return 'just now';
-            if (diff < 3600) return Math.floor(diff / 60) + 'm';
-            if (diff < 86400) return Math.floor(diff / 3600) + 'h';
-            return Math.floor(diff / 86400) + 'd';
+            if (diff < 60) return window.t ? window.t('notifications.just_now') : 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + (window.t ? window.t('notifications.unit_min') : 'm');
+            if (diff < 86400) return Math.floor(diff / 3600) + (window.t ? window.t('notifications.unit_hour') : 'h');
+            return Math.floor(diff / 86400) + (window.t ? window.t('notifications.unit_day') : 'd');
         }
 
         function esc(s) {
@@ -217,18 +220,18 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
 
         function render(notifs) {
             if (!notifs.length) {
-                list.innerHTML = '<li class="notif-empty">No notifications yet.</li>';
+                list.innerHTML = '<li class="notif-empty">' + (window.t ? window.t('notifications.empty') : 'No notifications yet.') + '</li>';
                 return;
             }
             list.innerHTML = notifs.map(n => {
                 const url = targetUrl(n);
-                const hint = url ? '<span class="notif-hint">Click to open →</span>' : '';
+                const hint = url ? '<span class="notif-hint">' + (window.t ? window.t('notifications.click_to_open') : 'Click to open →') + '</span>' : '';
                 return `
       <li class="notif-item ${n.read ? '' : 'unread'}" data-id="${n.id}" data-url="${esc(url || '')}">
         <span class="notif-dot"></span>
         <div style="flex:1">
           <p>${n.title ? '<strong>' + esc(n.title) + '</strong> ' : ''}${esc(n.text)}</p>
-          <span class="notif-time">${timeAgo(n.created_at)} ago</span>
+          <span class="notif-time">${timeAgo(n.created_at)} ${window.t ? window.t('notifications.ago') : 'ago'}</span>
           ${hint}
         </div>
       </li>
@@ -249,7 +252,7 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
             fetch(BASE + '/api/get-notifications.php?limit=100')
                 .then(r => {
                     if (r.status === 401) {
-                        list.innerHTML = '<li class="notif-empty">Please sign in to view notifications.</li>';
+                        list.innerHTML = '<li class="notif-empty">' + (window.t ? window.t('notifications.please_signin') : 'Please sign in to view notifications.') + '</li>';
                         return [];
                     }
                     return r.ok ? r.json() : [];
@@ -258,7 +261,7 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
                     if (Array.isArray(notifs)) render(notifs);
                 })
                 .catch(() => {
-                    list.innerHTML = '<li class="notif-empty">Couldn\'t load notifications.</li>';
+                    list.innerHTML = '<li class="notif-empty">' + (window.t ? window.t('notifications.load_error') : "Couldn't load notifications.") + '</li>';
                 });
         }
 

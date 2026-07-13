@@ -1,10 +1,11 @@
 <?php
+require_once __DIR__ . '/../php/lang.php';
 session_start();
 require "../db/connect.php";
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['error' => t('api.err.unauthorized')]);
     exit;
 }
 
@@ -12,7 +13,7 @@ $user_id = $_SESSION['user_id'];
 $property_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if (!$property_id) {
-    echo json_encode(['error' => 'Property ID required']);
+    echo json_encode(['error' => t('api.property.err.id_required')]);
     exit;
 }
 
@@ -31,7 +32,7 @@ $result = $stmt->get_result();
 $property = $result->fetch_assoc();
 
 if (!$property) {
-    echo json_encode(['error' => 'Property not found']);
+    echo json_encode(['error' => t('api.err.property_not_found')]);
     exit;
 }
 

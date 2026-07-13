@@ -45,10 +45,11 @@
     if(!dateStr) return '';
     const then = new Date(dateStr.replace(' ', 'T'));
     const diff = Math.max(0, Math.floor((Date.now() - then.getTime()) / 1000));
-    if(diff < 60) return 'just now';
-    if(diff < 3600) return Math.floor(diff/60) + 'm';
-    if(diff < 86400) return Math.floor(diff/3600) + 'h';
-    return Math.floor(diff/86400) + 'd';
+    const t = window.t || function(k, f){ return f; };
+    if(diff < 60) return t('time.justnow', 'just now');
+    if(diff < 3600) return Math.floor(diff/60) + t('time.minute_short', 'm');
+    if(diff < 86400) return Math.floor(diff/3600) + t('time.hour_short', 'h');
+    return Math.floor(diff/86400) + t('time.day_short', 'd');
   }
 
   function paintOverview(){
@@ -83,14 +84,15 @@
         .then(r => r.ok ? r.json() : [])
         .then(notifs => {
           if(!Array.isArray(notifs)) return;
+          const t = window.t || function(k, f){ return f; };
           notifList.innerHTML = notifs.length ? notifs.map(n => `
             <li class="notif-item ${n.read?'':'unread'}">
               <span class="notif-dot ${n.read?'':'red'}"></span>
               <div>
                 <p>${n.title ? '<strong>'+n.title+'</strong> ' : ''}${n.text}</p>
-                <span class="notif-time">${timeAgo(n.created_at)} ago</span>
+                <span class="notif-time">${timeAgo(n.created_at)} ${t('time.ago','ago')}</span>
               </div>
-            </li>`).join('') : '<li class="notif-empty">No notifications yet.</li>';
+            </li>`).join('') : `<li class="notif-empty">${t('dash.no_notifications','No notifications yet.')}</li>`;
         })
         .catch(() => {});
     }
@@ -113,7 +115,8 @@
     if(!fbtn) return;
     e.preventDefault();
     const isFollowing = fbtn.classList.toggle('following');
-    fbtn.textContent = isFollowing ? 'Following' : 'Follow';
+    const dt = window.t || function(k, f){ return f; };
+    fbtn.textContent = isFollowing ? dt('propdetails.following', 'Following') : dt('propdetails.follow', 'Follow');
     if(isFollowing){
       fbtn.style.background = '#C72C41';
       fbtn.style.color = '#fff';

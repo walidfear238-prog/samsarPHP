@@ -55,19 +55,19 @@
         const grid = document.getElementById('prop-grid');
         if (!grid) return;
         if (!properties.length) {
-            grid.innerHTML = '<p style="grid-column:1/-1;color:var(--graphite)">No listings yet.</p>';
+            grid.innerHTML = '<p style="grid-column:1/-1;color:var(--graphite)">' + (window.t ? window.t('agencyprofile.js.no_listings') : 'No listings yet.') + '</p>';
             return;
         }
         grid.innerHTML = properties.map((p, i) => {
             const img = propImgUrl(p.img) || PLACEHOLDER;
-            const loc = [p.district, p.city].filter(Boolean).join(' · ') || 'Morocco';
+            const loc = [p.district, p.city].filter(Boolean).join(' · ') || (window.t ? window.t('properties.js.default_city') : 'Morocco');
             return `
   <a class="p-card" href="03-property-details.php?id=${p.id}" style="transition-delay:${i * 70}ms">
    <div class="p-img"><img src="${img}" alt="${p.title || ''}" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER}'"/></div>
    <div class="p-body">
     <span class="p-loc">${loc}</span>
-    <h3 class="p-title">${p.title || 'Property'}</h3>
-    <span class="p-price">${formatPrice(p.price)} <small>MAD</small></span>
+    <h3 class="p-title">${p.title || (window.t ? window.t('properties.js.default_title') : 'Property')}</h3>
+    <span class="p-price">${formatPrice(p.price)} <small>${window.t ? window.t('unit.mad') : 'MAD'}</small></span>
    </div>
   </a>`;
         }).join('');
@@ -76,11 +76,11 @@
 
     function renderNotFound() {
         setText('prof-eyebrow', 'SAMSAR');
-        setText('prof-name', 'Agency not found');
+        setText('prof-name', window.t ? window.t('agencyprofile.js.not_found') : 'Agency not found');
         setText('prof-location', '');
-        setText('about-text', 'This agency profile is not available.');
+        setText('about-text', window.t ? window.t('agencyprofile.js.not_available') : 'This agency profile is not available.');
         const grid = document.getElementById('prop-grid');
-        if (grid) grid.innerHTML = '<p style="grid-column:1/-1;color:var(--graphite)">This agency could not be found.</p>';
+        if (grid) grid.innerHTML = '<p style="grid-column:1/-1;color:var(--graphite)">' + (window.t ? window.t('agencyprofile.js.could_not_find') : 'This agency could not be found.') + '</p>';
     }
 
     // Load the real agency (by id) and its own properties from the database
@@ -102,32 +102,32 @@
                     logoEl.onerror = () => { logoEl.onerror = null; logoEl.src = fallback; };
                 }
 
-                setText('prof-eyebrow', (a.is_verified ? 'Verified samsar' : 'SAMSAR agency') + (a.joinYear ? ` · Since ${a.joinYear}` : ''));
-                setText('prof-name', a.name, 'Agency');
-                setText('prof-location', [a.city, ...(a.districts || [])].filter(Boolean).join(' · '), 'Morocco');
+                setText('prof-eyebrow', (a.is_verified ? (window.t ? window.t('agencyprofile.js.verified_samsar') : 'Verified samsar') : (window.t ? window.t('agencyprofile.js.samsar_agency') : 'SAMSAR agency')) + (a.joinYear ? ` · ${window.t ? window.t('agencyprofile.js.since') : 'Since'} ${a.joinYear}` : ''));
+                setText('prof-name', a.name, window.t ? window.t('agencyprofile.js.not_found_short') : 'Agency');
+                setText('prof-location', [a.city, ...(a.districts || [])].filter(Boolean).join(' · '), window.t ? window.t('properties.js.default_city') : 'Morocco');
 
                 setText('stat-listings', a.listingsCount ?? 0);
-                setText('stat-years', `${a.yearsOnPlatform ?? 0} yrs`);
+                setText('stat-years', `${a.yearsOnPlatform ?? 0} ${window.t ? window.t('agencies.js.yrs') : 'yrs'}`);
                 setText('stat-rating', '—');
-                setText('stat-reviews', '0 reviews');
+                setText('stat-reviews', window.t ? window.t('agencyprofile.zero_reviews') : '0 reviews');
                 setText('stat-languages', '—');
 
                 setText('tab-listings-count', a.listingsCount ?? 0);
                 setText('tab-reviews-count', 0);
 
-                setText('about-heading', `About ${a.name}`);
-                const listingsWord = a.listingsCount === 1 ? 'listing' : 'listings';
-                setText('about-text', `${a.name} is a real estate agency on SAMSAR${a.city ? `, based in ${a.city}` : ''}${a.joinYear ? `, on the platform since ${a.joinYear}` : ''}, with ${a.listingsCount ?? 0} active ${listingsWord}.`);
+                setText('about-heading', (window.t ? window.t('agencyprofile.js.about_prefix') : 'About') + ' ' + a.name);
+                const listingsWord = window.t ? window.t('agencyprofile.listings').toLowerCase() : (a.listingsCount === 1 ? 'listing' : 'listings');
+                setText('about-text', `${a.name} ${window.t ? window.t('agencyprofile.js.is_agency_on_samsar') : 'is a real estate agency on SAMSAR'}${a.city ? `, ${window.t ? window.t('agencyprofile.js.based_in') : 'based in'} ${a.city}` : ''}${a.joinYear ? `, ${window.t ? window.t('agencyprofile.js.on_platform_since') : 'on the platform since'} ${a.joinYear}` : ''}, ${window.t ? window.t('agencyprofile.js.with') : 'with'} ${a.listingsCount ?? 0} ${window.t ? window.t('agencyprofile.js.active') : 'active'} ${listingsWord}.`);
 
                 const specEl = document.getElementById('about-specialties');
                 if (specEl) {
                     specEl.innerHTML = (a.specialties && a.specialties.length)
                         ? a.specialties.map(s => `<li>${s}</li>`).join('')
-                        : '<li>No specialties listed yet.</li>';
+                        : '<li>' + (window.t ? window.t('agencyprofile.js.no_specialties') : 'No specialties listed yet.') + '</li>';
                 }
 
                 const reviewsEl = document.getElementById('reviews-list');
-                if (reviewsEl) reviewsEl.innerHTML = '<p style="color:var(--graphite)">No reviews yet.</p>';
+                if (reviewsEl) reviewsEl.innerHTML = '<p style="color:var(--graphite)">' + (window.t ? window.t('agencyprofile.js.no_reviews') : 'No reviews yet.') + '</p>';
 
                 const phoneEl = document.getElementById('contact-phone');
                 if (phoneEl) {

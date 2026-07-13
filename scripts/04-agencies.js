@@ -47,18 +47,18 @@
     .then(res => res.json())
     .then(ags => {
       if (!Array.isArray(ags) || ags.length === 0) {
-        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--graphite);padding:40px 0">No agencies yet.</p>';
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--graphite);padding:40px 0">' + (window.t ? window.t('agencies.js.none_yet') : 'No agencies yet.') + '</p>';
         return;
       }
 
       grid.innerHTML = ags.map((a, i) => {
-        const name = a.name || 'Agency';
+        const name = a.name || (window.t ? window.t('agencies.js.default_name') : 'Agency');
         const city = a.city || '';
         const listings = a.listings || 0;
         const years = yearsSince(a.joined);
         const logo = logoUrl(a.logo);
         const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=C72C41&color=fff&size=200`;
-        const bio = `${name} — real estate agency${city ? ` based in ${city}` : ' on SAMSAR'}.`;
+        const bio = window.t ? (city ? window.t('agencies.js.bio_with_city').replace('{name}', name).replace('{city}', city) : window.t('agencies.js.bio_no_city').replace('{name}', name)) : `${name} — real estate agency${city ? ` based in ${city}` : ' on SAMSAR'}.`;
 
         return `
   <a class="ag-card" href="05-agency-profile.php?id=${a.id}" style="transition-delay:${i * 70}ms">
@@ -70,9 +70,9 @@
     </div>
     <p class="ag-bio">${bio}</p>
     <div class="ag-stats">
-     <div><strong>${listings}</strong>Listings</div>
-     <div><strong>${years} yrs</strong>Experience</div>
-     <div><strong>—</strong>Rating</div>
+     <div><strong>${listings}</strong>${window.t ? window.t('agencyprofile.listings') : 'Listings'}</div>
+     <div><strong>${years} ${window.t ? window.t('agencies.js.yrs') : 'yrs'}</strong>${window.t ? window.t('agencies.js.experience') : 'Experience'}</div>
+     <div><strong>—</strong>${window.t ? window.t('agencyprofile.rating') : 'Rating'}</div>
     </div>
    </div>
   </a>`;
@@ -81,15 +81,16 @@
       document.querySelectorAll('.ag-card').forEach(el => io.observe(el));
     })
     .catch(() => {
-      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--graphite);padding:40px 0">Unable to load agencies right now.</p>';
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--graphite);padding:40px 0">' + (window.t ? window.t('agencies.js.load_error') : 'Unable to load agencies right now.') + '</p>';
     });
 
   document.querySelectorAll('.ag-tab').forEach(t => t.addEventListener('click', () => {
     document.querySelectorAll('.ag-tab').forEach(x => x.classList.remove('active')); t.classList.add('active');
+    const isAll = t.dataset.all === 'true';
     const city = t.textContent;
     document.querySelectorAll('.ag-card').forEach(card => {
       const cardCity = card.querySelector('.ag-city').textContent;
-      if (city === 'All cities' || cardCity === city) card.style.display = '';
+      if (isAll || cardCity === city) card.style.display = '';
       else card.style.display = 'none';
     });
   }));
@@ -112,7 +113,7 @@
     btn.addEventListener('click', e => {
       e.preventDefault();
       const isFollowing = btn.classList.toggle('following');
-      btn.textContent = isFollowing ? 'Following' : 'Follow';
+      btn.textContent = isFollowing ? (window.t ? window.t('propdetails.following') : 'Following') : (window.t ? window.t('propdetails.follow') : 'Follow');
       if (isFollowing) { btn.style.background = 'var(--crimson)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--crimson)'; }
       else { btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; }
     });

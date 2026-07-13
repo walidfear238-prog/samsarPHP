@@ -2,10 +2,11 @@
 session_start();
 header('Content-Type: application/json');
 require "../db/connect.php";
+require_once __DIR__ . "/../php/lang.php";
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'You must be logged in to send a message']);
+    echo json_encode(['success' => false, 'message' => t('api.err.must_be_logged_in')]);
     exit;
 }
 
@@ -18,13 +19,13 @@ $message = isset($data['message']) ? trim($data['message']) : '';
 
 if (!$to_user_id || !$property_id || $message === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+    echo json_encode(['success' => false, 'message' => t('api.err.missing_fields')]);
     exit;
 }
 
 if ($to_user_id === $user_id) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'You cannot message yourself']);
+    echo json_encode(['success' => false, 'message' => t('api.err.cannot_message_self')]);
     exit;
 }
 
@@ -72,11 +73,11 @@ $prop->bind_param("i", $property_id);
 $prop->execute();
 $propRow = $prop->get_result()->fetch_assoc();
 $prop->close();
-$propTitle = $propRow['title'] ?? 'your property';
+$propTitle = $propRow['title'] ?? t('api.notif.your_property');
 
 $notif = $conn->prepare("INSERT INTO notifications (user_id, type, title, message) VALUES (?, 'message', ?, ?)");
-$title = 'New inquiry';
-$body = ($senderName !== '' ? $senderName : 'Someone') . ' sent you a message about ' . $propTitle;
+$title = t('api.notif.new_inquiry');
+$body = t('api.notif.sent_message_about', ['name' => ($senderName !== '' ? $senderName : t('api.notif.someone')), 'property' => $propTitle]);
 $notif->bind_param("iss", $to_user_id, $title, $body);
 $notif->execute();
 $notif->close();

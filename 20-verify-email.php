@@ -3,6 +3,7 @@
 
 // nO whitespace or ANYTHING before this opening PHP tag!
 require 'db/connect.php';
+require_once __DIR__ . '/php/lang.php';
 
 // handle verification logic BEFORE any HTML output
 $error_message = '';
@@ -12,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
 
     // validate numeric input
     if (!is_numeric($user_code)) {
-        $error_message = "Please enter a valid numeric code.";
+        $error_message = t("verify.err.invalid_code");
     } else {
         $numeric_code = (int) $user_code;
 
@@ -37,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
             header('Location: 08-login.php');
             exit(); // always call exit after header redirect
         } else {
-            $error_message = "Wrong verification code!";
+            $error_message = t("verify.err.wrong_code");
         }
     }
 }
@@ -52,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Verify your email</title>
+    <title data-i18n-doctitle="verify.title">SAMSAR · Verify your email</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -60,6 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/20-verify-email.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -84,13 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
                 </svg>
             </div>
 
-            <h1>Check your <em>inbox.</em></h1>
-            <p>We sent a verification link to</p>
+            <h1><span data-i18n="verify.title1">Check your </span><em data-i18n="verify.title1_em">inbox.</em></h1>
+            <p data-i18n="verify.sent_to">We sent a verification link to</p>
             <span class="email-display" id="email-display">yassine@email.com</span>
-            <p class="sub">Click the link in the email to activate your SAMSAR account. The link expires in 24 hours.
+            <p class="sub" data-i18n="verify.instructions">Click the link in the email to activate your SAMSAR account. The link expires in 24 hours.
             </p>
 
-            <div class="code-input" aria-label="Verification code">
+            <div class="code-input" aria-label="Verification code" data-i18n-aria-label="verify.code_label">
                 <input name="code[]" type="text" maxlength="1" data-idx="0" autofocus />
                 <input name="code[]" type="text" maxlength="1" data-idx="1" />
                 <input name="code[]" type="text" maxlength="1" data-idx="2" />
@@ -98,10 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
                 <input name="code[]" type="text" maxlength="1" data-idx="4" />
                 <input name="code[]" type="text" maxlength="1" data-idx="5" />
             </div>
-            <p class="code-hint">Or enter the 6-digit code from the email</p>
+            <p class="code-hint" data-i18n="verify.code_hint">Or enter the 6-digit code from the email</p>
 
             <button class="pill-btn" id="verify-btn">
-                <span>Verify & continue</span>
+                <span data-i18n="verify.submit">Verify & continue</span>
                 <span class="pill-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M13 6l6 6-6 6" />
@@ -109,18 +113,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
             </button>
 
             <div class="footer-actions">
-                <button class="link-btn" id="resend">Didn't receive it? <strong>Resend email</strong></button>
+                <button class="link-btn" id="resend"><span data-i18n="verify.no_receive">Didn't receive it?</span> <strong data-i18n="verify.resend">Resend email</strong></button>
                 <span class="divider-dot">·</span>
-                <a href="09-register.php" class="link-btn">Wrong email? <strong>Go back</strong></a>
+                <a href="09-register.php" class="link-btn"><span data-i18n="verify.wrong_email">Wrong email?</span> <strong data-i18n="verify.goback">Go back</strong></a>
             </div>
 
             <div class="status" id="status" hidden>
                 <span class="status-ico">✓</span>
-                <span class="status-text">Verified — redirecting to your dashboard…</span>
+                <span class="status-text" data-i18n="verify.status_verified">Verified — redirecting to your dashboard…</span>
             </div>
         </div>
 
-        <p class="legal">Need help? <a href="07-contact.php">Contact support</a></p>
+        <p class="legal"><span data-i18n="verify.needhelp">Need help?</span> <a href="07-contact.php" data-i18n="verify.contactsupport">Contact support</a></p>
     </main>
 
     <script src="scripts/samsar-transitions.js"></script>

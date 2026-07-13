@@ -20,12 +20,15 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · My Properties</title>
+    <title data-i18n-doctitle="myproperties.title">SAMSAR · My Properties</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -43,17 +46,17 @@ if (!isset($_SESSION['user_id'])) {
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link active" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link active" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
             <?php
@@ -80,28 +83,28 @@ if (!isset($_SESSION['user_id'])) {
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>My Properties</h1>
-                    <p>Manage your active and draft listings.</p>
+                    <h1 data-i18n="dash.myproperties">My Properties</h1>
+                    <p data-i18n="myproperties.subtitle">Manage your active and draft listings.</p>
                 </div>
-                <a class="btn btn-primary" href="add-property.php">+ Add Property</a>
+                <a class="btn btn-primary" href="add-property.php" data-i18n="dash.addproperty.plus">+ Add Property</a>
             </header>
 
             <div class="content-card" style="padding:0;overflow:hidden">
                 <table class="mp-table">
                     <thead>
                         <tr>
-                            <th>Property</th>
-                            <th>Status</th>
-                            <th>Price</th>
-                            <th>Beds / Baths</th>
-                            <th>Area</th>
+                            <th data-i18n="myproperties.th.property">Property</th>
+                            <th data-i18n="propdetails.status">Status</th>
+                            <th data-i18n="myproperties.th.price">Price</th>
+                            <th data-i18n="myproperties.th.bedsbaths">Beds / Baths</th>
+                            <th data-i18n="myproperties.th.area">Area</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -114,11 +117,11 @@ if (!isset($_SESSION['user_id'])) {
     <!-- Delete Modal -->
     <div class="modal-overlay" id="delete-modal">
         <div class="modal-box">
-            <h3>Delete Property?</h3>
-            <p>This listing will be permanently removed.</p>
+            <h3 data-i18n="myproperties.delete_modal.title">Delete Property?</h3>
+            <p data-i18n="myproperties.delete_modal.text">This listing will be permanently removed.</p>
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:24px">
-                <button class="btn btn-ghost" id="cancel-delete">Cancel</button>
-                <button class="btn btn-danger" id="confirm-delete">Delete</button>
+                <button class="btn btn-ghost" id="cancel-delete" data-i18n="myproperties.cancel">Cancel</button>
+                <button class="btn btn-danger" id="confirm-delete" data-i18n="myproperties.delete">Delete</button>
             </div>
         </div>
     </div>
@@ -350,8 +353,8 @@ if (!isset($_SESSION['user_id'])) {
                 body.innerHTML = `
                 <tr>
                     <td colspan="6" class="mp-empty">
-                        <h3>No properties yet</h3>
-                        <p>Click "Add Property" to create your first listing.</p>
+                        <h3>${window.t ? window.t('myproperties.empty.title') : 'No properties yet'}</h3>
+                        <p>${window.t ? window.t('myproperties.empty.text') : 'Click "Add Property" to create your first listing.'}</p>
                     </td>
                 </tr>
             `;
@@ -370,14 +373,14 @@ if (!isset($_SESSION['user_id'])) {
                         </div>
                     </div>
                 </td>
-                <td><span class="mp-status ${p.status === 'rented' ? 'rented' : (p.status === 'sold' ? 'sold' : '')}">${escapeHtml(p.status || 'active')}</span></td>
-                <td><strong>${parseInt(p.price).toLocaleString()} MAD</strong></td>
-                <td>${p.bedrooms || 0} bd / ${p.bathrooms || 0} ba</td>
+                <td><span class="mp-status ${p.status === 'rented' ? 'rented' : (p.status === 'sold' ? 'sold' : '')}">${escapeHtml(window.t ? window.t('propstatus.' + (p.status || 'active')) : (p.status || 'active'))}</span></td>
+                <td><strong>${parseInt(p.price).toLocaleString()} ${window.t ? window.t('unit.mad') : 'MAD'}</strong></td>
+                <td>${p.bedrooms || 0} ${window.t ? window.t('unit.bd') : 'bd'} / ${p.bathrooms || 0} ${window.t ? window.t('unit.ba') : 'ba'}</td>
                 <td>${p.area || 0} m²</td>
                 <td>
                     <div class="mp-actions">
-                        <a href="edit-property.php?id=${p.id}" class="mp-btn edit">Edit</a>
-                        <button class="mp-btn del" data-del="${p.id}">Delete</button>
+                        <a href="edit-property.php?id=${p.id}" class="mp-btn edit">${window.t ? window.t('myproperties.edit') : 'Edit'}</a>
+                        <button class="mp-btn del" data-del="${p.id}">${window.t ? window.t('myproperties.delete') : 'Delete'}</button>
                     </div>
                 </td>
             </tr>
@@ -390,9 +393,9 @@ if (!isset($_SESSION['user_id'])) {
                 body.innerHTML = `
                 <tr>
                     <td colspan="6" class="mp-empty">
-                        <h3>Error loading properties</h3>
+                        <h3>${window.t ? window.t('myproperties.error.title') : 'Error loading properties'}</h3>
                         <p>${error.message}</p>
-                        <p>Please check that api/get-properties.php exists and is working.</p>
+                        <p>${window.t ? window.t('myproperties.error.text') : 'Please check that api/get-properties.php exists and is working.'}</p>
                     </td>
                 </tr>
             `;
@@ -445,19 +448,19 @@ if (!isset($_SESSION['user_id'])) {
                             tbody.innerHTML = `
                         <tr>
                             <td colspan="6" class="mp-empty">
-                                <h3>No properties yet</h3>
-                                <p>Click "Add Property" to create your first listing.</p>
+                                <h3>${window.t ? window.t('myproperties.empty.title') : 'No properties yet'}</h3>
+                                <p>${window.t ? window.t('myproperties.empty.text') : 'Click "Add Property" to create your first listing.'}</p>
                             </td>
                         </tr>
                     `;
                         }
                     } else {
-                        alert(data.message || "Delete failed. Please try again.");
+                        alert(data.message || (window.t ? window.t('myproperties.delete_failed') : 'Delete failed. Please try again.'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert("An error occurred while deleting the property.");
+                    alert(window.t ? window.t('myproperties.delete_error') : 'An error occurred while deleting the property.');
                 })
                 .finally(() => {
                     const modal = document.getElementById("delete-modal");

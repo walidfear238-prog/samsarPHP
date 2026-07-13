@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../php/lang.php';
 // Returns all real agencies (users with role = 'agency') from the database.
 // Public endpoint - no auth required, used by 04-agencies.php.
 
@@ -8,7 +9,7 @@ require "../db/connect.php";
 
 if (!$conn) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['error' => t('api.err.db_connection_failed')]);
     exit;
 }
 

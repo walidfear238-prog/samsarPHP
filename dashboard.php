@@ -28,12 +28,15 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Dashboard</title>
+    <title data-i18n-doctitle="dashboard.title">SAMSAR · Dashboard</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -51,17 +54,17 @@ if (!isset($_SESSION['user_id'])) {
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link active" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link active" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif">0</em></a>
             </nav>
 
@@ -89,57 +92,57 @@ if (!isset($_SESSION['user_id'])) {
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Overview</h1>
-                    <p>Manage your listings, conversations and social activity.</p>
+                    <h1 data-i18n="dash.overview">Overview</h1>
+                    <p data-i18n="dash.overview.subtitle">Manage your listings, conversations and social activity.</p>
                 </div>
                 <div style="display:flex;gap:12px;flex-wrap:wrap">
-                    <a class="btn btn-ghost" href="02-properties.php">Browse Market</a>
-                    <a class="btn btn-primary" href="add-property.php">+ Add Property</a>
+                    <a class="btn btn-ghost" href="02-properties.php" data-i18n="dash.browsemarket">Browse Market</a>
+                    <a class="btn btn-primary" href="add-property.php" data-i18n="dash.addproperty.plus">+ Add Property</a>
                 </div>
             </header>
 
             <div
                 style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:26px">
                 <div class="content-card">
-                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase">Active
+                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase" data-i18n="dash.stats.active_listings">Active
                         Listings
                     </div>
                     <div id="stat-listings" style="font-family:Fraunces,serif;font-size:34px;margin-top:8px">0</div>
                     <a href="my-properties.php"
-                        style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block">Manage
+                        style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block"><span data-i18n="dash.manage">Manage</span>
                         →</a>
                 </div>
                 <div class="content-card">
-                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase">Favorites
+                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase" data-i18n="dash.favorites">Favorites
                     </div>
                     <div id="stat-favorites" style="font-family:Fraunces,serif;font-size:34px;margin-top:8px">0
                     </div>
                     <a href="favorites.php"
-                        style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block">View
+                        style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block"><span data-i18n="dash.view">View</span>
                         →</a>
                 </div>
                 <div class="content-card">
-                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase">Messages
+                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase" data-i18n="dash.messages">Messages
                     </div>
                     <div id="stat-notifications" style="font-family:Fraunces,serif;font-size:34px;margin-top:8px">0
                     </div>
-                    <a href="messages.php" style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block">Open
+                    <a href="messages.php" style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block"><span data-i18n="dash.open">Open</span>
                         →</a>
                 </div>
                 <div class="content-card">
-                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase">Followers
+                    <div style="font-size:12px;letter-spacing:.12em;color:#666;text-transform:uppercase" data-i18n="dash.followers">Followers
                     </div>
                     <div id="stat-followers" style="font-family:Fraunces,serif;font-size:34px;margin-top:8px">0
                     </div>
                     <a href="following.php"
-                        style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block">View
+                        style="font-size:12px;color:#C72C41;margin-top:8px;display:inline-block"><span data-i18n="dash.view">View</span>
                         →</a>
                 </div>
             </div>
@@ -147,54 +150,54 @@ if (!isset($_SESSION['user_id'])) {
             <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px">
                 <section>
                     <div class="content-card" style="margin-bottom:18px">
-                        <h3 style="font-family:Fraunces,serif;font-size:24px;margin:0 0 6px">Quick Actions</h3>
-                        <p style="margin:0 0 18px;color:#666">Jump back into the most common tasks.</p>
+                        <h3 style="font-family:Fraunces,serif;font-size:24px;margin:0 0 6px" data-i18n="dash.quickactions">Quick Actions</h3>
+                        <p style="margin:0 0 18px;color:#666" data-i18n="dash.quickactions.subtitle">Jump back into the most common tasks.</p>
                         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-                            <a class="btn btn-primary" href="add-property.php" style="text-align:center">+ Add
+                            <a class="btn btn-primary" href="add-property.php" style="text-align:center" data-i18n="dash.addproperty.plus2">+ Add
                                 Property</a>
-                            <a class="btn btn-ghost" href="messages.php" style="text-align:center">Open Messages</a>
-                            <a class="btn btn-ghost" href="favorites.php" style="text-align:center">View
+                            <a class="btn btn-ghost" href="messages.php" style="text-align:center" data-i18n="dash.openmessages">Open Messages</a>
+                            <a class="btn btn-ghost" href="favorites.php" style="text-align:center" data-i18n="dash.viewfavorites">View
                                 Favorites</a>
                         </div>
                     </div>
 
                     <div class="content-card">
-                        <h3 style="font-family:Fraunces,serif;font-size:22px;margin:0 0 14px">Latest Notifications
+                        <h3 style="font-family:Fraunces,serif;font-size:22px;margin:0 0 14px" data-i18n="dash.latestnotifications">Latest Notifications
                         </h3>
                         <ul id="notif-list" class="notif-mini-list"></ul>
                         <a href="notifications.php"
-                            style="display:inline-block;margin-top:14px;color:#C72C41;font-size:13px;font-weight:600">View
-                            all →</a>
+                            style="display:inline-block;margin-top:14px;color:#C72C41;font-size:13px;font-weight:600"><span data-i18n="dash.viewall">View
+                            all</span> →</a>
                     </div>
                 </section>
 
                 <aside>
                     <div class="content-card" style="margin-bottom:18px">
-                        <h3 style="font-family:Fraunces,serif;font-size:20px;margin:0 0 12px">Quick Messages</h3>
+                        <h3 style="font-family:Fraunces,serif;font-size:20px;margin:0 0 12px" data-i18n="dash.quickmessages">Quick Messages</h3>
                         <a href="messages.php" class="msg-mini">
                             <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
                                 alt="" />
-                            <div><strong>Karim B.</strong><span>Is the price negotiable on Riad Souira?</span></div>
+                            <div><strong>Karim B.</strong><span data-i18n="dash.demo.msg1">Is the price negotiable on Riad Souira?</span></div>
                         </a>
                         <a href="messages.php" class="msg-mini">
                             <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80"
                                 alt="" />
-                            <div><strong>Élise M.</strong><span>I would like to book a visit for Saturday.</span>
+                            <div><strong>Élise M.</strong><span data-i18n="dash.demo.msg2">I would like to book a visit for Saturday.</span>
                             </div>
                         </a>
                     </div>
 
                     <div class="content-card">
-                        <h3 style="font-family:Fraunces,serif;font-size:20px;margin:0 0 12px">Following</h3>
+                        <h3 style="font-family:Fraunces,serif;font-size:20px;margin:0 0 12px" data-i18n="dash.following">Following</h3>
                         <a href="following.php" class="follow-mini">
                             <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&q=80"
                                 alt="" />
-                            <div><strong>Atlas Real Estate</strong><span>Marrakech · 86 listings</span></div>
+                            <div><strong>Atlas Real Estate</strong><span>Marrakech · 86 <span data-i18n="unit.listings">listings</span></span></div>
                         </a>
                         <a href="following.php" class="follow-mini">
                             <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80"
                                 alt="" />
-                            <div><strong>Élise M.</strong><span>Casablanca · 2 listings</span></div>
+                            <div><strong>Élise M.</strong><span>Casablanca · 2 <span data-i18n="unit.listings">listings</span></span></div>
                         </a>
                     </div>
                 </aside>

@@ -2,6 +2,7 @@
 session_start();
 require "db/connect.php";
 require __DIR__ . "/vendor/autoload.php";
+require_once __DIR__ . "/php/lang.php";
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -28,49 +29,49 @@ function validate_signup($first_name, $last_name, $email, $password, $role, $age
   $errors = [];
   // Validate first name
   if ($first_name == "") {
-    $errors[] = "First name is required.";
+    $errors[] = t("register.err.firstname_required");
   } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $first_name)) {
-    $errors[] = "Only letters and white space allowed in first name.";
+    $errors[] = t("register.err.firstname_letters");
   }
   // Validate last name
 
   if ($last_name == "") {
-    $errors[] = "Last name is required.";
+    $errors[] = t("register.err.lastname_required");
   } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $last_name)) {
-    $errors[] = "Only letters and white space allowed in last name.";
+    $errors[] = t("register.err.lastname_letters");
   }
 
   // Validate email
   if ($email == "") {
-    $errors[] = "Email is required.";
+    $errors[] = t("register.err.email_required");
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $errors[] = "Invalid email format.";
+    $errors[] = t("register.err.email_invalid");
   }
 
   // Validate password
   if ($password == "") {
-    $errors[] = "Password is required.";
+    $errors[] = t("register.err.password_required");
   } elseif (strlen($password) < 8) {
-    $errors[] = "Password must be at least 8 characters long.";
+    $errors[] = t("register.err.password_length");
   } elseif (!preg_match("/[A-Z]/", $password)) {
-    $errors[] = "Password must contain at least one uppercase letter.";
+    $errors[] = t("register.err.password_upper");
   } elseif (!preg_match("/[a-z]/", $password)) {
-    $errors[] = "Password must contain at least one lowercase letter.";
+    $errors[] = t("register.err.password_lower");
   } elseif (!preg_match("/[0-9]/", $password)) {
-    $errors[] = "Password must contain at least one number.";
+    $errors[] = t("register.err.password_number");
   }
 
   /* $allowed_roles = ["user", "agency"];
    if (empty($role) || !in_array($role, $allowed_roles)) {
-     $errors[] = "Please select a valid account type.";
+     $errors[] = t("register.err.account_type");
    }*/
 
   if ($role == "agency") {
     if (empty($agency_name)) {
-      $errors[] = "Agency name is required for agency accounts.";
+      $errors[] = t("register.err.agency_name_required");
     }
     if (empty($city)) {
-      $errors[] = "City is required for agency accounts.";
+      $errors[] = t("register.err.agency_city_required");
     }
   }
 
@@ -99,21 +100,21 @@ function upload_profile_picture($file)
 
   // Check if file is an actual image
   if ($check === false) {
-    return ["error" => "File is not an image."];
+    return ["error" => t("register.err.file_not_image")];
   }
   // Check file size (limit to 500KB)
   if ($file["size"] > 500000) {
-    return ["error" => "Sorry, your file is too large."];
+    return ["error" => t("register.err.file_too_large")];
   }
   // Allow only certain file formats
   if (!in_array($imageFileType, ["jpg", "jpeg", "png", "gif"])) {
-    return ["error" => "Sorry, only JPG, JPEG, PNG & GIF files are allowed."];
+    return ["error" => t("register.err.file_type")];
   }
   // Attempt to move uploaded file to target directory
   if (move_uploaded_file($file["tmp_name"], $target_file)) {
     return ["path" => $target_file];
   } else {
-    return ["error" => "Sorry, there was an error uploading your file."];
+    return ["error" => t("register.err.file_upload")];
   }
 }
 
@@ -232,7 +233,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   // Check if email already exists
   if (email_exists($conn, $email)) {
-    $errors[] = "An account with this email already exists. Please login or use a different email.";
+    $errors[] = t("register.err.email_exists");
   }
 
   $errors = validate_signup($first_name, $last_name, $email, $password, $role, $agency_name, $city);
@@ -272,16 +273,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           // Store email in session for verification page
           $_SESSION['temp_email'] = $email;
           $_SESSION['temp_first_name'] = $first_name;
-          $_SESSION['success_message'] = "Account created! Please verify your email.";
+          $_SESSION['success_message'] = t("register.success.created");
 
           // Redirect to verification page
           header("Location: 20-verify-email.php");
           exit();
         } else {
-          $errors[] = "Account created but failed to send verification email. Please contact support.";
+          $errors[] = t("register.err.email_send_failed");
         }
       } else {
-        $errors[] = "Error creating account. Please try again.";
+        $errors[] = t("register.err.create_failed");
       }
     }
   }
@@ -307,7 +308,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Create your account</title>
+    <title data-i18n-doctitle="register.title">SAMSAR · Create your account</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -315,6 +316,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/09-register.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -341,20 +345,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="pc-foot">
                 <div class="pc-quote">
-                    <p>"In Morocco, the samsar's word has always been older than any contract."</p>
-                    <span>— Salma El Idrissi, co-founder</span>
+                    <p data-i18n="register.quote">"In Morocco, the samsar's word has always been older than any contract."</p>
+                    <span data-i18n="register.quote.author">— Salma El Idrissi, co-founder</span>
                 </div>
-                <span class="pc-caption">Riad in the medina of Marrakech</span>
+                <span class="pc-caption" data-i18n="register.photo_caption">Riad in the medina of Marrakech</span>
             </div>
         </aside>
 
         <section class="form-side">
             <div class="form-inner">
                 <header class="form-head">
-                    <h1>Create your account.<br />Open every <em>door.</em></h1>
+                    <h1><span data-i18n="register.title1">Create your account.</span><br /><span data-i18n="register.title2">Open every </span><em data-i18n="register.title2_em">door.</em></h1>
                     <div class="head-actions">
-                        <a href="index.php" class="circle-btn" aria-label="Back">←</a>
-                        <span class="head-text">Already a member? <a href="08-login.php" class="head-link">Sign
+                        <a href="index.php" class="circle-btn" aria-label="Back" data-i18n-aria-label="common.back">←</a>
+                        <span class="head-text"><span data-i18n="register.already_member">Already a member?</span> <a href="08-login.php" class="head-link" data-i18n="register.signin">Sign
                                 in</a></span>
                     </div>
                 </header>
@@ -362,7 +366,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if (isset($_SESSION['errors']) && !empty($_SESSION['errors'])): ?>
                 <div
                     style="color: red; padding: 15px; background: #ffeeee; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid red;">
-                    <strong>Please fix the following errors:</strong>
+                    <strong data-i18n="register.fix_errors">Please fix the following errors:</strong>
                     <ul style="margin: 10px 0 0 0;">
                         <?php foreach ($_SESSION['errors'] as $error): ?>
                         <li><?php echo $error; ?></li>
@@ -374,16 +378,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST"
                     enctype="multipart/form-data" id="reg-form" class="form">
-                    <div class="type-toggle" role="radiogroup" aria-label="Account type">
+                    <div class="type-toggle" role="radiogroup" aria-label="Account type" data-i18n-aria-label="register.account_type">
                         <label class="tt-opt active" data-type="user">
                             <input type="radio" name="acct" value="user" checked />
                             <span class="tt-ico">⌂</span>
-                            <span class="tt-text"><strong>Personal User</strong><em>Browse & message sellers</em></span>
+                            <span class="tt-text"><strong data-i18n="register.personal_user">Personal User</strong><em data-i18n="register.personal_user.desc">Browse & message sellers</em></span>
                         </label>
                         <label class="tt-opt" data-type="agency">
                             <input type="radio" name="acct" value="agency" />
                             <span class="tt-ico">▤</span>
-                            <span class="tt-text"><strong>Real Estate Agency</strong><em>List properties & build a
+                            <span class="tt-text"><strong data-i18n="register.agency">Real Estate Agency</strong><em data-i18n="register.agency.desc">List properties & build a
                                     brand</em></span>
                         </label>
                     </div>
@@ -391,11 +395,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="row">
                         <label class="floating">
                             <input name="fir" type="text" required placeholder=" " />
-                            <span>First name</span>
+                            <span data-i18n="register.firstname">First name</span>
                         </label>
                         <label class="floating">
                             <input name="las" type="text" required placeholder=" " />
-                            <span>Last name</span>
+                            <span data-i18n="register.lastname">Last name</span>
                         </label>
                     </div>
 
@@ -403,7 +407,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="row">
                             <label class="floating">
                                 <input name="agency-name" type="text" placeholder=" " />
-                                <span>Agency name</span>
+                                <span data-i18n="register.agencyname">Agency name</span>
                             </label>
                             <label class="floating">
                                 <select name="city">
@@ -415,30 +419,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <option value="fès">Fès</option>
                                     <option value="essaouira">Essaouira</option>
                                 </select>
-                                <span>City</span>
+                                <span data-i18n="modal.city">City</span>
                             </label>
                         </div>
                     </div>
 
                     <label class="floating">
                         <input name="email" type="email" required placeholder=" " />
-                        <span>Email address</span>
+                        <span data-i18n="login.email">Email address</span>
                     </label>
 
                     <label class="floating">
                         <input name="phone" type="tel" placeholder=" " />
-                        <span>Phone (optional)</span>
+                        <span data-i18n="register.phone_optional">Phone (optional)</span>
                     </label>
 
                     <label class="floating">
                         <input name="profile-picture" type="file" accept="image/*" />
-                        <span>Upload a profile picture</span>
+                        <span data-i18n="register.upload_photo">Upload a profile picture</span>
                     </label>
 
                     <label class="floating">
                         <input name="password" type="password" id="pw" required placeholder=" " />
-                        <span>Password</span>
-                        <button type="button" class="eye" id="pw-toggle" aria-label="Show password">
+                        <span data-i18n="login.password">Password</span>
+                        <button type="button" class="eye" id="pw-toggle" aria-label="Show password" data-i18n-aria-label="login.show_password">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="1.6">
                                 <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
@@ -448,18 +452,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </label>
                     <div class="meter"><span></span></div>
 
-                    <label class="check terms"><input name="terms" type="checkbox" required /><span>I agree to the
-                            <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span></label>
+                    <label class="check terms"><input name="terms" type="checkbox" required /><span><span data-i18n="register.agree">I agree to the</span>
+                            <a href="#" data-i18n="login.terms">Terms of Service</a> <span data-i18n="login.legal2">and</span> <a href="#" data-i18n="login.privacy">Privacy Policy</a></span></label>
 
                     <button class="pill-btn" type="submit">
-                        <span>Create free account</span>
+                        <span data-i18n="register.submit">Create free account</span>
                         <span class="pill-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2">
                                 <path d="M5 12h14M13 6l6 6-6 6" />
                             </svg></span>
                     </button>
 
-                    <p class="legal">No credit card. No spam. Cancel anytime — your data is never sold.</p>
+                    <p class="legal" data-i18n="register.legal">No credit card. No spam. Cancel anytime — your data is never sold.</p>
                 </form>
             </div>
         </section>

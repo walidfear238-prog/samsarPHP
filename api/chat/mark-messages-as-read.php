@@ -5,7 +5,7 @@ $raw  = file_get_contents("php://input");
 $data = json_decode($raw);
 
 if (empty($data->conversation_id)) {
-    json_out(false, 'Missing conversation_id', 400);
+    json_out(false, t('api.err.missing_conversation_id'), 400);
 }
 
 $parts = explode('_', (string) $data->conversation_id, 2);
@@ -13,7 +13,7 @@ $other_user_id = isset($parts[0]) ? (int) $parts[0] : 0;
 $property_id   = (isset($parts[1]) && (int) $parts[1] > 0) ? (int) $parts[1] : null;
 
 if (!$other_user_id) {
-    json_out(false, 'Invalid conversation_id', 400);
+    json_out(false, t('api.err.invalid_conversation_id'), 400);
 }
 
 $stmt = $conn->prepare("

@@ -21,7 +21,7 @@ $user = $result->fetch_assoc();
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Messages</title>
+    <title data-i18n-doctitle="messages.title">SAMSAR · Messages</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
@@ -32,6 +32,9 @@ $user = $result->fetch_assoc();
     window.SAMSAR_BASE =
         <?php echo json_encode(rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/')); ?>;
     </script>
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -48,18 +51,25 @@ $user = $result->fetch_assoc();
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link active" href="messages.php"><span class="ico">✉</span>Messages <em
-                        class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
-                        class="dashboard-badge grey" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
-                        class="dashboard-badge red" id="bdg-notif-2">0</em></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span
+                        data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span
+                        data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span
+                        data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link active" href="messages.php"><span class="ico">✉</span><span
+                        data-i18n="dash.messages">Messages</span> <em class="dashboard-badge red"
+                        id="bdg-msg">0</em></a>
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span
+                        data-i18n="dash.favorites">Favorites</span> <em class="dashboard-badge grey"
+                        id="bdg-fav">0</em></a>
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span
+                        data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span
+                        data-i18n="dash.notifications">Notifications</span> <em class="dashboard-badge red"
+                        id="bdg-notif-2">0</em></a>
             </nav>
             <div class="dashboard-side-foot">
                 <div class="dashboard-user">
@@ -69,15 +79,15 @@ $user = $result->fetch_assoc();
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Messages</h1>
-                    <p>Your conversations with buyers, sellers and agencies.</p>
+                    <h1 data-i18n="dash.messages">Messages</h1>
+                    <p data-i18n="messages.subtitle">Your conversations with buyers, sellers and agencies.</p>
                 </div>
             </header>
 
@@ -89,8 +99,8 @@ $user = $result->fetch_assoc();
                             <path
                                 d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                         </svg>
-                        <h3>Select a conversation</h3>
-                        <p>Choose a conversation from the left to start chatting.</p>
+                        <h3 data-i18n="messages.select_conversation">Select a conversation</h3>
+                        <p data-i18n="messages.select_conversation_hint">Choose a conversation from the left to start chatting.</p>
                     </div>
                 </section>
             </div>

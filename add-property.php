@@ -183,12 +183,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Add Property</title>
+    <title data-i18n-doctitle="addproperty.title">SAMSAR · Add Property</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -206,17 +209,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link active" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link active" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
             <div class="dashboard-side-foot">
@@ -248,65 +251,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             htmlspecialchars($user['role']) . "</span></div>";
                         ?>
                     </div>
-                    <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                    <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
                 </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Add Property</h1>
-                    <p>Create a new listing for sale or rent.</p>
+                    <h1 data-i18n="dash.addproperty">Add Property</h1>
+                    <p data-i18n="addproperty.subtitle">Create a new listing for sale or rent.</p>
                 </div>
             </header>
 
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST"
                 enctype="multipart/form-data" id="add-form" class="ap-form">
                 <div class="content-card">
-                    <h3 class="ap-section-title">Basic information</h3>
+                    <h3 class="ap-section-title" data-i18n="addproperty.basicinfo">Basic information</h3>
                     <div class="ap-grid">
                         <label class="ap-field">
-                            <span>Property Title *</span>
+                            <span data-i18n="addproperty.title_field">Property Title *</span>
                             <input name="title" type="text" required placeholder="e.g. Villa Tazri — Palmeraie" />
 
                         </label>
                         <label class="ap-field">
-                            <span>Property Type *</span>
+                            <span data-i18n="addproperty.type_field">Property Type *</span>
                             <select name="type" required>
-                                <option value="Villa">Villa</option>
-                                <option value="Riad">Riad</option>
-                                <option value="Apartment">Apartment</option>
-                                <option value="Penthouse">Penthouse</option>
-                                <option value="Land">Land</option>
-                                <option value="Commercial">Commercial</option>
+                                <option value="Villa" data-i18n="proptype.villa">Villa</option>
+                                <option value="Riad" data-i18n="proptype.riad">Riad</option>
+                                <option value="Apartment" data-i18n="proptype.apartment">Apartment</option>
+                                <option value="Penthouse" data-i18n="proptype.penthouse">Penthouse</option>
+                                <option value="Land" data-i18n="proptype.land">Land</option>
+                                <option value="Commercial" data-i18n="proptype.commercial">Commercial</option>
                             </select>
                         </label>
                         <label class="ap-field">
-                            <span>Price (MAD) *</span>
+                            <span data-i18n="addproperty.price_field">Price (MAD) *</span>
                             <input name="price" type="text" required placeholder="e.g. 12,400,000" />
                         </label>
                         <label class="ap-field">
-                            <span>Status *</span>
+                            <span data-i18n="propdetails.status">Status *</span>
                             <select name="status" required>
-                                <option value="available">For sale</option>
-                                <option value="rented">For rent</option>
-                                <option value="sold">Sold</option>
-                                <option value="pending">Pending</option>
+                                <option value="available" data-i18n="propstatus.available">For sale</option>
+                                <option value="rented" data-i18n="propstatus.rented">For rent</option>
+                                <option value="sold" data-i18n="propstatus.sold">Sold</option>
+                                <option value="pending" data-i18n="propstatus.pending">Pending</option>
                             </select>
                         </label>
                     </div>
                     <label class="ap-field" style="margin-top:14px;display:block">
-                        <span>Description</span>
+                        <span data-i18n="propdetails.description">Description</span>
                         <textarea name="desc" rows="4"
-                            placeholder="Describe the property, location, and key features…"></textarea>
+                            placeholder="Describe the property, location, and key features…" data-i18n-placeholder="addproperty.description.placeholder"></textarea>
                     </label>
                 </div>
 
                 <div class="content-card">
-                    <h3 class="ap-section-title">Location</h3>
+                    <h3 class="ap-section-title" data-i18n="properties.filters.city">Location</h3>
                     <div class="ap-grid">
                         <label class="ap-field">
-                            <span>City *</span>
+                            <span data-i18n="addproperty.city_field">City *</span>
                             <select name="city" required>
                                 <option>Casablanca</option>
                                 <option>Marrakech</option>
@@ -318,37 +321,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </label>
                         <label class="ap-field">
-                            <span>District</span>
-                            <input name="district" type="text" placeholder="e.g. Palmeraie" />
+                            <span data-i18n="addproperty.district">District</span>
+                            <input name="district" type="text" placeholder="e.g. Palmeraie" data-i18n-placeholder="addproperty.district.placeholder" />
                         </label>
                     </div>
                 </div>
 
                 <div class="content-card">
-                    <h3 class="ap-section-title">Specifications</h3>
+                    <h3 class="ap-section-title" data-i18n="addproperty.specifications">Specifications</h3>
                     <div class="ap-grid ap-grid-4">
                         <label class="ap-field">
-                            <span>Bedrooms</span>
+                            <span data-i18n="propdetails.bedrooms">Bedrooms</span>
                             <input name="beds" type="number" min="0" value="3" />
                         </label>
                         <label class="ap-field">
-                            <span>Bathrooms</span>
+                            <span data-i18n="propdetails.bathrooms">Bathrooms</span>
                             <input name="baths" type="number" min="0" value="2" />
                         </label>
                         <label class="ap-field">
-                            <span>Area (m²)</span>
+                            <span data-i18n="addproperty.area_field">Area (m²)</span>
                             <input name="area" type="number" min="0" value="150" />
                         </label>
                         <label class="ap-field">
-                            <span>Upload Image</span>
+                            <span data-i18n="addproperty.upload_image">Upload Image</span>
                             <input name="images[]" type="file" accept="image/*" multiple />
                         </label>
                     </div>
                 </div>
 
                 <div class="ap-actions">
-                    <a href="my-properties.php" class="btn btn-ghost">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Publish Listing</button>
+                    <a href="my-properties.php" class="btn btn-ghost" data-i18n="myproperties.cancel">Cancel</a>
+                    <button type="submit" class="btn btn-primary" data-i18n="addproperty.publish">Publish Listing</button>
                 </div>
             </form>
         </main>

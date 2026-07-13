@@ -1,0 +1,85 @@
+/* ============================================================
+   SAMSAR — rtl.css  (NEW FILE)
+   Only applies when <html dir="rtl"> / body.lang-ar is set by
+   language-switcher.js. Does NOT touch any existing selector,
+   class name, or color from the site's own stylesheets — every
+   rule here is scoped under [dir="rtl"] / .lang-ar so it can
+   only ever ADD behavior, never override the default (LTR) look.
+   ============================================================ */
+
+/* Base direction */
+html[dir="rtl"] body {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Flip flex row layouts so nav / footer columns visually mirror */
+html[dir="rtl"] .nav-inner,
+html[dir="rtl"] .dashboard-nav a,
+html[dir="rtl"] .footer-grid {
+  direction: rtl;
+}
+
+/* Keep the brand logo mark from mirroring (SVG paths are icon glyphs,
+   not directional arrows) */
+html[dir="rtl"] .brand-mark,
+html[dir="rtl"] .dashboard-brand .brand-mark {
+  transform: none;
+}
+
+/* Arrow glyph used on primary CTAs ("Join SAMSAR →") should point left in RTL */
+html[dir="rtl"] .arrow {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+/* Dashboard sidebar icons keep their spacing but mirror margins */
+html[dir="rtl"] .dashboard-link .ico {
+  margin-right: 0;
+  margin-left: 0.5em;
+}
+
+/* Language switcher widget - direction-agnostic but tidy in both modes */
+.lang-switcher {
+  display: inline-flex;
+  gap: 6px;
+  margin-inline-start: 12px;
+}
+.lang-switcher button {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.lang-switcher button:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+.lang-switcher button.active {
+  opacity: 1;
+  background: currentColor;
+}
+.lang-switcher button.active {
+  color: Canvas; /* inverts text color against the filled pill; safe fallback */
+}
+
+/* Dashboard sidebar variant: stack under the nav, full width */
+.dashboard-sidebar .lang-switcher {
+  margin: 12px 0 0 0;
+  padding: 0 4px;
+}
+
+@media (max-width: 640px) {
+  .lang-switcher button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}

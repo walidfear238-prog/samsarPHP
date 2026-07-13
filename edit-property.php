@@ -28,12 +28,15 @@ if (!$property) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Edit Property</title>
+    <title data-i18n-doctitle="editproperty.title">SAMSAR · Edit Property</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -51,17 +54,17 @@ if (!$property) {
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
             <?php
@@ -80,17 +83,17 @@ if (!$property) {
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Edit Property</h1>
-                    <p>Update listing details.</p>
+                    <h1 data-i18n="editproperty.title_h1">Edit Property</h1>
+                    <p data-i18n="editproperty.subtitle">Update listing details.</p>
                 </div>
-                <a href="my-properties.php" class="btn btn-ghost">← Back to Properties</a>
+                <a href="my-properties.php" class="btn btn-ghost"><span data-i18n="editproperty.backto">← Back to Properties</span></a>
             </header>
 
             <form id="edit-form" class="ap-form" method="POST" action="api/update-property.php"
@@ -98,65 +101,65 @@ if (!$property) {
                 <input type="hidden" name="property_id" value="<?php echo $property['id']; ?>">
 
                 <div class="content-card">
-                    <h3 class="ap-section-title">Basic information</h3>
+                    <h3 class="ap-section-title" data-i18n="addproperty.basicinfo">Basic information</h3>
                     <div class="ap-grid">
                         <label class="ap-field">
-                            <span>Property Title *</span>
+                            <span data-i18n="addproperty.title_field">Property Title *</span>
                             <input name="title" type="text" value="<?php echo htmlspecialchars($property['title']); ?>"
                                 required />
                         </label>
                         <label class="ap-field">
-                            <span>Property Type *</span>
+                            <span data-i18n="addproperty.type_field">Property Type *</span>
                             <select name="type" required>
                                 <option value="Villa"
-                                    <?php echo $property['property_type'] == 'Villa' ? 'selected' : ''; ?>>Villa
+                                    <?php echo $property['property_type'] == 'Villa' ? 'selected' : ''; ?> data-i18n="proptype.villa">Villa
                                 </option>
                                 <option value="Riad"
-                                    <?php echo $property['property_type'] == 'Riad' ? 'selected' : ''; ?>>Riad</option>
+                                    <?php echo $property['property_type'] == 'Riad' ? 'selected' : ''; ?> data-i18n="proptype.riad">Riad</option>
                                 <option value="Apartment"
-                                    <?php echo $property['property_type'] == 'Apartment' ? 'selected' : ''; ?>>Apartment
+                                    <?php echo $property['property_type'] == 'Apartment' ? 'selected' : ''; ?> data-i18n="proptype.apartment">Apartment
                                 </option>
                                 <option value="Penthouse"
-                                    <?php echo $property['property_type'] == 'Penthouse' ? 'selected' : ''; ?>>Penthouse
+                                    <?php echo $property['property_type'] == 'Penthouse' ? 'selected' : ''; ?> data-i18n="proptype.penthouse">Penthouse
                                 </option>
                                 <option value="Land"
-                                    <?php echo $property['property_type'] == 'Land' ? 'selected' : ''; ?>>Land</option>
+                                    <?php echo $property['property_type'] == 'Land' ? 'selected' : ''; ?> data-i18n="proptype.land">Land</option>
                                 <option value="Commercial"
                                     <?php echo $property['property_type'] == 'Commercial' ? 'selected' : ''; ?>>
-                                    Commercial</option>
+<span data-i18n="proptype.commercial">Commercial</span></option>
                             </select>
                         </label>
                         <label class="ap-field">
-                            <span>Price (MAD) *</span>
+                            <span data-i18n="addproperty.price_field">Price (MAD) *</span>
                             <input name="price" type="number" value="<?php echo $property['price']; ?>" required />
                         </label>
                         <label class="ap-field">
-                            <span>Status *</span>
+                            <span data-i18n="propdetails.status">Status *</span>
                             <select name="status" required>
                                 <option value="available"
-                                    <?php echo $property['status'] == 'available' ? 'selected' : ''; ?>>For sale
+                                    <?php echo $property['status'] == 'available' ? 'selected' : ''; ?> data-i18n="propstatus.available">For sale
                                 </option>
-                                <option value="rented" <?php echo $property['status'] == 'rented' ? 'selected' : ''; ?>>
+                                <option value="rented" <?php echo $property['status'] == 'rented' ? 'selected' : ''; ?> data-i18n="propstatus.rented">
                                     For rent</option>
-                                <option value="sold" <?php echo $property['status'] == 'sold' ? 'selected' : ''; ?>>Sold
+                                <option value="sold" <?php echo $property['status'] == 'sold' ? 'selected' : ''; ?> data-i18n="propstatus.sold">Sold
                                 </option>
                                 <option value="pending"
-                                    <?php echo $property['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                    <?php echo $property['status'] == 'pending' ? 'selected' : ''; ?> data-i18n="propstatus.pending">Pending</option>
                             </select>
                         </label>
                     </div>
                     <label class="ap-field" style="margin-top:14px;display:block">
-                        <span>Description</span>
+                        <span data-i18n="propdetails.description">Description</span>
                         <textarea name="desc"
                             rows="4"><?php echo htmlspecialchars($property['description'] ?? ''); ?></textarea>
                     </label>
                 </div>
 
                 <div class="content-card">
-                    <h3 class="ap-section-title">Location</h3>
+                    <h3 class="ap-section-title" data-i18n="properties.filters.city">Location</h3>
                     <div class="ap-grid">
                         <label class="ap-field">
-                            <span>City *</span>
+                            <span data-i18n="addproperty.city_field">City *</span>
                             <select name="city" required>
                                 <option value="Casablanca"
                                     <?php echo $property['city'] == 'Casablanca' ? 'selected' : ''; ?>>Casablanca
@@ -176,7 +179,7 @@ if (!$property) {
                             </select>
                         </label>
                         <label class="ap-field">
-                            <span>District</span>
+                            <span data-i18n="addproperty.district">District</span>
                             <input name="district" type="text"
                                 value="<?php echo htmlspecialchars($property['district'] ?? ''); ?>" />
                         </label>
@@ -184,26 +187,26 @@ if (!$property) {
                 </div>
 
                 <div class="content-card">
-                    <h3 class="ap-section-title">Specifications</h3>
+                    <h3 class="ap-section-title" data-i18n="addproperty.specifications">Specifications</h3>
                     <div class="ap-grid ap-grid-4">
                         <label class="ap-field">
-                            <span>Bedrooms</span>
+                            <span data-i18n="propdetails.bedrooms">Bedrooms</span>
                             <input name="beds" type="number" min="0"
                                 value="<?php echo $property['bedrooms'] ?? 0; ?>" />
                         </label>
                         <label class="ap-field">
-                            <span>Bathrooms</span>
+                            <span data-i18n="propdetails.bathrooms">Bathrooms</span>
                             <input name="baths" type="number" min="0"
                                 value="<?php echo $property['bathrooms'] ?? 0; ?>" />
                         </label>
                         <label class="ap-field">
-                            <span>Area (m²)</span>
+                            <span data-i18n="addproperty.area_field">Area (m²)</span>
                             <input name="area" type="number" min="0" value="<?php echo $property['area'] ?? 0; ?>" />
                         </label>
                     </div>
                 </div>
                 <div class="content-card">
-                    <h3 class="ap-section-title">Property Images</h3>
+                    <h3 class="ap-section-title" data-i18n="editproperty.images">Property Images</h3>
 
                     <!-- Current Images Display -->
                     <div id="current-images"
@@ -224,15 +227,15 @@ if (!$property) {
                             <div style="display: flex; gap: 5px; margin-top: 8px;">
                                 <?php if ($image['is_primary']): ?>
                                 <span
-                                    style="background: #2D7D5A; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Primary</span>
+                                    style="background: #2D7D5A; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;" data-i18n="editproperty.primary">Primary</span>
                                 <?php else: ?>
                                 <button type="button" class="set-primary-btn" data-id="<?php echo $image['id']; ?>"
-                                    style="background: #666; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                                    style="background: #666; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" data-i18n="editproperty.setprimary">
                                     Set as Primary
                                 </button>
                                 <?php endif; ?>
                                 <button type="button" class="remove-image-btn" data-id="<?php echo $image['id']; ?>"
-                                    style="background: #C72C41; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                                    style="background: #C72C41; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" data-i18n="editproperty.remove">
                                     Remove
                                 </button>
                             </div>
@@ -243,10 +246,10 @@ if (!$property) {
 
                     <!-- Upload New Images -->
                     <label class="ap-field">
-                        <span>Add New Images</span>
+                        <span data-i18n="editproperty.addnewimages">Add New Images</span>
                         <input type="file" name="images[]" multiple
                             accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" />
-                        <small style="color: #666; margin-top: 5px;">You can select multiple images. Supported formats:
+                        <small style="color: #666; margin-top: 5px;" data-i18n="editproperty.formats_hint">You can select multiple images. Supported formats:
                             JPG, PNG, GIF, WEBP</small>
                     </label>
 
@@ -256,8 +259,8 @@ if (!$property) {
                 </div>
 
                 <div class="ap-actions">
-                    <a href="my-properties.php" class="btn btn-ghost">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="my-properties.php" class="btn btn-ghost" data-i18n="myproperties.cancel">Cancel</a>
+                    <button type="submit" class="btn btn-primary" data-i18n="editproperty.savechanges">Save Changes</button>
                 </div>
             </form>
         </main>
@@ -373,7 +376,7 @@ if (!$property) {
             const imageId = this.getAttribute('data-id');
             const imageDiv = this.closest('.image-item');
 
-            if (confirm('Are you sure you want to remove this image?')) {
+            if (confirm(window.t ? window.t('editproperty.confirm_remove') : 'Are you sure you want to remove this image?')) {
                 imagesToRemove.push(imageId);
                 imageDiv.style.display = 'none';
                 document.getElementById('remove_images_input').value = JSON.stringify(imagesToRemove);
@@ -389,13 +392,13 @@ if (!$property) {
             // Update UI for all images
             document.querySelectorAll('.image-item').forEach(item => {
                 const primarySpan = item.querySelector('span');
-                if (primarySpan && primarySpan.textContent === 'Primary') {
+                if (primarySpan && primarySpan.textContent === (window.t ? window.t('editproperty.primary') : 'Primary')) {
                     primarySpan.remove();
                     const setBtn = document.createElement('button');
                     setBtn.type = 'button';
                     setBtn.className = 'set-primary-btn';
                     setBtn.setAttribute('data-id', imageId);
-                    setBtn.textContent = 'Set as Primary';
+                    setBtn.textContent = window.t ? window.t('editproperty.setprimary') : 'Set as Primary';
                     setBtn.style.cssText =
                         'background: #666; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;';
                     item.querySelector('div').appendChild(setBtn);
@@ -408,7 +411,7 @@ if (!$property) {
             // Update current button to show it's primary
             this.remove();
             const primarySpan = document.createElement('span');
-            primarySpan.textContent = 'Primary';
+            primarySpan.textContent = window.t ? window.t('editproperty.primary') : 'Primary';
             primarySpan.style.cssText =
                 'background: #2D7D5A; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;';
             this.parentElement.appendChild(primarySpan);
@@ -451,7 +454,7 @@ if (!$property) {
         const originalText = submitBtn.textContent;
 
         // Show loading state
-        submitBtn.textContent = 'Saving...';
+        submitBtn.textContent = window.t ? window.t('editproperty.saving') : 'Saving...';
         submitBtn.disabled = true;
 
         try {
@@ -465,7 +468,7 @@ if (!$property) {
 
             if (result.success) {
                 // Show success message
-                submitBtn.textContent = 'Saved ✓';
+                submitBtn.textContent = window.t ? window.t('editproperty.saved') : 'Saved ✓';
                 submitBtn.style.background = '#2D7D5A';
 
                 // Redirect after delay
@@ -479,7 +482,7 @@ if (!$property) {
                     }
                 }, 700);
             } else {
-                alert(result.message || 'Failed to update property');
+                alert(result.message || (window.t ? window.t('editproperty.update_failed') : 'Failed to update property'));
                 console.error('Update failed:', result);
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
@@ -487,7 +490,7 @@ if (!$property) {
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred while saving. Please check the console for details.');
+            alert(window.t ? window.t('editproperty.save_error') : 'An error occurred while saving. Please check the console for details.');
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
         }

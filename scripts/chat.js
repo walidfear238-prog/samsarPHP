@@ -100,11 +100,11 @@
         }
 
         if (convs === null) {
-            listEl.innerHTML = `<div class="loading" style="color:#C72C41">Could not load conversations.</div>`;
+            listEl.innerHTML = `<div class="loading" style="color:#C72C41">${window.t ? window.t('chat.load_error') : 'Could not load conversations.'}</div>`;
             return;
         }
         if (!convs.length) {
-            listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#999;"><p>No conversations yet.</p></div>`;
+            listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#999;"><p>${window.t ? window.t('chat.no_conversations') : 'No conversations yet.'}</p></div>`;
             setBadge(0);
             return;
         }
@@ -115,10 +115,10 @@
             const unread   = parseInt(c.unread_count) || 0;
             const isActive = activeConv && String(c.conversation_id) === String(activeConv.id);
             const preview  = c.last_message
-                ? (String(c.last_sender_id) === String(ME) ? 'You: ' : '')
+                ? (String(c.last_sender_id) === String(ME) ? (window.t ? window.t('chat.you_prefix') : 'You: ') : '')
                   + esc(c.last_message.substring(0, 45))
                   + (c.last_message.length > 45 ? '…' : '')
-                : 'No messages yet';
+                : (window.t ? window.t('chat.no_messages_yet') : 'No messages yet');
             totalUnread += unread;
 
             return `
@@ -238,15 +238,15 @@
                     ${avatarHTML(avt, first, last, 42)}
                     <div>
                         <strong>${esc(first)} ${esc(last)}</strong>
-                        <span id="chat-status">Loading…</span>
+                        <span id="chat-status">${window.t ? window.t('common.loading_ellipsis') : 'Loading…'}</span>
                     </div>
                 </div>
                 <div class="chat-body" id="chat-body">
-                    <div class="loading">Loading messages…</div>
+                    <div class="loading">${window.t ? window.t('chat.loading_messages') : 'Loading messages…'}</div>
                 </div>
                 <div class="chat-form">
-                    <input type="text" id="chat-input" placeholder="Type a message…" autocomplete="off">
-                    <button id="send-btn">Send</button>
+                    <input type="text" id="chat-input" placeholder="${window.t ? window.t('chat.type_message') : 'Type a message…'}" autocomplete="off">
+                    <button id="send-btn">${window.t ? window.t('chat.send') : 'Send'}</button>
                 </div>
             </div>`;
 
@@ -262,14 +262,14 @@
                 );
             } catch (err) {
                 if (bodyEl) bodyEl.innerHTML =
-                    `<div class="loading" style="color:#C72C41">Error loading messages.</div>`;
+                    `<div class="loading" style="color:#C72C41">${window.t ? window.t('chat.error_loading_messages') : 'Error loading messages.'}</div>`;
                 console.error('[chat] initial load:', err);
                 return;
             }
 
             if (!msgs || !msgs.length) {
                 if (bodyEl) bodyEl.innerHTML =
-                    `<div style="text-align:center;padding:40px;color:#999;">No messages yet. Say hello 👋</div>`;
+                    `<div style="text-align:center;padding:40px;color:#999;">${window.t ? window.t('chat.no_messages_say_hello') : 'No messages yet. Say hello 👋'}</div>`;
             } else {
                 if (bodyEl) {
                     bodyEl.innerHTML    = msgs.map(renderBubble).join('');
@@ -305,7 +305,7 @@
                 });
             } catch (err) {
                 console.error('[chat] sendMessage:', err);
-                alert('Failed to send. Please try again.');
+                alert(window.t ? window.t('chat.send_failed') : 'Failed to send. Please try again.');
             }
 
             if (result) {
@@ -316,7 +316,7 @@
 
             inputEl.disabled  = false;
             btnEl.disabled    = false;
-            btnEl.textContent = 'Send';
+            btnEl.textContent = window.t ? window.t('chat.send') : 'Send';
             inputEl.focus();
         }
 

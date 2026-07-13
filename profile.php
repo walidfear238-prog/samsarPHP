@@ -4,12 +4,15 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Profile</title>
+    <title data-i18n-doctitle="profile.title">SAMSAR · Profile</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -27,34 +30,34 @@
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
             <div class="dashboard-side-foot">
                 <div class="dashboard-user">
                     <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
                         alt="Avatar" />
-                    <div><strong>Yassine A.</strong><span>User</span></div>
+                    <div><strong>Yassine A.</strong><span data-i18n="profile.role_user">User</span></div>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Profile</h1>
-                    <p>Manage your public information and account preferences.</p>
+                    <h1 data-i18n="dash.profile">Profile</h1>
+                    <p data-i18n="profile.subtitle">Manage your public information and account preferences.</p>
                 </div>
             </header>
 
@@ -65,28 +68,28 @@
                         style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.06)" />
                     <div style="flex:1">
                         <input type="file" id="avatar-input" accept="image/*" hidden />
-                        <button type="button" class="btn btn-ghost" id="change-avatar">Change photo</button>
-                        <p style="margin:8px 0 0;font-size:12px;color:#888">JPG, PNG. Max 2MB.</p>
+                        <button type="button" class="btn btn-ghost" id="change-avatar" data-i18n="profile.changephoto">Change photo</button>
+                        <p style="margin:8px 0 0;font-size:12px;color:#888" data-i18n="profile.filehint">JPG, PNG. Max 2MB.</p>
                     </div>
                 </div>
 
                 <div class="content-card">
-                    <h3 class="ap-section-title">Personal information</h3>
+                    <h3 class="ap-section-title" data-i18n="profile.personalinfo">Personal information</h3>
                     <div class="ap-grid">
                         <label class="ap-field">
-                            <span>Full name</span>
+                            <span data-i18n="modal.fullname">Full name</span>
                             <input name="name" type="text" value="Yassine A." required />
                         </label>
                         <label class="ap-field">
-                            <span>Email</span>
+                            <span data-i18n="modal.email">Email</span>
                             <input name="email" type="email" value="yassine@samsar.ma" required />
                         </label>
                         <label class="ap-field">
-                            <span>Phone</span>
+                            <span data-i18n="agencyprofile.phone">Phone</span>
                             <input name="phone" type="tel" value="+212 6 12 34 56 78" />
                         </label>
                         <label class="ap-field">
-                            <span>City</span>
+                            <span data-i18n="modal.city">City</span>
                             <select name="city">
                                 <option>Casablanca</option>
                                 <option selected>Marrakech</option>
@@ -98,25 +101,25 @@
                         </label>
                     </div>
                     <label class="ap-field" style="margin-top:14px;display:block">
-                        <span>Bio</span>
+                        <span data-i18n="profile.bio">Bio</span>
                         <textarea name="bio" rows="3"
-                            placeholder="Tell the community a little about yourself…">Looking for a family villa in Marrakech or Rabat. 4+ bedrooms, pool, quiet neighbourhood.</textarea>
+                            placeholder="Tell the community a little about yourself…" data-i18n-placeholder="profile.bio.placeholder">Looking for a family villa in Marrakech or Rabat. 4+ bedrooms, pool, quiet neighbourhood.</textarea>
                     </label>
                 </div>
 
                 <div class="content-card">
-                    <h3 class="ap-section-title">Notification preferences</h3>
-                    <label class="ap-check"><input type="checkbox" checked /><span>Email me when a matching property is
+                    <h3 class="ap-section-title" data-i18n="profile.notifprefs">Notification preferences</h3>
+                    <label class="ap-check"><input type="checkbox" checked /><span data-i18n="profile.notif1">Email me when a matching property is
                             listed</span></label>
-                    <label class="ap-check"><input type="checkbox" checked /><span>SMS me about scheduled
+                    <label class="ap-check"><input type="checkbox" checked /><span data-i18n="profile.notif2">SMS me about scheduled
                             viewings</span></label>
-                    <label class="ap-check"><input type="checkbox" /><span>Weekly market digest
+                    <label class="ap-check"><input type="checkbox" /><span data-i18n="profile.notif3">Weekly market digest
                             (Tuesdays)</span></label>
                 </div>
 
                 <div style="display:flex;justify-content:flex-end;gap:12px">
-                    <button type="button" class="btn btn-ghost" id="cancel-profile">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-ghost" id="cancel-profile" data-i18n="myproperties.cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="profile.savechanges">Save changes</button>
                 </div>
             </form>
         </main>
@@ -267,11 +270,11 @@
 
             // Update sidebar name
             const nameEl = document.querySelector('.dashboard-user strong');
-            if (nameEl) nameEl.textContent = profile.name || 'User';
+            if (nameEl) nameEl.textContent = profile.name || (window.t ? window.t('profile.role_user') : 'User');
 
             const btn = e.target.querySelector('button[type="submit"]');
             const orig = btn.textContent;
-            btn.textContent = 'Saved ✓';
+            btn.textContent = window.t ? window.t('editproperty.saved') : 'Saved ✓';
             btn.style.background = '#2D7D5A';
             btn.disabled = true;
             setTimeout(() => {

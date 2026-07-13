@@ -16,12 +16,15 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Following</title>
+    <title data-i18n-doctitle="following.title">SAMSAR · Following</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -40,17 +43,17 @@ if (!isset($_SESSION['user_id'])) {
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link active" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link active" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
 
@@ -77,15 +80,15 @@ if (!isset($_SESSION['user_id'])) {
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Following</h1>
-                    <p>Accounts you follow across SAMSAR.</p>
+                    <h1 data-i18n="dash.following">Following</h1>
+                    <p data-i18n="following.subtitle">Accounts you follow across SAMSAR.</p>
                 </div>
             </header>
             <div id="follow-grid" class="follow-grid"></div>
@@ -179,7 +182,7 @@ if (!isset($_SESSION['user_id'])) {
             const list = Store.get('following', []);
             if (!list.length) {
                 grid.innerHTML =
-                    '<div class="content-card follow-empty" style="grid-column:1/-1"><h3 style="font-family:Fraunces,serif;margin:0 0 6px">Not following anyone yet</h3><p style="margin:0">Find people to follow on the marketplace.</p></div>';
+                    '<div class="content-card follow-empty" style="grid-column:1/-1"><h3 style="font-family:Fraunces,serif;margin:0 0 6px">' + (window.t ? window.t('following.empty.title') : 'Not following anyone yet') + '</h3><p style="margin:0">' + (window.t ? window.t('following.empty.text') : 'Find people to follow on the marketplace.') + '</p></div>';
                 return;
             }
             grid.innerHTML = list.map(f => `
@@ -188,11 +191,11 @@ if (!isset($_SESSION['user_id'])) {
           <img src="${f.avatar}" alt="${f.name}"/>
           <div>
             <strong>${f.name}</strong>
-            <span>${f.city} · ${f.listings} listings</span>
+            <span>${f.city} · ${f.listings} ${window.t ? window.t('unit.listings') : 'listings'}</span>
           </div>
         </div>
         <div class="follow-action">
-          <button class="btn-sm following" data-id="${f.id}">Following</button>
+          <button class="btn-sm following" data-id="${f.id}">${window.t ? window.t('propdetails.following') : 'Following'}</button>
         </div>
       </div>
     `).join('');
@@ -200,7 +203,7 @@ if (!isset($_SESSION['user_id'])) {
             grid.querySelectorAll('.btn-sm').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const isFollowing = btn.classList.toggle('following');
-                    btn.textContent = isFollowing ? 'Following' : 'Follow';
+                    btn.textContent = isFollowing ? (window.t ? window.t('propdetails.following') : 'Following') : (window.t ? window.t('propdetails.follow') : 'Follow');
                     if (isFollowing) {
                         btn.style.background = '#C72C41';
                         btn.style.color = '#fff';

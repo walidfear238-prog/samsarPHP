@@ -5,10 +5,11 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require __DIR__ . "/../db/connect.php";
+require_once __DIR__ . "/../php/lang.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized - Please login']);
+    echo json_encode(['success' => false, 'message' => t('api.err.unauthorized_login')]);
     exit;
 }
 
@@ -16,7 +17,7 @@ $user_id = $_SESSION['user_id'];
 
 // Check if property_id is provided
 if (!isset($_POST['property_id']) || empty($_POST['property_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Property ID is required']);
+    echo json_encode(['success' => false, 'message' => t('api.property.err.id_required')]);
     exit;
 }
 
@@ -29,7 +30,7 @@ $check_stmt->execute();
 $result = $check_stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo json_encode(['success' => false, 'message' => 'Property not found or you do not have permission to edit it']);
+    echo json_encode(['success' => false, 'message' => t('api.property.err.edit_permission')]);
     $check_stmt->close();
     exit;
 }
@@ -49,19 +50,19 @@ $description = trim($_POST['desc'] ?? '');
 
 // Validate required fields
 if (empty($title)) {
-    echo json_encode(['success' => false, 'message' => 'Title is required']);
+    echo json_encode(['success' => false, 'message' => t('api.property.err.title_required')]);
     exit;
 }
 if (empty($property_type)) {
-    echo json_encode(['success' => false, 'message' => 'Property type is required']);
+    echo json_encode(['success' => false, 'message' => t('api.property.err.type_required')]);
     exit;
 }
 if ($price <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Valid price is required']);
+    echo json_encode(['success' => false, 'message' => t('api.property.err.price_required')]);
     exit;
 }
 if (empty($city)) {
-    echo json_encode(['success' => false, 'message' => 'City is required']);
+    echo json_encode(['success' => false, 'message' => t('api.property.err.city_required')]);
     exit;
 }
 
@@ -210,7 +211,7 @@ try {
 
     echo json_encode([
         'success' => true,
-        'message' => 'Property updated successfully',
+        'message' => t('api.property.update_success'),
         'uploaded_images' => $uploaded_images
     ]);
 

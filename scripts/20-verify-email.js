@@ -51,7 +51,7 @@
   if(code.length<6){inputs[code.length].focus();return}
   // Fake verification
   const btn=document.getElementById('verify-btn');
-  btn.querySelector('span:first-child').textContent='Verifying…';
+  btn.querySelector('span:first-child').textContent=window.t?window.t('verify.js.verifying'):'Verifying…';
   setTimeout(()=>{
    const status=document.getElementById('status');
    status.hidden=false;
@@ -68,7 +68,7 @@
  document.getElementById('resend').addEventListener('click',()=>{
   const btn=document.getElementById('resend');
   const orig=btn.innerHTML;
-  btn.innerHTML='<strong>Email resent ✓</strong>';
+  btn.innerHTML='<strong>'+(window.t?window.t('verify.js.resent'):'Email resent ✓')+'</strong>';
   btn.disabled=true;
   setTimeout(()=>{btn.innerHTML=orig;btn.disabled=false},3000);
  });

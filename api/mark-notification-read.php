@@ -12,10 +12,11 @@
 session_start();
 header('Content-Type: application/json');
 require "../db/connect.php";
+require_once __DIR__ . "/../php/lang.php";
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => t('api.err.unauthorized')]);
     exit;
 }
 

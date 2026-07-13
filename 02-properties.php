@@ -10,7 +10,7 @@ session_start();
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Properties</title>
+    <title data-i18n-doctitle="properties.title">SAMSAR · Properties</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,6 +18,9 @@ session_start();
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/02-properties.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -35,26 +38,26 @@ session_start();
                 <span class="brand-word">SAMSAR</span>
             </a>
             <nav class="nav-links">
-                <a href="02-properties.php" class="active">Properties</a>
-                <a href="04-agencies.php">Agencies</a>
-                <a href="06-about.php">About</a>
-                <a href="07-contact.php">Contact</a>
+                <a href="02-properties.php" data-i18n="nav.properties" class="active">Properties</a>
+                <a href="04-agencies.php" data-i18n="nav.agencies">Agencies</a>
+                <a href="06-about.php" data-i18n="nav.about">About</a>
+                <a href="07-contact.php" data-i18n="nav.contact">Contact</a>
             </nav>
             <?php
             if (isset($_SESSION["user_id"])) {
                 // User is logged in, show dashboard link and logout option
                 echo '<div class="nav-right">';
-                echo '<a href="dashboard.php" style="font-size:14px;font-weight:500">Dashboard</a>';
+                echo '<a href="dashboard.php" style="font-size:14px;font-weight:500"><span data-i18n="nav.dashboard">Dashboard</span></a>';
 
 
-                echo '<a href="logout.php" class="btn btn-secondary">Logout</a>';
+                echo '<a href="logout.php" class="btn btn-secondary"><span data-i18n="nav.logout">Logout</span></a>';
                 echo '
         </div>';
             } else {
                 // User is not logged in, show sign in and register options
                 echo '            <div class="nav-right">
-                <a href="08-login.php" class="nav-text">Sign in</a>
-                <a href="09-register.php" class="btn btn-primary">Join SAMSAR <span class="arrow">→</span></a>
+                <a href="08-login.php" class="nav-text"><span data-i18n="nav.signin">Sign in</span></a>
+                <a href="09-register.php" class="btn btn-primary"><span data-i18n="nav.join">Join SAMSAR</span> <span class="arrow">→</span></a>
             </div>';
             }
             ?>
@@ -70,9 +73,9 @@ session_start();
     <main>
 
         <section class="page-head">
-            <div> <span>Marketplace</span>
-                <h1>Every Moroccan home,<br /><em>in one place.</em></h1>
-                <p>Browse 1,284 verified listings from Marrakech to Tangier — riads,
+            <div> <span data-i18n="properties.marketplace">Marketplace</span>
+                <h1><span data-i18n="properties.hero.title1">Every Moroccan home,</span><br /><em data-i18n="properties.hero.title2">in one place.</em></h1>
+                <p data-i18n="properties.hero.subtitle">Browse 1,284 verified listings from Marrakech to Tangier — riads,
                     villas,
                     apartments and land — brokered by the SAMSAR network.</p>
             </div>
@@ -80,8 +83,8 @@ session_start();
         <div class="container layout">
             <!-- LEFT FILTER SIDEBAR -->
             <aside class="filter-side">
-                <button class="filter-toggle" id="ft-toggle" aria-label="Toggle filters">
-                    <span>Filters</span>
+                <button class="filter-toggle" id="ft-toggle" aria-label="Toggle filters" data-i18n-aria-label="properties.filters.toggle">
+                    <span data-i18n="properties.filters">Filters</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="4" y1="6" x2="20" y2="6" />
                         <line x1="7" y1="12" x2="17" y2="12" />
@@ -91,48 +94,48 @@ session_start();
 
                 <div class="filter-panel" id="filter-panel">
                     <div class="fp-head">
-                        <h2>Filters</h2>
-                        <button class="reset-btn" id="reset-filters">Reset</button>
+                        <h2 data-i18n="properties.filters">Filters</h2>
+                        <button class="reset-btn" id="reset-filters" data-i18n="properties.filters.reset">Reset</button>
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">Search</label>
-                        <input type="search" placeholder="Marrakech, Anfa…" id="f-search" />
+                        <label class="fp-label" data-i18n="properties.filters.search">Search</label>
+                        <input type="search" placeholder="Marrakech, Anfa…" id="f-search" data-i18n-placeholder="properties.filters.search.placeholder" />
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">Purpose</label>
+                        <label class="fp-label" data-i18n="properties.filters.purpose">Purpose</label>
                         <div class="seg-control" data-group="status">
-                            <button class="seg-btn active" data-v="all">All</button>
-                            <button class="seg-btn" data-v="sale">For Sale</button>
-                            <button class="seg-btn" data-v="rent">For Rent</button>
+                            <button class="seg-btn active" data-v="all" data-i18n="properties.filters.all">All</button>
+                            <button class="seg-btn" data-v="sale" data-i18n="card.forsale">For Sale</button>
+                            <button class="seg-btn" data-v="rent" data-i18n="card.forrent">For Rent</button>
                         </div>
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">Property type</label>
+                        <label class="fp-label" data-i18n="properties.filters.type">Property type</label>
                         <div class="chip-stack" data-group="type">
-                            <button class="filter-chip active" data-v="all">All <em>9</em></button>
-                            <button class="filter-chip" data-v="villa">Villas <em>4</em></button>
-                            <button class="filter-chip" data-v="riad">Riads <em>3</em></button>
-                            <button class="filter-chip" data-v="apt">Apartments <em>2</em></button>
+                            <button class="filter-chip active" data-v="all"><span data-i18n="properties.filters.all">All</span> <em>9</em></button>
+                            <button class="filter-chip" data-v="villa"><span data-i18n="proptype.villas">Villas</span> <em>4</em></button>
+                            <button class="filter-chip" data-v="riad"><span data-i18n="proptype.riads">Riads</span> <em>3</em></button>
+                            <button class="filter-chip" data-v="apt"><span data-i18n="proptype.apartments">Apartments</span> <em>2</em></button>
                         </div>
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">Price range (MAD)</label>
+                        <label class="fp-label" data-i18n="properties.filters.pricerange">Price range (MAD)</label>
                         <div class="price-inputs">
-                            <input type="text" placeholder="Min" id="f-min-price" />
+                            <input type="text" placeholder="Min" id="f-min-price" data-i18n-placeholder="properties.filters.min" />
                             <span>—</span>
-                            <input type="text" placeholder="Max" id="f-max-price" />
+                            <input type="text" placeholder="Max" id="f-max-price" data-i18n-placeholder="properties.filters.max" />
                         </div>
                         <div class="price-bar"><span class="track"></span><span class="fill"></span></div>
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">Bedrooms</label>
+                        <label class="fp-label" data-i18n="properties.filters.bedrooms">Bedrooms</label>
                         <div class="pill-row" data-group="bd">
-                            <button class="pill active" data-v="0">Any</button>
+                            <button class="pill active" data-v="0" data-i18n="properties.filters.any">Any</button>
                             <button class="pill" data-v="1">1+</button>
                             <button class="pill" data-v="2">2+</button>
                             <button class="pill" data-v="3">3+</button>
@@ -142,9 +145,9 @@ session_start();
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">Bathrooms</label>
+                        <label class="fp-label" data-i18n="properties.filters.bathrooms">Bathrooms</label>
                         <div class="pill-row" data-group="ba">
-                            <button class="pill active" data-v="0">Any</button>
+                            <button class="pill active" data-v="0" data-i18n="properties.filters.any">Any</button>
                             <button class="pill" data-v="1">1+</button>
                             <button class="pill" data-v="2">2+</button>
                             <button class="pill" data-v="3">3+</button>
@@ -153,7 +156,7 @@ session_start();
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">City</label>
+                        <label class="fp-label" data-i18n="properties.filters.city">City</label>
                         <div class="check-list">
                             <label class="ck"><input type="checkbox" data-city="marrakech" />
                                 <span>Marrakech</span>
@@ -174,24 +177,24 @@ session_start();
                     </div>
 
                     <div class="fp-group">
-                        <label class="fp-label">Features</label>
+                        <label class="fp-label" data-i18n="properties.filters.features">Features</label>
                         <div class="check-list">
                             <label class="ck"><input type="checkbox" data-feature="pool" />
-                                <span>Pool</span></label>
+                                <span data-i18n="feature.pool">Pool</span></label>
                             <label class="ck"><input type="checkbox" data-feature="garden" />
-                                <span>Garden</span></label>
+                                <span data-i18n="feature.garden">Garden</span></label>
                             <label class="ck"><input type="checkbox" data-feature="hammam" />
-                                <span>Hammam</span></label>
-                            <label class="ck"><input type="checkbox" data-feature="sea" /> <span>Sea
+                                <span data-i18n="feature.hammam">Hammam</span></label>
+                            <label class="ck"><input type="checkbox" data-feature="sea" /> <span data-i18n="feature.seaview">Sea
                                     view</span></label>
-                            <label class="ck"><input type="checkbox" data-feature="mountain" /> <span>Mountain
+                            <label class="ck"><input type="checkbox" data-feature="mountain" /> <span data-i18n="feature.mountainview">Mountain
                                     view</span></label>
                             <label class="ck"><input type="checkbox" data-feature="parking" />
-                                <span>Parking</span></label>
+                                <span data-i18n="feature.parking">Parking</span></label>
                         </div>
                     </div>
 
-                    <button class="btn btn-primary apply-btn" type="button" id="apply-filters">Apply filters
+                    <button class="btn btn-primary apply-btn" type="button" id="apply-filters"><span data-i18n="properties.filters.apply">Apply filters</span>
                         <span class="arrow">→</span></button>
                 </div>
             </aside>
@@ -199,28 +202,28 @@ session_start();
             <!-- RESULTS -->
             <section class="results">
                 <div class="results-head reveal">
-                    <div><span><strong id="result-count">9</strong> homes found</span><em class="active-loc">in
+                    <div><span><strong id="result-count">9</strong> <span data-i18n="properties.results.found">homes found</span></span><em class="active-loc"><span data-i18n="properties.results.in">in</span>
                             Marrakech</em>
                     </div>
                     <div class="r-tools">
                         <div class="sort">
-                            <label>Sort</label>
+                            <label data-i18n="properties.sort">Sort</label>
                             <select>
-                                <option>Newest</option>
-                                <option>Price ↑</option>
-                                <option>Price ↓</option>
-                                <option>Most viewed</option>
+                                <option data-i18n="properties.sort.newest">Newest</option>
+                                <option data-i18n="properties.sort.priceup">Price ↑</option>
+                                <option data-i18n="properties.sort.pricedown">Price ↓</option>
+                                <option data-i18n="properties.sort.mostviewed">Most viewed</option>
                             </select>
                         </div>
                         <div class="view-toggle">
-                            <button class="vt-btn active" data-view="grid" aria-label="Grid view"><svg width="14"
+                            <button class="vt-btn active" data-view="grid" aria-label="Grid view" data-i18n-aria-label="properties.view.grid"><svg width="14"
                                     height="14" viewBox="0 0 24 24" fill="currentColor">
                                     <rect x="3" y="3" width="8" height="8" />
                                     <rect x="13" y="3" width="8" height="8" />
                                     <rect x="3" y="13" width="8" height="8" />
                                     <rect x="13" y="13" width="8" height="8" />
                                 </svg></button>
-                            <button class="vt-btn" data-view="list" aria-label="List view"><svg width="14" height="14"
+                            <button class="vt-btn" data-view="list" aria-label="List view" data-i18n-aria-label="properties.view.list"><svg width="14" height="14"
                                     viewBox="0 0 24 24" fill="currentColor">
                                     <rect x="3" y="4" width="18" height="3" />
                                     <rect x="3" y="10" width="18" height="3" />
@@ -233,13 +236,13 @@ session_start();
                 <div class="property-grid" id="grid"></div>
 
                 <div class="pagination reveal">
-                    <button class="page-btn">← Prev</button>
+                    <button class="page-btn"><span data-i18n="properties.pagination.prev">← Prev</span></button>
                     <span class="page-num active">1</span>
                     <span class="page-num">2</span>
                     <span class="page-num">3</span>
                     <span class="page-num">…</span>
                     <span class="page-num">54</span>
-                    <button class="page-btn">Next →</button>
+                    <button class="page-btn"><span data-i18n="properties.pagination.next">Next →</span></button>
                 </div>
             </section>
         </div>

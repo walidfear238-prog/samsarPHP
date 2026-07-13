@@ -12,9 +12,9 @@ require_once "db/connect.php";
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
+    <meta name="description" data-i18n-content="home.meta.description"
         content="SAMSAR — Morocco's premium real estate platform. Riads, villas, and homes from Marrakech to Tangier, brokered with transparency." />
-    <title>SAMSAR · Find your place in Morocco</title>
+    <title data-i18n-doctitle="home.title">SAMSAR · Find your place in Morocco</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,6 +24,9 @@ require_once "db/connect.php";
 
     <link rel="stylesheet" href="styles/01-home.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -45,28 +48,28 @@ require_once "db/connect.php";
             </a>
 
             <nav class="nav-links" aria-label="Primary">
-                <a href="02-properties.php">Properties</a>
-                <a href="04-agencies.php">Agencies</a>
-                <a href="06-about.php">About</a>
-                <a href="07-contact.php">Contact</a>
+                <a href="02-properties.php" data-i18n="nav.properties">Properties</a>
+                <a href="04-agencies.php" data-i18n="nav.agencies">Agencies</a>
+                <a href="06-about.php" data-i18n="nav.about">About</a>
+                <a href="07-contact.php" data-i18n="nav.contact">Contact</a>
             </nav>
 
             <?php
             if (isset($_SESSION["user_id"])) {
                 // User is logged in, show dashboard link and logout option
                 echo '<div class="nav-right">';
-                echo '<a href="dashboard.php" style="font-size:14px;font-weight:500">Dashboard</a>';
+                echo '<a href="dashboard.php" style="font-size:14px;font-weight:500"><span data-i18n="nav.dashboard">Dashboard</span></a>';
 
 
-                echo '<a href="logout.php" class="btn btn-secondary">Logout</a>';
+                echo '<a href="logout.php" class="btn btn-secondary"><span data-i18n="nav.logout">Logout</span></a>';
                 echo '
         </div>';
             } else {
                 // User is not logged in, show sign in and register options
                 echo ' <div class="nav-right">
-            <a href="08-login.php" style="font-size:14px;font-weight:500">Sign in</a>
+            <a href="08-login.php" style="font-size:14px;font-weight:500"><span data-i18n="nav.signin">Sign in</span></a>
             <a href="09-register.php" class="btn btn-primary">
-                Join SAMSAR
+                <span data-i18n="nav.join">Join SAMSAR</span>
                 <span class="arrow" aria-hidden="true">→</span>
             </a>
             <button class="nav-toggle" aria-label="Open menu"><span></span></button>
@@ -95,13 +98,13 @@ require_once "db/connect.php";
 
             if (isset($_SESSION["user_id"])) {
                 echo '    <div class="container hero-content">
-                <h1 class="hero-title" data-scroll-hide>One click away from your <em>home.</em></h1>
+                <h1 class="hero-title" data-scroll-hide><span data-i18n="home.hero.title_loggedin">One click away from your </span><em data-i18n="home.hero.title_loggedin_em">home.</em></h1>
                  </div> ';
             } else {
 
                 echo '            <div class="container hero-content">
-                <h1 class="hero-title" data-scroll-hide>One click away from your <em>dream.</em></h1>
-                <a href="09-register.php" class="btn btn-primary hero-cta" data-scroll-hide>Join us</a>
+                <h1 class="hero-title" data-scroll-hide><span data-i18n="home.hero.title">One click away from your </span><em data-i18n="home.hero.title_em">dream.</em></h1>
+                <a href="09-register.php" class="btn btn-primary hero-cta" data-scroll-hide><span data-i18n="home.hero.joinus">Join us</span></a>
             </div>';
 
             }
@@ -118,8 +121,8 @@ require_once "db/connect.php";
         <section class="actions" id="buy">
             <div class="container">
                 <div class="actions-header reveal">
-                    <h2>Three ways<br />to move with SAMSAR.</h2>
-                    <p>Whether you're settling in, cashing out, or just exploring — start with a single tap. Every
+                    <h2><span data-i18n="home.actions.title1">Three ways</span><br /><span data-i18n="home.actions.title2">to move with SAMSAR.</span></h2>
+                    <p data-i18n="home.actions.subtitle">Whether you're settling in, cashing out, or just exploring — start with a single tap. Every
                         path
                         is
                         brokered by a verified local samsar.</p>
@@ -127,18 +130,18 @@ require_once "db/connect.php";
 
                 <a class="action-row reveal" href="02-properties.php" data-cursor="hover">
                     <span class="arrow-in" aria-hidden="true">→</span>
-                    <span class="label">Buy</span>
-                    <span class="meta"><strong>1,284 homes</strong>Marrakech · Casablanca · Tangier</span>
+                    <span class="label" data-i18n="home.actions.buy">Buy</span>
+                    <span class="meta"><strong>1,284 <span data-i18n="home.actions.homes_count">homes</span></strong>Marrakech · Casablanca · Tangier</span>
                 </a>
                 <a class="action-row reveal" href="02-properties.php" data-cursor="hover" data-delay="80">
                     <span class="arrow-in" aria-hidden="true">→</span>
-                    <span class="label">Rent</span>
-                    <span class="meta"><strong>540 listings</strong>Long-term & seasonal riads</span>
+                    <span class="label" data-i18n="home.actions.rent">Rent</span>
+                    <span class="meta"><strong>540 <span data-i18n="home.actions.listings_count">listings</span></strong><span data-i18n="home.actions.rent_meta">Long-term & seasonal riads</span></span>
                 </a>
                 <a class="action-row reveal" href="10-register-choose.php" data-cursor="hover" data-delay="160">
                     <span class="arrow-in" aria-hidden="true">→</span>
-                    <span class="label">Sell</span>
-                    <span class="meta"><strong>Free valuation</strong>Listed in under 48 hours</span>
+                    <span class="label" data-i18n="home.actions.sell">Sell</span>
+                    <span class="meta"><strong data-i18n="home.actions.free_valuation">Free valuation</strong><span data-i18n="home.actions.sell_meta">Listed in under 48 hours</span></span>
                 </a>
             </div>
         </section>
@@ -147,17 +150,17 @@ require_once "db/connect.php";
         <section class="featured" id="developments">
             <div class="container">
                 <div class="featured-header reveal">
-                    <h2>Latest in <em>your feed.</em></h2>
-                    <p>New listings from agencies you follow.</p>
+                    <h2><span data-i18n="home.feed.title">Latest in </span><em data-i18n="home.feed.title_em">your feed.</em></h2>
+                    <p data-i18n="home.feed.subtitle">New listings from agencies you follow.</p>
                 </div>
                 <div class="property-grid" id="feed-grid">
                     <!-- Statically filled for demo -->
                 </div>
 
                 <div class="featured-header reveal" style="margin-top: 80px;">
-                    <h2>Featured <em>listings.</em></h2>
+                    <h2><span data-i18n="home.featured.title">Featured </span><em data-i18n="home.featured.title_em">listings.</em></h2>
                     <a class="view-all" href="02-properties.php" data-cursor="hover">
-                        View all 1,284 →
+                        <span data-i18n="home.featured.viewall">View all</span> 1,284 →
                     </a>
                 </div>
 
@@ -167,8 +170,8 @@ require_once "db/connect.php";
                         <div class="card-media">
                             <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=900&q=80"
                                 alt="Villa with private pool, palm garden in Marrakech Palmeraie" loading="lazy" />
-                            <span class="card-badge crimson">For Sale</span>
-                            <button class="card-fav" aria-label="Save property">
+                            <span class="card-badge crimson" data-i18n="card.forsale">For Sale</span>
+                            <button class="card-fav" aria-label="Save property" data-i18n-aria-label="card.save_property">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="1.8">
                                     <path
@@ -180,11 +183,11 @@ require_once "db/connect.php";
                             <span class="card-loc">Palmeraie · Marrakech</span>
                             <h3 class="card-title">Villa Tazri — Pool & Atlas views</h3>
                             <div class="card-specs">
-                                <span>5 bd</span><span>6 ba</span><span>620 m²</span>
+                                <span>5 <span data-i18n="unit.bd">bd</span></span><span>6 <span data-i18n="unit.ba">ba</span></span><span>620 m²</span>
                             </div>
                             <div class="card-foot">
-                                <span class="card-price">12,400,000 <small>MAD</small></span>
-                                <a class="card-cta" href="03-property-details.php" data-cursor="hover">View Details
+                                <span class="card-price">12,400,000 <small data-i18n="unit.mad">MAD</small></span>
+                                <a class="card-cta" href="03-property-details.php" data-cursor="hover"><span data-i18n="card.viewdetails">View Details</span>
                                     <span class="arrow">→</span></a>
                             </div>
                         </div>
@@ -194,8 +197,8 @@ require_once "db/connect.php";
                         <div class="card-media">
                             <img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=900&q=80"
                                 alt="Restored riad with zellige courtyard in Essaouira medina" loading="lazy" />
-                            <span class="card-badge">For Rent</span>
-                            <button class="card-fav" aria-label="Save property">
+                            <span class="card-badge" data-i18n="card.forrent">For Rent</span>
+                            <button class="card-fav" aria-label="Save property" data-i18n-aria-label="card.save_property">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="1.8">
                                     <path
@@ -207,11 +210,11 @@ require_once "db/connect.php";
                             <span class="card-loc">Medina · Essaouira</span>
                             <h3 class="card-title">Riad Souira — Restored 18th-century</h3>
                             <div class="card-specs">
-                                <span>4 bd</span><span>4 ba</span><span>310 m²</span>
+                                <span>4 <span data-i18n="unit.bd">bd</span></span><span>4 <span data-i18n="unit.ba">ba</span></span><span>310 m²</span>
                             </div>
                             <div class="card-foot">
-                                <span class="card-price">38,000 <small>MAD / mo</small></span>
-                                <a class="card-cta" href="03-property-details.php" data-cursor="hover">View Details
+                                <span class="card-price">38,000 <small data-i18n="unit.mad_mo">MAD / mo</small></span>
+                                <a class="card-cta" href="03-property-details.php" data-cursor="hover"><span data-i18n="card.viewdetails">View Details</span>
                                     <span class="arrow">→</span></a>
                             </div>
                         </div>
@@ -221,8 +224,8 @@ require_once "db/connect.php";
                         <div class="card-media">
                             <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
                                 alt="Bright penthouse with terrace in Casablanca Anfa" loading="lazy" />
-                            <span class="card-badge crimson">New</span>
-                            <button class="card-fav" aria-label="Save property">
+                            <span class="card-badge crimson" data-i18n="card.new">New</span>
+                            <button class="card-fav" aria-label="Save property" data-i18n-aria-label="card.save_property">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="1.8">
                                     <path
@@ -234,11 +237,11 @@ require_once "db/connect.php";
                             <span class="card-loc">Anfa · Casablanca</span>
                             <h3 class="card-title">Penthouse Lumière — Ocean terrace</h3>
                             <div class="card-specs">
-                                <span>3 bd</span><span>3 ba</span><span>240 m²</span>
+                                <span>3 <span data-i18n="unit.bd">bd</span></span><span>3 <span data-i18n="unit.ba">ba</span></span><span>240 m²</span>
                             </div>
                             <div class="card-foot">
-                                <span class="card-price">7,950,000 <small>MAD</small></span>
-                                <a class="card-cta" href="03-property-details.php" data-cursor="hover">View Details
+                                <span class="card-price">7,950,000 <small data-i18n="unit.mad">MAD</small></span>
+                                <a class="card-cta" href="03-property-details.php" data-cursor="hover"><span data-i18n="card.viewdetails">View Details</span>
                                     <span class="arrow">→</span></a>
                             </div>
                         </div>
@@ -253,9 +256,9 @@ require_once "db/connect.php";
             <div class="container">
                 <div class="why-grid">
                     <div class="why-intro reveal">
-                        <span class="eyebrow">Why SAMSAR</span>
-                        <h2>A modern broker,<br />rooted in <em>tradition.</em></h2>
-                        <p>The samsar has always been the soul of Moroccan property — the one who knows the door
+                        <span class="eyebrow" data-i18n="home.why.eyebrow">Why SAMSAR</span>
+                        <h2><span data-i18n="home.why.title1">A modern broker,</span><br /><span data-i18n="home.why.title2">rooted in </span><em data-i18n="home.why.title2_em">tradition.</em></h2>
+                        <p data-i18n="home.why.subtitle">The samsar has always been the soul of Moroccan property — the one who knows the door
                             behind
                             the door.
                             We've kept the trust and added the technology.</p>
@@ -263,24 +266,24 @@ require_once "db/connect.php";
                     <div class="why-stats">
                         <div class="stat reveal">
                             <div class="num">100<em>%</em></div>
-                            <h3>Verified listings</h3>
-                            <p>Every title deed cross-checked with the Conservation Foncière before publication.</p>
+                            <h3 data-i18n="home.why.stat1.title">Verified listings</h3>
+                            <p data-i18n="home.why.stat1.text">Every title deed cross-checked with the Conservation Foncière before publication.</p>
                         </div>
                         <div class="stat reveal" data-delay="100">
                             <div class="num">14<em>+</em></div>
-                            <h3>Local samsars</h3>
-                            <p>A network of vetted brokers across Marrakech, Casablanca, Tangier, Fès and the coast.
+                            <h3 data-i18n="home.why.stat2.title">Local samsars</h3>
+                            <p data-i18n="home.why.stat2.text">A network of vetted brokers across Marrakech, Casablanca, Tangier, Fès and the coast.
                             </p>
                         </div>
                         <div class="stat reveal" data-delay="200">
                             <div class="num">0<em>%</em></div>
-                            <h3>Hidden fees</h3>
-                            <p>Flat 2.5% commission. Itemised in writing before you ever sign a thing.</p>
+                            <h3 data-i18n="home.why.stat3.title">Hidden fees</h3>
+                            <p data-i18n="home.why.stat3.text">Flat 2.5% commission. Itemised in writing before you ever sign a thing.</p>
                         </div>
                         <div class="stat reveal" data-delay="300">
                             <div class="num">3<em>×</em></div>
-                            <h3>Bilingual contracts</h3>
-                            <p>Arabic, French and English — drafted by a Moroccan notary you choose.</p>
+                            <h3 data-i18n="home.why.stat4.title">Bilingual contracts</h3>
+                            <p data-i18n="home.why.stat4.text">Arabic, French and English — drafted by a Moroccan notary you choose.</p>
                         </div>
                     </div>
                 </div>
@@ -291,15 +294,15 @@ require_once "db/connect.php";
         <section class="cities">
             <div class="container">
                 <div class="cities-head reveal">
-                    <h2>Explore by city.</h2>
+                    <h2 data-i18n="home.cities.title">Explore by city.</h2>
                     <div class="cities-controls" role="group" aria-label="Scroll cities">
-                        <button data-cities-prev aria-label="Previous cities">
+                        <button data-cities-prev aria-label="Previous cities" data-i18n-aria-label="home.cities.prev">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="1.8">
                                 <path d="M15 18l-6-6 6-6" />
                             </svg>
                         </button>
-                        <button data-cities-next aria-label="Next cities">
+                        <button data-cities-next aria-label="Next cities" data-i18n-aria-label="home.cities.next">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="1.8">
                                 <path d="M9 6l6 6-6 6" />
@@ -313,49 +316,49 @@ require_once "db/connect.php";
                         <img src="https://images.unsplash.com/photo-1597211833712-5e41faa202ea?auto=format&fit=crop&w=700&q=80"
                             alt="Blue alleys of Chefchaouen" loading="lazy" />
                         <div class="city-label">
-                            <h3>Chefchaouen</h3><span>86 homes</span>
+                            <h3>Chefchaouen</h3><span>86 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
                         <img src="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=700&q=80"
                             alt="Marrakech medina rooftops" loading="lazy" />
                         <div class="city-label">
-                            <h3>Marrakech</h3><span>412 homes</span>
+                            <h3>Marrakech</h3><span>412 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
                         <img src="https://images.unsplash.com/photo-1538230575309-59fe2ecf5b59?auto=format&fit=crop&w=700&q=80"
                             alt="Fès tanneries and medina" loading="lazy" />
                         <div class="city-label">
-                            <h3>Fès</h3><span>164 homes</span>
+                            <h3>Fès</h3><span>164 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
                         <img src="https://images.unsplash.com/photo-1577147443647-81d0e4bfe4cc?auto=format&fit=crop&w=700&q=80"
                             alt="Tangier waterfront" loading="lazy" />
                         <div class="city-label">
-                            <h3>Tangier</h3><span>238 homes</span>
+                            <h3>Tangier</h3><span>238 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
                         <img src="https://images.unsplash.com/photo-1570214476695-19bd467e6f7a?auto=format&fit=crop&w=700&q=80"
                             alt="Hassan Tower Rabat" loading="lazy" />
                         <div class="city-label">
-                            <h3>Rabat</h3><span>197 homes</span>
+                            <h3>Rabat</h3><span>197 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
                         <img src="https://images.unsplash.com/photo-1528657249085-893be9ffd04f?auto=format&fit=crop&w=700&q=80"
                             alt="Essaouira fishing port and ramparts" loading="lazy" />
                         <div class="city-label">
-                            <h3>Essaouira</h3><span>94 homes</span>
+                            <h3>Essaouira</h3><span>94 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
                         <img src="https://images.unsplash.com/photo-1518730518541-d0843268c287?auto=format&fit=crop&w=700&q=80"
                             alt="Ouarzazate desert kasbah" loading="lazy" />
                         <div class="city-label">
-                            <h3>Ouarzazate</h3><span>52 homes</span>
+                            <h3>Ouarzazate</h3><span>52 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                 </div>
@@ -365,9 +368,9 @@ require_once "db/connect.php";
         <!-- CTA BAND -->
         <section class="cta-band" id="list">
             <div class="container cta-inner">
-                <h2>Selling your home?<br /><em>Let's get started.</em></h2>
+                <h2><span data-i18n="home.cta.title1">Selling your home?</span><br /><em data-i18n="home.cta.title2">Let's get started.</em></h2>
                 <a href="#" class="btn" data-open-modal data-cursor="hover">
-                    Let's get started <span class="arrow" aria-hidden="true">→</span>
+                    <span data-i18n="home.cta.button">Let's get started</span> <span class="arrow" aria-hidden="true">→</span>
                 </a>
             </div>
         </section>
@@ -386,46 +389,46 @@ require_once "db/connect.php";
                         </svg>
                         <span class="brand-word">SAMSAR</span>
                     </a>
-                    <p>The trusted Moroccan broker, reimagined. Properties brokered with transparency, from the
+                    <p data-i18n="footer.tagline">The trusted Moroccan broker, reimagined. Properties brokered with transparency, from the
                         Atlas to
                         the
                         Atlantic.</p>
                 </div>
 
                 <div class="footer-col">
-                    <h4>Explore</h4>
+                    <h4 data-i18n="footer.explore">Explore</h4>
                     <ul>
-                        <li><a href="#">Buy</a></li>
-                        <li><a href="#">Rent</a></li>
-                        <li><a href="#">Sell</a></li>
-                        <li><a href="#">New developments</a></li>
+                        <li><a href="#" data-i18n="footer.explore.buy">Buy</a></li>
+                        <li><a href="#" data-i18n="footer.explore.rent">Rent</a></li>
+                        <li><a href="#" data-i18n="footer.explore.sell">Sell</a></li>
+                        <li><a href="#" data-i18n="footer.explore.newdev">New developments</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
-                    <h4>Company</h4>
+                    <h4 data-i18n="footer.company">Company</h4>
                     <ul>
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Our samsars</a></li>
-                        <li><a href="#">Journal</a></li>
-                        <li><a href="#">Careers</a></li>
+                        <li><a href="#" data-i18n="footer.company.about">About</a></li>
+                        <li><a href="#" data-i18n="footer.company.samsars">Our samsars</a></li>
+                        <li><a href="#" data-i18n="footer.company.journal">Journal</a></li>
+                        <li><a href="#" data-i18n="footer.company.careers">Careers</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
-                    <h4>Support</h4>
+                    <h4 data-i18n="footer.support">Support</h4>
                     <ul>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Buyer guide</a></li>
-                        <li><a href="#">Seller guide</a></li>
+                        <li><a href="#" data-i18n="footer.support.contact">Contact</a></li>
+                        <li><a href="#" data-i18n="footer.support.faq">FAQ</a></li>
+                        <li><a href="#" data-i18n="footer.support.buyerguide">Buyer guide</a></li>
+                        <li><a href="#" data-i18n="footer.support.sellerguide">Seller guide</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
-                    <h4>Legal</h4>
+                    <h4 data-i18n="footer.legal">Legal</h4>
                     <ul>
-                        <li><a href="#">Terms</a></li>
-                        <li><a href="#">Privacy</a></li>
-                        <li><a href="#">Cookies</a></li>
-                        <li><a href="#">Mentions légales</a></li>
+                        <li><a href="#" data-i18n="footer.legal.terms">Terms</a></li>
+                        <li><a href="#" data-i18n="footer.legal.privacy">Privacy</a></li>
+                        <li><a href="#" data-i18n="footer.legal.cookies">Cookies</a></li>
+                        <li><a href="#" data-i18n="footer.legal.mentions">Mentions légales</a></li>
                     </ul>
                 </div>
             </div>
@@ -465,33 +468,33 @@ require_once "db/connect.php";
     <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
         <div class="modal-backdrop" data-close-modal></div>
         <div class="modal-panel" role="document">
-            <button class="modal-close" data-close-modal aria-label="Close">
+            <button class="modal-close" data-close-modal aria-label="Close" data-i18n-aria-label="modal.close">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
             </button>
-            <h3 id="modal-title">Let's <em>get started.</em></h3>
-            <p>Tell us about your property. A SAMSAR broker will reach out within 24 hours with a free
+            <h3 id="modal-title"><span data-i18n="modal.title1">Let's </span><em data-i18n="modal.title1_em">get started.</em></h3>
+            <p data-i18n="modal.subtitle">Tell us about your property. A SAMSAR broker will reach out within 24 hours with a free
                 valuation.
             </p>
             <form>
                 <div class="field-row">
                     <div class="field">
-                        <label for="m-name">Full name</label>
-                        <input id="m-name" type="text" required placeholder="Yassine El Amrani" />
+                        <label for="m-name" data-i18n="modal.fullname">Full name</label>
+                        <input id="m-name" type="text" required placeholder="Yassine El Amrani" data-i18n-placeholder="modal.fullname.placeholder" />
                     </div>
                     <div class="field">
-                        <label for="m-phone">Phone</label>
-                        <input id="m-phone" type="tel" required placeholder="+212 …" />
+                        <label for="m-phone" data-i18n="modal.phone">Phone</label>
+                        <input id="m-phone" type="tel" required placeholder="+212 …" data-i18n-placeholder="modal.phone.placeholder" />
                     </div>
                 </div>
                 <div class="field">
-                    <label for="m-email">Email</label>
-                    <input id="m-email" type="email" required placeholder="you@samsar.ma" />
+                    <label for="m-email" data-i18n="modal.email">Email</label>
+                    <input id="m-email" type="email" required placeholder="you@samsar.ma" data-i18n-placeholder="modal.email.placeholder" />
                 </div>
                 <div class="field-row">
                     <div class="field">
-                        <label for="m-city">City</label>
+                        <label for="m-city" data-i18n="modal.city">City</label>
                         <select id="m-city">
                             <option>Marrakech</option>
                             <option>Casablanca</option>
@@ -502,17 +505,17 @@ require_once "db/connect.php";
                         </select>
                     </div>
                     <div class="field">
-                        <label for="m-type">Property type</label>
+                        <label for="m-type" data-i18n="modal.propertytype">Property type</label>
                         <select id="m-type">
-                            <option>Riad</option>
-                            <option>Villa</option>
-                            <option>Apartment</option>
-                            <option>Land</option>
+                            <option data-i18n="proptype.riad">Riad</option>
+                            <option data-i18n="proptype.villa">Villa</option>
+                            <option data-i18n="proptype.apartment">Apartment</option>
+                            <option data-i18n="proptype.land">Land</option>
                         </select>
                     </div>
                 </div>
                 <button class="btn btn-primary" type="submit">
-                    Request valuation <span class="arrow" aria-hidden="true">→</span>
+                    <span data-i18n="modal.requestvaluation">Request valuation</span> <span class="arrow" aria-hidden="true">→</span>
                 </button>
             </form>
         </div>

@@ -2,10 +2,11 @@
 session_start();
 header('Content-Type: application/json');
 require "../db/connect.php";
+require_once __DIR__ . "/../php/lang.php";
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['error' => t('api.err.unauthorized')]);
     exit;
 }
 
@@ -17,7 +18,7 @@ $message = isset($data['message']) ? trim($data['message']) : '';
 
 if (!$conversation_id || $message === '') {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing conversation_id or message']);
+    echo json_encode(['error' => t('api.message.err.missing_fields')]);
     exit;
 }
 
@@ -29,7 +30,7 @@ $check->close();
 
 if (!$convRow) {
     http_response_code(403);
-    echo json_encode(['error' => 'Forbidden']);
+    echo json_encode(['error' => t('api.err.forbidden')]);
     exit;
 }
 
@@ -40,7 +41,7 @@ $stmt->bind_param("iis", $conversation_id, $user_id, $message);
 
 if (!$stmt->execute()) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to send message']);
+    echo json_encode(['error' => t('api.message.err.send_failed')]);
     exit;
 }
 
@@ -61,7 +62,7 @@ $senderName = trim(($senderRow['firstname'] ?? '') . ' ' . ($senderRow['lastname
 $preview = substr($message, 0, 80);
 
 $notif = $conn->prepare("INSERT INTO notifications (user_id, type, title, message) VALUES (?, 'message', ?, ?)");
-$title = 'New message';
+$title = t('api.notif.new_message');
 $notifBody = ($senderName !== '' ? $senderName . ': ' : '') . $preview;
 $notif->bind_param("iss", $other_id, $title, $notifBody);
 $notif->execute();

@@ -19,12 +19,15 @@ $user = $result->fetch_assoc();
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAMSAR · Favorites</title>
+    <title data-i18n-doctitle="favorites.title">SAMSAR · Favorites</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="css/rtl.css" />
+    <script src="js/translations.js"></script>
+    <script src="js/language-switcher.js"></script>
 </head>
 
 <body>
@@ -42,17 +45,17 @@ $user = $result->fetch_assoc();
                 <span class="dashboard-brand-word">SAMSAR</span>
             </a>
             <nav class="dashboard-nav">
-                <div class="dashboard-group">MAIN</div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span>Overview</a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span>My Properties</a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span>Add Property</a>
-                <div class="dashboard-group">SOCIAL</div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span>Messages <em
+                <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
                         class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link active" href="favorites.php"><span class="ico">♡</span>Favorites <em
+                <a class="dashboard-link active" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
                         class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span>Following</a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span>Notifications <em
+                <a class="dashboard-link" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
                         class="dashboard-badge red" id="bdg-notif-2">0</em></a>
             </nav>
 
@@ -64,15 +67,15 @@ $user = $result->fetch_assoc();
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout>Sign out →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
             </div>
         </aside>
 
         <main class="dashboard-main">
             <header class="dashboard-head">
                 <div>
-                    <h1>Favorites</h1>
-                    <p>Your saved properties.</p>
+                    <h1 data-i18n="dash.favorites">Favorites</h1>
+                    <p data-i18n="favorites.subtitle">Your saved properties.</p>
                 </div>
             </header>
             <div id="fav-grid" class="fav-grid"></div>
@@ -319,7 +322,7 @@ $user = $result->fetch_assoc();
 
         function loadFavorites() {
             grid.innerHTML =
-                '<div class="loading-spinner"><div class="spinner"></div><p>Loading favorites...</p></div>';
+                '<div class="loading-spinner"><div class="spinner"></div><p>' + (window.t ? window.t('favorites.loading') : 'Loading favorites...') + '</p></div>';
 
             fetch('api/favorits/get-all-favorits.php')
                 .then(response => {
@@ -331,7 +334,7 @@ $user = $result->fetch_assoc();
 
                     if (properties.error) {
                         grid.innerHTML =
-                            `<div class="fav-empty"><h3>Error</h3><p>${properties.error}</p></div>`;
+                            `<div class="fav-empty"><h3>${window.t ? window.t('common.error') : 'Error'}</h3><p>${properties.error}</p></div>`;
                         return;
                     }
 
@@ -345,7 +348,7 @@ $user = $result->fetch_assoc();
                 .catch(error => {
                     console.error('Error:', error);
                     grid.innerHTML =
-                        `<div class="fav-empty"><h3>Error Loading Favorites</h3><p>${error.message}</p></div>`;
+                        `<div class="fav-empty"><h3>${window.t ? window.t('favorites.error_loading') : 'Error Loading Favorites'}</h3><p>${error.message}</p></div>`;
                 });
         }
 
@@ -364,14 +367,14 @@ $user = $result->fetch_assoc();
                             <div class="fav-loc">📍 ${escapeHtml(p.city)} · ${escapeHtml(p.property_type)}</div>
                             <h3 class="fav-title"><a href="03-property-details.php?id=${p.id}">${escapeHtml(p.title)}</a></h3>
                             <div class="fav-specs">
-                                <span>${p.bedrooms || 0} bd</span>
-                                <span>${p.bathrooms || 0} ba</span>
+                                <span>${p.bedrooms || 0} ${window.t ? window.t('unit.bd') : 'bd'}</span>
+                                <span>${p.bathrooms || 0} ${window.t ? window.t('unit.ba') : 'ba'}</span>
                                 <span>${p.area || 0} m²</span>
                             </div>
-                            <div class="fav-price">${formatPrice(p.price)} <small>MAD</small></div>
+                            <div class="fav-price">${formatPrice(p.price)} <small>${window.t ? window.t('unit.mad') : 'MAD'}</small></div>
                             <div class="fav-actions">
-                                <a href="03-property-details.php?id=${p.id}" class="fav-btn view">View Details →</a>
-                                <button class="fav-btn unfav" data-id="${p.id}">Remove</button>
+                                <a href="03-property-details.php?id=${p.id}" class="fav-btn view">${window.t ? window.t('card.viewdetails') : 'View Details'} →</a>
+                                <button class="fav-btn unfav" data-id="${p.id}">${window.t ? window.t('favorites.remove') : 'Remove'}</button>
                             </div>
                         </div>
                     </div>
@@ -382,7 +385,7 @@ $user = $result->fetch_assoc();
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     const propertyId = this.getAttribute('data-id');
-                    if (confirm('Remove this property from favorites?')) {
+                    if (confirm(window.t ? window.t('favorites.confirm_remove') : 'Remove this property from favorites?')) {
                         removeFromFavorites(propertyId, this.closest('.fav-card'));
                     }
                 });
@@ -405,27 +408,27 @@ $user = $result->fetch_assoc();
                         cardElement.style.opacity = '0';
                         setTimeout(() => {
                             cardElement.remove();
-                            showToast('✓ Removed from favorites');
+                            showToast(window.t ? ('✓ ' + window.t('favorites.removed')) : '✓ Removed from favorites');
                             const remaining = document.querySelectorAll('.fav-card').length;
                             document.getElementById('bdg-fav').textContent = remaining;
                             if (remaining === 0) showEmptyState();
                         }, 300);
                     } else {
-                        showToast(data.message || 'Error removing from favorites', true);
+                        showToast(data.message || (window.t ? window.t('favorites.remove_error') : 'Error removing from favorites'), true);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showToast('Error removing from favorites', true);
+                    showToast(window.t ? window.t('favorites.remove_error') : 'Error removing from favorites', true);
                 });
         }
 
         function showEmptyState() {
             grid.innerHTML = `
                 <div class="fav-empty">
-                    <h3>No favorites yet</h3>
-                    <p>Start saving properties you love by clicking the heart icon.</p>
-                    <a href="02-properties.php" class="fav-btn view" style="display:inline-block;width:auto;padding:12px 24px;">Browse Properties →</a>
+                    <h3>${window.t ? window.t('favorites.empty.title') : 'No favorites yet'}</h3>
+                    <p>${window.t ? window.t('favorites.empty.text') : 'Start saving properties you love by clicking the heart icon.'}</p>
+                    <a href="02-properties.php" class="fav-btn view" style="display:inline-block;width:auto;padding:12px 24px;">${window.t ? window.t('favorites.browse') : 'Browse Properties'} →</a>
                 </div>
             `;
             document.getElementById('bdg-fav').textContent = '0';

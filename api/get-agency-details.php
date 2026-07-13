@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../php/lang.php';
 // Returns a single agency's real profile data plus the list of properties
 // that belong to that agency only. Public endpoint - no auth required,
 // used by 05-agency-profile.php.
@@ -9,14 +10,14 @@ require "../db/connect.php";
 
 if (!$conn) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['error' => t('api.err.db_connection_failed')]);
     exit;
 }
 
 $agency_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($agency_id <= 0) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid agency ID']);
+    echo json_encode(['error' => t('api.err.invalid_agency_id')]);
     exit;
 }
 
@@ -41,7 +42,7 @@ $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
     http_response_code(404);
-    echo json_encode(['error' => 'Agency not found']);
+    echo json_encode(['error' => t('api.err.agency_not_found')]);
     exit;
 }
 

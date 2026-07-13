@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../php/lang.php';
 /**
  * FIXED VERSION — api/get-unread-counts.php
  *
@@ -19,7 +20,7 @@ require "../db/connect.php";
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['error' => t('api.err.unauthorized')]);
     exit;
 }
 

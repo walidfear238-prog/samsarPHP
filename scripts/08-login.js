@@ -28,7 +28,7 @@
     document.getElementById('login-form').addEventListener('submit', e => {
         e.preventDefault();
         const b = e.target.querySelector('.pill-btn span:first-child');
-        b.textContent = 'Signing in…';
+        b.textContent = window.t ? window.t('login.js.signingin') : 'Signing in…';
         document.body.classList.add('is-leaving');
         setTimeout(() => location.href = 'dashboard.php', 500);
     });

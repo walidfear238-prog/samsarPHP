@@ -8,7 +8,7 @@ if ($limit < 1) $limit = 50;
 if ($limit > 200) $limit = 200;
 
 if ($token === '') {
-    json_out(false, 'Missing conversation_id', 400);
+    json_out(false, t('api.err.missing_conversation_id'), 400);
 }
 
 $parts = explode('_', $token, 2);
@@ -16,7 +16,7 @@ $other_user_id = isset($parts[0]) ? (int) $parts[0] : 0;
 $property_id   = (isset($parts[1]) && (int) $parts[1] > 0) ? (int) $parts[1] : null;
 
 if (!$other_user_id) {
-    json_out(false, 'Invalid conversation_id', 400);
+    json_out(false, t('api.err.invalid_conversation_id'), 400);
 }
 
 // No separate "ownership" check needed: the WHERE clause only ever
