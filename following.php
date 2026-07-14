@@ -44,17 +44,24 @@ if (!isset($_SESSION['user_id'])) {
             </a>
             <nav class="dashboard-nav">
                 <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
-                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span data-i18n="dash.overview">Overview</span></a>
-                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span data-i18n="dash.myproperties">My Properties</span></a>
-                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span data-i18n="dash.addproperty">Add Property</span></a>
+                <a class="dashboard-link" href="dashboard.php"><span class="ico">⌂</span><span
+                        data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span
+                        data-i18n="dash.myproperties">My Properties</span></a>
+                <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span
+                        data-i18n="dash.addproperty">Add Property</span></a>
                 <div class="dashboard-group"><span data-i18n="dash.group.social">SOCIAL</span></div>
-                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span data-i18n="dash.messages">Messages</span> <em
-                        class="dashboard-badge red" id="bdg-msg">0</em></a>
-                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span data-i18n="dash.favorites">Favorites</span> <em
-                        class="dashboard-badge red" id="bdg-fav">0</em></a>
-                <a class="dashboard-link active" href="following.php"><span class="ico">࿄</span><span data-i18n="dash.following">Following</span></a>
-                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span data-i18n="dash.notifications">Notifications</span> <em
-                        class="dashboard-badge red" id="bdg-notif-2">0</em></a>
+                <a class="dashboard-link" href="messages.php"><span class="ico">✉</span><span
+                        data-i18n="dash.messages">Messages</span> <em class="dashboard-badge red"
+                        id="bdg-msg">0</em></a>
+                <a class="dashboard-link" href="favorites.php"><span class="ico">♡</span><span
+                        data-i18n="dash.favorites">Favorites</span> <em class="dashboard-badge red"
+                        id="bdg-fav">0</em></a>
+                <a class="dashboard-link active" href="following.php"><span class="ico">࿄</span><span
+                        data-i18n="dash.following">Following</span></a>
+                <a class="dashboard-link" href="notifications.php"><span class="ico">⌖</span><span
+                        data-i18n="dash.notifications">Notifications</span> <em class="dashboard-badge red"
+                        id="bdg-notif-2">0</em></a>
             </nav>
 
             <!-- profile name and role and profile image -->
@@ -80,7 +87,8 @@ if (!isset($_SESSION['user_id'])) {
                         htmlspecialchars($user['role']) . "</span></div>";
                     ?>
                 </div>
-                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign out</span> →</a>
+                <a class="dashboard-signout" href="logout.php" data-logout><span data-i18n="dash.signout">Sign
+                        out</span> →</a>
             </div>
         </aside>
 
@@ -175,20 +183,36 @@ if (!isset($_SESSION['user_id'])) {
     <script src="scripts/dashboard.js"></script>
     <script>
     (function() {
-        const Store = window.SamsarStore;
         const grid = document.getElementById('follow-grid');
 
-        function render() {
-            const list = Store.get('following', []);
+        // Resolve a profile_image path the same way the rest of the app does
+        function avatarUrl(path, name) {
+            if (path) {
+                if (/^https?:\/\//.test(path)) return path;
+                if (path.startsWith('uploads/')) return path;
+                return 'uploads/profile/' + path;
+            }
+            return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name || '') +
+                '&background=C72C41&color=fff&size=100';
+        }
+
+        function renderEmpty() {
+            grid.innerHTML =
+                '<div class="content-card follow-empty" style="grid-column:1/-1"><h3 style="font-family:Fraunces,serif;margin:0 0 6px">' +
+                (window.t ? window.t('following.empty.title') : 'Not following anyone yet') +
+                '</h3><p style="margin:0">' + (window.t ? window.t('following.empty.text') :
+                    'Find people to follow on the marketplace.') + '</p></div>';
+        }
+
+        function render(list) {
             if (!list.length) {
-                grid.innerHTML =
-                    '<div class="content-card follow-empty" style="grid-column:1/-1"><h3 style="font-family:Fraunces,serif;margin:0 0 6px">' + (window.t ? window.t('following.empty.title') : 'Not following anyone yet') + '</h3><p style="margin:0">' + (window.t ? window.t('following.empty.text') : 'Find people to follow on the marketplace.') + '</p></div>';
+                renderEmpty();
                 return;
             }
             grid.innerHTML = list.map(f => `
       <div class="follow-card">
         <div class="follow-card-top">
-          <img src="${f.avatar}" alt="${f.name}"/>
+          <img src="${avatarUrl(f.avatar, f.name)}" alt="${f.name}"/>
           <div>
             <strong>${f.name}</strong>
             <span>${f.city} · ${f.listings} ${window.t ? window.t('unit.listings') : 'listings'}</span>
@@ -203,7 +227,8 @@ if (!isset($_SESSION['user_id'])) {
             grid.querySelectorAll('.btn-sm').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const isFollowing = btn.classList.toggle('following');
-                    btn.textContent = isFollowing ? (window.t ? window.t('propdetails.following') : 'Following') : (window.t ? window.t('propdetails.follow') : 'Follow');
+                    btn.textContent = isFollowing ? (window.t ? window.t('propdetails.following') :
+                        'Following') : (window.t ? window.t('propdetails.follow') : 'Follow');
                     if (isFollowing) {
                         btn.style.background = '#C72C41';
                         btn.style.color = '#fff';
@@ -215,7 +240,14 @@ if (!isset($_SESSION['user_id'])) {
             });
         }
 
-        render();
+        // Load the real list of accounts the logged-in user follows from the database
+        fetch('api/follow/show-following.php')
+            .then(res => res.json())
+            .then(data => {
+                const list = (data && data.success && Array.isArray(data.following)) ? data.following : [];
+                render(list);
+            })
+            .catch(() => renderEmpty());
     })();
     </script>
 </body>

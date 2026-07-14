@@ -9,36 +9,49 @@ require_once __DIR__ . '/php/lang.php';
 $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
-    $user_code = trim($_POST['code[0]'] . $_POST['code[1]'] . $_POST['code[2]'] . $_POST['code[3]'] . $_POST['code[4]'] . $_POST['code[5]']);
+    // The 6 code boxes are submitted as an array via name="code[]",
+    // so PHP collects them into $_POST['code'][0..5] — read it that way
+    // instead of looking for a literal "code[0]" key (which never exists
+    // and was the reason the code always failed to reach the DB check).
+    $submitted_code = (isset($_POST['code']) && is_array($_POST['code'])) ? $_POST['code'] : [];
+    $user_code = '';
+    foreach ($submitted_code as $digit) {
+        $user_code .= trim((string) $digit);
+    }
 
     // validate numeric input
-    if (!is_numeric($user_code)) {
+    if ($user_code === '' || !is_numeric($user_code)) {
         $error_message = t("verify.err.invalid_code");
     } else {
         $numeric_code = (int) $user_code;
 
-        // check what code is being submitted
-        // echo "Submitted code: " . $numeric_code; // Uncomment for debugging
+        try {
+            $stmt = $conn->prepare("SELECT id FROM users WHERE verification_code = ?");
+            $stmt->bind_param("i", $numeric_code);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        $stmt = $conn->prepare("SELECT * FROM users WHERE verification_code = ?");
-        $stmt->bind_param("i", $numeric_code);
-        $stmt->execute();
-        $result = $stmt->get_result();
+            if ($result && $result->num_rows > 0) {
+                // get the user ID to update by ID instead of verification_code
+                $user = $result->fetch_assoc();
+                $user_id = (int) $user['id'];
 
-        if ($result->num_rows > 0) {
-            // get the user ID to update by ID instead of verification_code
-            $user = $result->fetch_assoc();
-            $user_id = $user['id'];
+                $stmt2 = $conn->prepare("UPDATE users SET is_verified = 1, email_verified_at = NOW() WHERE id = ?");
+                $stmt2->bind_param("i", $user_id);
+                $stmt2->execute();
 
-            $stmt2 = $conn->prepare("UPDATE users SET is_verified = 1 WHERE id = ?");
-            $stmt2->bind_param("i", $user_id);
-            $stmt2->execute();
-
-            // redirect AFTER all processing, before any HTML output
-            header('Location: 08-login.php');
-            exit(); // always call exit after header redirect
-        } else {
-            $error_message = t("verify.err.wrong_code");
+                // redirect AFTER all processing, before any HTML output
+                header('Location: 08-login.php?verified=1');
+                exit(); // always call exit after header redirect
+            } else {
+                $error_message = t("verify.err.wrong_code");
+            }
+        } catch (\Throwable $e) {
+            // Covers both classic mysqli false-returns and the thrown
+            // mysqli_sql_exception that PHP uses by default since 8.1,
+            // so a DB hiccup never surfaces as a raw fatal error.
+            error_log("Email verification: SQL error while verifying code: " . $e->getMessage());
+            $error_message = "We couldn't verify your account right now. Please try again in a moment.";
         }
     }
 }
@@ -94,23 +107,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
             <p class="sub" data-i18n="verify.instructions">Click the link in the email to activate your SAMSAR account. The link expires in 24 hours.
             </p>
 
-            <div class="code-input" aria-label="Verification code" data-i18n-aria-label="verify.code_label">
-                <input name="code[]" type="text" maxlength="1" data-idx="0" autofocus />
-                <input name="code[]" type="text" maxlength="1" data-idx="1" />
-                <input name="code[]" type="text" maxlength="1" data-idx="2" />
-                <input name="code[]" type="text" maxlength="1" data-idx="3" />
-                <input name="code[]" type="text" maxlength="1" data-idx="4" />
-                <input name="code[]" type="text" maxlength="1" data-idx="5" />
-            </div>
-            <p class="code-hint" data-i18n="verify.code_hint">Or enter the 6-digit code from the email</p>
+            <?php if (!empty($error_message)): ?>
+            <div class="verify-error" id="verify-error"><?php echo htmlspecialchars($error_message); ?></div>
+            <?php endif; ?>
 
-            <button class="pill-btn" id="verify-btn">
-                <span data-i18n="verify.submit">Verify & continue</span>
-                <span class="pill-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg></span>
-            </button>
+            <form id="verify-form" method="POST" action="20-verify-email.php">
+                <input type="hidden" name="verify" value="1" />
+
+                <div class="code-input" aria-label="Verification code" data-i18n-aria-label="verify.code_label">
+                    <input name="code[]" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="0" autofocus />
+                    <input name="code[]" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="1" />
+                    <input name="code[]" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="2" />
+                    <input name="code[]" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="3" />
+                    <input name="code[]" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="4" />
+                    <input name="code[]" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="5" />
+                </div>
+                <p class="code-hint" data-i18n="verify.code_hint">Or enter the 6-digit code from the email</p>
+
+                <button class="pill-btn" type="submit" id="verify-btn">
+                    <span data-i18n="verify.submit">Verify & continue</span>
+                    <span class="pill-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M13 6l6 6-6 6" />
+                        </svg></span>
+                </button>
+            </form>
 
             <div class="footer-actions">
                 <button class="link-btn" id="resend"><span data-i18n="verify.no_receive">Didn't receive it?</span> <strong data-i18n="verify.resend">Resend email</strong></button>

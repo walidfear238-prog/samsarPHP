@@ -45,24 +45,24 @@
   });
  });
 
- // Verify button
- document.getElementById('verify-btn').addEventListener('click',()=>{
-  const code=Array.from(inputs).map(i=>i.value).join('');
-  if(code.length<6){inputs[code.length].focus();return}
-  // Fake verification
-  const btn=document.getElementById('verify-btn');
-  btn.querySelector('span:first-child').textContent=window.t?window.t('verify.js.verifying'):'Verifying…';
-  setTimeout(()=>{
-   const status=document.getElementById('status');
-   status.hidden=false;
-   btn.style.display='none';
-   // Redirect after short delay
-   setTimeout(()=>{
-    if(window.SamsarTransition)SamsarTransition.leave(()=>location.href='dashboard.php');
-    else setTimeout(()=>location.href='dashboard.php',500);
-   },1600);
-  },900);
- });
+ // Verify button — submits the code to the server for real. The form
+ // posts to 20-verify-email.php, which checks the code against the DB
+ // and marks the account verified before redirecting to the login page.
+ const verifyForm=document.getElementById('verify-form');
+ const verifyBtn=document.getElementById('verify-btn');
+ if(verifyForm&&verifyBtn){
+  verifyForm.addEventListener('submit',e=>{
+   const code=Array.from(inputs).map(i=>i.value).join('');
+   if(code.length<6){
+    e.preventDefault();
+    inputs[code.length].focus();
+    return;
+   }
+   // Let the form submit normally; just show a busy state while it does.
+   verifyBtn.disabled=true;
+   verifyBtn.querySelector('span:first-child').textContent=window.t?window.t('verify.js.verifying'):'Verifying…';
+  });
+ }
 
  // Resend
  document.getElementById('resend').addEventListener('click',()=>{

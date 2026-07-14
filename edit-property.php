@@ -1,6 +1,7 @@
 <?php
 session_start();
 require "db/connect.php";
+require_once __DIR__ . "/php/upload-limits.php";
 if (!isset($_SESSION['user_id'])) {
     header('location: index.php');
     exit;
@@ -34,6 +35,7 @@ if (!$property) {
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="styles/samsar-uploader.css" />
     <link rel="stylesheet" href="css/rtl.css" />
     <script src="js/translations.js"></script>
     <script src="js/language-switcher.js"></script>
@@ -245,13 +247,36 @@ if (!$property) {
                     </div>
 
                     <!-- Upload New Images -->
-                    <label class="ap-field">
-                        <span data-i18n="editproperty.addnewimages">Add New Images</span>
-                        <input type="file" name="images[]" multiple
-                            accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" />
-                        <small style="color: #666; margin-top: 5px;" data-i18n="editproperty.formats_hint">You can select multiple images. Supported formats:
-                            JPG, PNG, GIF, WEBP</small>
-                    </label>
+                    <span class="ap-field-label" data-i18n="editproperty.addnewimages">Add New Images</span>
+                    <div class="samsar-uploader" data-max-bytes="<?php echo (int) samsar_max_upload_bytes(); ?>"
+                        data-accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                        <input class="su-input" id="ep-images-input" type="file" name="images[]"
+                            accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" multiple />
+                        <label class="su-dropzone" for="ep-images-input" tabindex="0">
+                            <span class="su-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 16V4M12 4l-4.5 4.5M12 4l4.5 4.5" />
+                                    <path d="M4 16v2.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V16" />
+                                </svg>
+                            </span>
+                            <span class="su-title" data-i18n="uploader.choose_image">Choose an image</span>
+                            <span class="su-sub" data-i18n="uploader.drag_drop">or drag and drop here</span>
+                            <span class="su-meta">
+                                <span class="su-chip">JPG</span>
+                                <span class="su-chip">PNG</span>
+                                <span class="su-chip">GIF</span>
+                                <span class="su-chip">WEBP</span>
+                                <?php $max_upload_label = samsar_max_upload_label(); ?>
+                                <?php if ($max_upload_label): ?>
+                                <span class="su-chip">Max <?php echo htmlspecialchars($max_upload_label); ?></span>
+                                <?php endif; ?>
+                            </span>
+                        </label>
+                        <p class="su-warning" hidden></p>
+                        <div class="su-previews"></div>
+                        <p class="su-count" hidden></p>
+                    </div>
 
                     <!-- Hidden inputs for image management -->
                     <input type="hidden" name="remove_images" id="remove_images_input" value="[]">
@@ -299,6 +324,16 @@ if (!$property) {
     }
 
     .ap-field span {
+        font-size: 11px;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: #666;
+        font-weight: 600
+    }
+
+    .ap-field-label {
+        display: block;
+        margin-bottom: 8px;
         font-size: 11px;
         letter-spacing: .1em;
         text-transform: uppercase;
@@ -365,6 +400,7 @@ if (!$property) {
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
+    <script src="scripts/samsar-uploader.js"></script>
 
     <script>
     // Image management

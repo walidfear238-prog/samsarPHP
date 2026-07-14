@@ -3,6 +3,7 @@
 
 session_start();
 require "db/connect.php";
+require_once __DIR__ . "/php/upload-limits.php";
 if (!isset($_SESSION['user_id'])) {
     header('location: index.php');
     exit;
@@ -189,6 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/dashboard-shell.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
+    <link rel="stylesheet" href="styles/samsar-uploader.css" />
     <link rel="stylesheet" href="css/rtl.css" />
     <script src="js/translations.js"></script>
     <script src="js/language-switcher.js"></script>
@@ -329,7 +331,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <div class="content-card">
                     <h3 class="ap-section-title" data-i18n="addproperty.specifications">Specifications</h3>
-                    <div class="ap-grid ap-grid-4">
+                    <div class="ap-grid ap-grid-3">
                         <label class="ap-field">
                             <span data-i18n="propdetails.bedrooms">Bedrooms</span>
                             <input name="beds" type="number" min="0" value="3" />
@@ -342,10 +344,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <span data-i18n="addproperty.area_field">Area (m²)</span>
                             <input name="area" type="number" min="0" value="150" />
                         </label>
-                        <label class="ap-field">
-                            <span data-i18n="addproperty.upload_image">Upload Image</span>
-                            <input name="images[]" type="file" accept="image/*" multiple />
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3 class="ap-section-title" data-i18n="addproperty.upload_image">Upload Image</h3>
+                    <div class="samsar-uploader" data-max-files="10"
+                        data-max-bytes="<?php echo (int) samsar_max_upload_bytes(); ?>"
+                        data-accept="image/jpeg,image/png,image/jpg,image/gif">
+                        <input class="su-input" id="ap-images-input" type="file" name="images[]"
+                            accept="image/jpeg,image/png,image/jpg,image/gif" multiple />
+                        <label class="su-dropzone" for="ap-images-input" tabindex="0">
+                            <span class="su-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 16V4M12 4l-4.5 4.5M12 4l4.5 4.5" />
+                                    <path d="M4 16v2.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V16" />
+                                </svg>
+                            </span>
+                            <span class="su-title" data-i18n="uploader.choose_image">Choose an image</span>
+                            <span class="su-sub" data-i18n="uploader.drag_drop">or drag and drop here</span>
+                            <span class="su-meta">
+                                <span class="su-chip">JPG</span>
+                                <span class="su-chip">PNG</span>
+                                <span class="su-chip">GIF</span>
+                                <?php $max_upload_label = samsar_max_upload_label(); ?>
+                                <?php if ($max_upload_label): ?>
+                                <span class="su-chip">Max <?php echo htmlspecialchars($max_upload_label); ?></span>
+                                <?php endif; ?>
+                            </span>
                         </label>
+                        <p class="su-warning" hidden></p>
+                        <div class="su-previews"></div>
+                        <p class="su-count" hidden></p>
                     </div>
                 </div>
 
@@ -381,6 +412,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     .ap-grid-4 {
         grid-template-columns: repeat(4, 1fr)
+    }
+
+    .ap-grid-3 {
+        grid-template-columns: repeat(3, 1fr)
     }
 
     .ap-field {
@@ -433,7 +468,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     @media(max-width:780px) {
 
         .ap-grid,
-        .ap-grid-4 {
+        .ap-grid-4,
+        .ap-grid-3 {
             grid-template-columns: 1fr
         }
     }
@@ -442,6 +478,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
+    <script src="scripts/samsar-uploader.js"></script>
     <script>
     (function() {
         const Store = window.SamsarStore;

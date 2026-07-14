@@ -1,0 +1,245 @@
+/* =====================================================
+   SAMSAR · Choose Image component
+   Drag-and-drop style upload area + live preview grid.
+   Shared by add-property.php and edit-property.php.
+   Uses the color tokens already defined in dashboard-shell.css
+   (--crimson, --burgundy, --ink, --mist, --bone, --graphite).
+   ===================================================== */
+
+.samsar-uploader {
+    width: 100%;
+}
+
+.samsar-uploader .su-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.su-dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    padding: 40px 24px;
+    border: 1.5px dashed var(--mist, #D9D9D9);
+    border-radius: 16px;
+    background: var(--bone, #F5F5F5);
+    cursor: pointer;
+    transition: all .28s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.su-dropzone:hover,
+.su-dropzone.is-drag {
+    border-color: var(--crimson, #C72C41);
+    background: rgba(199, 44, 65, .04);
+    box-shadow: 0 10px 28px -14px rgba(199, 44, 65, .45);
+    transform: translateY(-1px);
+}
+
+.su-dropzone.is-drag {
+    border-style: solid;
+}
+
+.su-dropzone:focus-visible {
+    outline: none;
+    border-color: var(--crimson, #C72C41);
+    box-shadow: 0 0 0 4px rgba(199, 44, 65, .15);
+}
+
+.su-dropzone.has-files {
+    padding: 24px;
+}
+
+.su-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--crimson, #C72C41);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .07);
+    transition: transform .28s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.su-dropzone:hover .su-icon,
+.su-dropzone.is-drag .su-icon {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.su-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink, #1A1A1A);
+}
+
+.su-sub {
+    font-size: 12.5px;
+    color: var(--graphite, #6B6B6B);
+    margin-top: -4px;
+}
+
+.su-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.su-chip {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--graphite, #6B6B6B);
+    background: #fff;
+    border: 1px solid var(--mist, #D9D9D9);
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.su-warning {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--crimson, #C72C41);
+    text-align: center;
+}
+
+.su-previews {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.su-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #ececec;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .04);
+    animation: suPop .3s var(--ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+    transition: box-shadow .2s;
+}
+
+.su-card:hover {
+    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, .12);
+}
+
+@keyframes suPop {
+    from {
+        opacity: 0;
+        transform: scale(.92);
+    }
+}
+
+.su-thumb {
+    width: 100%;
+    height: 96px;
+    object-fit: cover;
+    display: block;
+    background: var(--bone, #F5F5F5);
+}
+
+.su-card-info {
+    padding: 8px 10px 10px;
+}
+
+.su-card-name {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink, #1A1A1A);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.su-card-size {
+    font-size: 10.5px;
+    color: var(--graphite, #6B6B6B);
+    margin-top: 2px;
+}
+
+.su-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(26, 26, 26, .55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    transition: all .2s;
+}
+
+.su-remove:hover {
+    background: var(--crimson, #C72C41);
+    transform: scale(1.08);
+}
+
+.su-add-more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 100%;
+    min-height: 96px;
+    border: 1.5px dashed var(--mist, #D9D9D9);
+    border-radius: 12px;
+    color: var(--graphite, #6B6B6B);
+    background: var(--bone, #F5F5F5);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all .22s;
+}
+
+.su-add-more:hover {
+    border-color: var(--crimson, #C72C41);
+    color: var(--crimson, #C72C41);
+    background: rgba(199, 44, 65, .04);
+}
+
+.su-add-more-plus {
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 400;
+}
+
+.su-count {
+    font-size: 11.5px;
+    color: var(--graphite, #6B6B6B);
+    margin-top: 10px;
+    text-align: right;
+}
+
+@media (max-width: 520px) {
+    .su-dropzone {
+        padding: 30px 16px;
+    }
+
+    .su-previews {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    }
+}
