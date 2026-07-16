@@ -15,6 +15,11 @@ session_start();
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/05-agency-profile.css" />
     <link rel="stylesheet" href="css/rtl.css" />
+    <script>
+    // Logged-in user's id (0 = not authenticated). Read by scripts/05-agency-profile.js
+    // so the Follow / Contact agency buttons know the auth state up front.
+    window.currentUserId = <?php echo isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0; ?>;
+    </script>
     <script src="js/translations.js"></script>
     <script src="js/language-switcher.js"></script>
 </head>
@@ -76,8 +81,15 @@ session_start();
                     <p id="prof-location" data-i18n="common.loading_ellipsis">Loading…</p>
                 </div>
                 <div class="prof-actions">
-                    <button class="btn btn-ghost follow-btn" data-follow data-i18n="propdetails.follow">Follow</button>
-                    <button class="btn btn-primary"><span data-i18n="agencyprofile.contact">Contact agency</span> <span class="arrow">→</span></button>
+                    <button class="btn btn-primary follow-btn" id="follow-btn" type="button" data-follow aria-pressed="false">
+                        <span class="btn-spinner" aria-hidden="true"></span>
+                        <span class="btn-label" data-i18n="propdetails.follow">Follow</span>
+                    </button>
+                    <span class="follow-count" id="follow-count" aria-live="polite" hidden></span>
+                    <button class="btn btn-primary" id="contact-agency-btn" type="button" data-contact-agency>
+                        <span class="btn-spinner" aria-hidden="true"></span>
+                        <span class="btn-label"><span data-i18n="agencyprofile.contact">Contact agency</span> <span class="arrow">→</span></span>
+                    </button>
                 </div>
             </section>
 
@@ -120,9 +132,12 @@ session_start();
                             <li><span data-i18n="agencyprofile.hours">Hours</span><span id="contact-hours">–</span></li>
                         </ul>
 
-                        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px"><span data-i18n="agencyprofile.sendmessage">Send a
+                        <button class="btn btn-primary" id="sidebar-contact-btn" type="button" data-contact-agency style="width:100%;justify-content:center;margin-top:14px">
+                            <span class="btn-spinner" aria-hidden="true"></span>
+                            <span class="btn-label"><span data-i18n="agencyprofile.sendmessage">Send a
                             message</span>
-                            <span class="arrow">→</span></button>
+                            <span class="arrow">→</span></span>
+                        </button>
                     </div>
                 </aside>
             </div>

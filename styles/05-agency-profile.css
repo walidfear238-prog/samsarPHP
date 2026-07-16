@@ -59,7 +59,18 @@ main{padding-bottom:80px}
 .prof-logo{width:120px;height:120px;border-radius:50%;object-fit:cover;border:6px solid #fff;background:#fff;box-shadow:0 20px 50px -20px rgba(0,0,0,.2)}
 .prof-info h1{font-family:var(--font-d);font-size:clamp(34px,5vw,56px);font-weight:400;letter-spacing:-.025em;line-height:1;margin-top:8px}
 .prof-info p{margin-top:8px;color:var(--graphite);font-size:14px}
-.prof-actions{display:flex;gap:10px}
+.prof-actions{display:flex;gap:10px;align-items:center}
+
+/* Follow / Contact buttons — loading + state styles */
+.btn:disabled{opacity:.65;cursor:not-allowed;pointer-events:none}
+.btn .btn-spinner{display:none;width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:btn-spin .7s linear infinite}
+.btn.is-loading .btn-spinner{display:inline-block}
+.btn.is-loading .btn-label{opacity:.55}
+@keyframes btn-spin{to{transform:rotate(360deg)}}
+/* Follow button: primary (filled) by default, outline once following */
+.follow-btn.following{background:transparent;color:var(--ink);border:1px solid var(--mist)}
+.follow-btn.following:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.follow-count{font-size:12px;color:var(--graphite);letter-spacing:.02em}
 
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding:32px 0;border-bottom:1px solid var(--mist)}
 .stat{display:flex;flex-direction:column;gap:4px}

@@ -360,6 +360,42 @@
         } catch { /* silently ignore */ }
     }
 
+    /**
+     * Coming from "Contact Agency" (05-agency-profile.php → messages.php?agencyId=...).
+     * If a thread with this agency already exists, open it (preferring the
+     * general/no-listing thread). Otherwise open a brand-new, empty thread
+     * pointed at the agency so the very first message the user sends creates it.
+     */
+    async function openOrStartConversationWithAgency(agencyId, agencyName, agencyAvatar) {
+        let convs = [];
+        try {
+            convs = await apiFetch('get-conversations-list.php');
+        } catch (err) {
+            console.warn('[chat] Could not load conversation list for agency deep-link:', err.message);
+        }
+        convs = convs || [];
+
+        const withAgency = convs.filter(c => String(c.other_user_id) === String(agencyId));
+        // Prefer the general (non-listing) thread; else fall back to the most recent one.
+        const match = withAgency.find(c => !c.property_id) || withAgency[0];
+
+        if (match) {
+            listEl.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+            const item = listEl.querySelector(`.chat-item[data-conv="${CSS.escape(String(match.conversation_id))}"]`);
+            if (item) { item.classList.add('active'); item.querySelector('.unread-badge')?.remove(); }
+
+            openChat(
+                match.conversation_id, // opaque thread token — do NOT parseInt
+                match.other_firstname || agencyName || '',
+                match.other_lastname  || '',
+                match.other_avatar    || agencyAvatar || ''
+            );
+        } else {
+            // No history yet — open a fresh, general (no-listing) thread with this agency.
+            openChat(`${agencyId}_0`, agencyName || 'Agency', '', agencyAvatar || '');
+        }
+    }
+
     /* ─────────────────────────────────────────────────────────
      *  INIT
      * ───────────────────────────────────────────────────────── */
@@ -374,21 +410,34 @@
 
         refreshList();
 
-        // Auto-open from URL: messages.php?open=<conversation_id>
-        const openId = new URLSearchParams(location.search).get('open');
-        if (openId) {
-            apiFetch('get-conversations-list.php')
-                .then(convs => {
-                    if (!convs) return;
-                    const c = convs.find(x => String(x.conversation_id) === String(openId));
-                    if (c) openChat(
-                        c.conversation_id, // opaque thread token, e.g. "26_201" — do NOT parseInt
-                        c.other_firstname || '',
-                        c.other_lastname  || '',
-                        c.other_avatar    || ''
-                    );
-                })
-                .catch(() => {});
+        const params   = new URLSearchParams(location.search);
+        const agencyId = params.get('agencyId');
+
+        if (agencyId) {
+            // Auto-open from URL: messages.php?agencyId=<id>&agencyName=<name>&agencyAvatar=<url>
+            // Sent by the "Contact Agency" button on the agency profile page.
+            openOrStartConversationWithAgency(
+                agencyId,
+                params.get('agencyName')   || '',
+                params.get('agencyAvatar') || ''
+            );
+        } else {
+            // Auto-open from URL: messages.php?open=<conversation_id>
+            const openId = params.get('open');
+            if (openId) {
+                apiFetch('get-conversations-list.php')
+                    .then(convs => {
+                        if (!convs) return;
+                        const c = convs.find(x => String(x.conversation_id) === String(openId));
+                        if (c) openChat(
+                            c.conversation_id, // opaque thread token, e.g. "26_201" — do NOT parseInt
+                            c.other_firstname || '',
+                            c.other_lastname  || '',
+                            c.other_avatar    || ''
+                        );
+                    })
+                    .catch(() => {});
+            }
         }
 
         window.addEventListener('beforeunload', stopPolling);

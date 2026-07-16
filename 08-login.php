@@ -11,10 +11,29 @@ function test_input($data)
     $data = htmlspecialchars($data);
     return $data;
 }
+
+/**
+ * Only ever redirect back to a page inside this same app (e.g.
+ * "05-agency-profile.php?id=40"). Rejects absolute/external URLs
+ * ("https://...", "//evil.com", ...) to avoid an open-redirect hole.
+ */
+function safe_local_redirect($raw)
+{
+    $raw = trim((string) $raw);
+    if ($raw === '') return '';
+    if (preg_match('#^[a-zA-Z0-9_\-]+\.php(\?[^\s"\'<>]*)?$#', $raw)) {
+        return $raw;
+    }
+    return '';
+}
+
+$redirectTarget = safe_local_redirect($_GET['redirect'] ?? ($_POST['redirect'] ?? ''));
+
 // code to handle the form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = test_input($_POST["email"]);
     $password = test_input($_POST["pw"]);
+    $redirectTarget = safe_local_redirect($_POST['redirect'] ?? '');
     // query to check if the user exists in the database usind oop
     $stmt = $conn->prepare("SELECT id, firstname, email, password FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
@@ -28,8 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION["user_id"] = $row["id"];
             $_SESSION["user_name"] = $row["firstname"];
             $_SESSION["user_email"] = $row["email"];
-            // redirect to the dashboard
-            header("Location: dashboard.php");
+            // redirect to wherever the user came from, or the dashboard by default
+            header("Location: " . ($redirectTarget !== '' ? $redirectTarget : "dashboard.php"));
             exit();
         } else {
             // password is incorrect
@@ -100,6 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </header>
 
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="form">
+                    <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirectTarget); ?>" />
                     <label class="floating">
                         <input name="email" type="email" id="email" required />
                         <span data-i18n="login.email">Email address</span>

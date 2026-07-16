@@ -1,5 +1,64 @@
 (function () {
     'use strict';
+
+    // ─────────────────────────────────────────────────────────────────────
+    // API ENDPOINTS — relative paths, resolve correctly from this page
+    // ─────────────────────────────────────────────────────────────────────
+    const API = {
+        CHECK_FOLLOW  : 'api/follow/check-follow.php',    // GET  ?user_id=
+        COUNT_FOLLOWER: 'api/follow/count-follower.php',  // GET  ?user_id=  (public)
+        FOLLOW        : 'api/follow/follow.php',          // POST following_id
+        UNFOLLOW      : 'api/follow/unfollow.php',         // POST following_id
+    };
+
+    // The logged-in user's id, or 0 if not authenticated. Set by 05-agency-profile.php.
+    const CURRENT_USER_ID = parseInt(window.currentUserId, 10) || 0;
+
+    // ─────────────────────────────────────────────────────────────────────
+    // TOAST — small transient notification, bottom-center
+    // ─────────────────────────────────────────────────────────────────────
+    let _toastTimer;
+    function toast(msg, type = 'neutral', ms = 3200) {
+        let el = document.getElementById('_sm-toast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = '_sm-toast';
+            Object.assign(el.style, {
+                position: 'fixed', bottom: '28px', left: '50%',
+                transform: 'translateX(-50%) translateY(14px)',
+                padding: '11px 26px', borderRadius: '999px',
+                fontSize: '13px', fontWeight: '500', letterSpacing: '.02em',
+                opacity: '0', transition: 'opacity .25s ease, transform .25s ease',
+                zIndex: '9999', pointerEvents: 'none', whiteSpace: 'nowrap',
+                maxWidth: '90vw', overflow: 'hidden', textOverflow: 'ellipsis',
+            });
+            document.body.appendChild(el);
+        }
+        const colors = {
+            success: ['#22c55e', '#fff'],
+            error  : ['#ef4444', '#fff'],
+            warning: ['#f59e0b', '#fff'],
+            neutral: ['#1a1a1a', '#fff'],
+        };
+        const [bg, fg] = colors[type] || colors.neutral;
+        el.style.background = bg;
+        el.style.color = fg;
+        el.textContent = msg;
+        el.style.opacity = '1';
+        el.style.transform = 'translateX(-50%) translateY(0)';
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(-50%) translateY(14px)';
+        }, ms);
+    }
+
+    /** Send the visitor to sign in, then bring them straight back here. */
+    function redirectToLogin() {
+        const back = location.pathname + location.search;
+        location.href = `08-login.php?redirect=${encodeURIComponent(back)}`;
+    }
+
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const fine = matchMedia('(pointer: fine)').matches;
     requestAnimationFrame(() => document.body.classList.add('is-entering'));
@@ -81,6 +140,183 @@
         setText('about-text', window.t ? window.t('agencyprofile.js.not_available') : 'This agency profile is not available.');
         const grid = document.getElementById('prop-grid');
         if (grid) grid.innerHTML = '<p style="grid-column:1/-1;color:var(--graphite)">' + (window.t ? window.t('agencyprofile.js.could_not_find') : 'This agency could not be found.') + '</p>';
+        // No valid agency on this page — the follow/contact buttons have nothing to act on.
+        hideActionButtons();
+    }
+
+    function hideActionButtons() {
+        const followBtn = document.getElementById('follow-btn');
+        const followCount = document.getElementById('follow-count');
+        if (followBtn) followBtn.hidden = true;
+        if (followCount) followCount.hidden = true;
+        document.querySelectorAll('[data-contact-agency]').forEach(btn => { btn.hidden = true; });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // FOLLOW / UNFOLLOW
+    // ─────────────────────────────────────────────────────────────────────
+
+    function setBtnLoading(btn, loading) {
+        btn.classList.toggle('is-loading', loading);
+        btn.disabled = loading;
+    }
+
+    /** Paint the follow button + count for the given state. */
+    function applyFollowUI(btn, following, count) {
+        const dt = window.t || function (k, f) { return f; };
+        btn.classList.toggle('following', following);
+        btn.setAttribute('aria-pressed', following ? 'true' : 'false');
+        const label = btn.querySelector('.btn-label');
+        if (label) label.textContent = following
+            ? dt('agencyprofile.unfollow', 'Unfollow')
+            : dt('propdetails.follow', 'Follow');
+
+        const countEl = document.getElementById('follow-count');
+        if (countEl && typeof count === 'number') {
+            countEl.hidden = false;
+            const followersWord = dt('dash.followers', 'Followers');
+            countEl.textContent = `${new Intl.NumberFormat('fr-MA').format(count)} ${followersWord.toLowerCase()}`;
+        }
+    }
+
+    /**
+     * Wires the Follow / Unfollow button for `agencyId`.
+     * - Fetches persisted follow status + follower count on load.
+     * - Handles loading state, optimistic update + rollback on failure.
+     * - Unauthenticated visitors are sent to sign in when they click.
+     */
+    async function initFollow(agencyId, agencyName) {
+        const btn = document.getElementById('follow-btn');
+        if (!btn || !agencyId) return;
+
+        // An agency can't follow itself.
+        if (CURRENT_USER_ID && CURRENT_USER_ID === Number(agencyId)) {
+            btn.hidden = true;
+            const countEl = document.getElementById('follow-count');
+            if (countEl) countEl.hidden = true;
+            return;
+        }
+
+        let isFollowing = false;
+        let followerCount = null;
+
+        // Follower count is public — always safe to fetch, logged in or not.
+        try {
+            const r = await fetch(`${API.COUNT_FOLLOWER}?user_id=${encodeURIComponent(agencyId)}`, { credentials: 'same-origin' });
+            if (r.ok) {
+                const d = await r.json();
+                if (d && d.success) followerCount = Number(d.count) || 0;
+            }
+        } catch (err) {
+            console.warn('[SAMSAR] Could not load follower count:', err.message);
+        }
+
+        if (CURRENT_USER_ID) {
+            try {
+                const r = await fetch(`${API.CHECK_FOLLOW}?user_id=${encodeURIComponent(agencyId)}`, { credentials: 'same-origin' });
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d && d.success) isFollowing = !!d.is_following;
+                }
+            } catch (err) {
+                console.warn('[SAMSAR] Could not check follow status:', err.message);
+            }
+        }
+
+        applyFollowUI(btn, isFollowing, followerCount);
+
+        btn.addEventListener('click', async () => {
+            if (btn.disabled) return;
+
+            // Not signed in — send them to log in, then back to this page.
+            if (!CURRENT_USER_ID) {
+                toast(window.t ? window.t('agencyprofile.js.signin_required', 'Please sign in to continue.') : 'Please sign in to continue.', 'warning');
+                setTimeout(redirectToLogin, 900);
+                return;
+            }
+
+            const wasFollowing = btn.classList.contains('following');
+            const endpoint = wasFollowing ? API.UNFOLLOW : API.FOLLOW;
+            const dt = window.t || function (k, f) { return f; };
+
+            // Optimistic update
+            setBtnLoading(btn, true);
+            applyFollowUI(btn, !wasFollowing, followerCount === null ? null : followerCount + (wasFollowing ? -1 : 1));
+
+            try {
+                const fd = new FormData();
+                fd.append('following_id', agencyId);
+
+                const r = await fetch(endpoint, { method: 'POST', body: fd, credentials: 'same-origin' });
+                const raw = await r.text();
+
+                let d;
+                try { d = JSON.parse(raw); }
+                catch (_) { throw new Error('Unexpected server response (not JSON).'); }
+
+                if (r.status === 401) {
+                    applyFollowUI(btn, wasFollowing, followerCount);
+                    toast(dt('agencyprofile.js.signin_required', 'Please sign in to continue.'), 'warning');
+                    setTimeout(redirectToLogin, 900);
+                } else if (d && d.success) {
+                    isFollowing = !wasFollowing;
+                    if (typeof d.followers_count === 'number') followerCount = d.followers_count;
+                    else if (followerCount !== null) followerCount += wasFollowing ? -1 : 1;
+                    applyFollowUI(btn, isFollowing, followerCount);
+
+                    toast(
+                        wasFollowing
+                            ? `${dt('agencyprofile.js.unfollowed_prefix', 'You have unfollowed')} ${agencyName}`
+                            : `${dt('agencyprofile.js.now_following_prefix', 'You are now following')} ${agencyName}`,
+                        'success'
+                    );
+                } else {
+                    // Server responded but declined the action (e.g. already following)
+                    applyFollowUI(btn, wasFollowing, followerCount);
+                    toast(d?.message || dt('common.something_wrong', 'Something went wrong.'), 'error');
+                }
+            } catch (err) {
+                console.error('[SAMSAR] Follow network/parse error:', err.message);
+                applyFollowUI(btn, wasFollowing, followerCount);
+                toast(window.t ? window.t('common.network_error') : 'Network error. Please try again.', 'error');
+            } finally {
+                setBtnLoading(btn, false);
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // CONTACT AGENCY — routes to the Messages page with the agency preselected
+    // ─────────────────────────────────────────────────────────────────────
+    function initContact(agencyId, agencyName, agencyAvatar) {
+        const buttons = Array.from(document.querySelectorAll('[data-contact-agency]'));
+        if (!buttons.length || !agencyId) return;
+
+        // An agency can't message itself.
+        if (CURRENT_USER_ID && CURRENT_USER_ID === Number(agencyId)) {
+            buttons.forEach(btn => { btn.hidden = true; });
+            return;
+        }
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.disabled) return;
+
+                if (!CURRENT_USER_ID) {
+                    toast(window.t ? window.t('agencyprofile.js.signin_required', 'Please sign in to continue.') : 'Please sign in to continue.', 'warning');
+                    setTimeout(redirectToLogin, 900);
+                    return;
+                }
+
+                setBtnLoading(btn, true);
+                const params = new URLSearchParams({
+                    agencyId  : String(agencyId),
+                    agencyName: agencyName || '',
+                });
+                if (agencyAvatar) params.set('agencyAvatar', agencyAvatar);
+                location.href = `messages.php?${params.toString()}`;
+            });
+        });
     }
 
     // Load the real agency (by id) and its own properties from the database
@@ -94,13 +330,19 @@
             .then(a => {
                 document.title = `${a.name} · SAMSAR`;
 
+                const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=C72C41&color=fff&size=200`;
+                const resolvedAvatar = logoUrl(a.logo) || fallbackAvatar;
+
                 const logoEl = document.getElementById('prof-logo');
                 if (logoEl) {
-                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=C72C41&color=fff&size=200`;
-                    logoEl.src = logoUrl(a.logo) || fallback;
+                    logoEl.src = resolvedAvatar;
                     logoEl.alt = a.name + ' logo';
-                    logoEl.onerror = () => { logoEl.onerror = null; logoEl.src = fallback; };
+                    logoEl.onerror = () => { logoEl.onerror = null; logoEl.src = fallbackAvatar; };
                 }
+
+                // Wire up the Follow and Contact agency buttons with the real agency data.
+                initFollow(a.id, a.name);
+                initContact(a.id, a.name, resolvedAvatar);
 
                 setText('prof-eyebrow', (a.is_verified ? (window.t ? window.t('agencyprofile.js.verified_samsar') : 'Verified samsar') : (window.t ? window.t('agencyprofile.js.samsar_agency') : 'SAMSAR agency')) + (a.joinYear ? ` · ${window.t ? window.t('agencyprofile.js.since') : 'Since'} ${a.joinYear}` : ''));
                 setText('prof-name', a.name, window.t ? window.t('agencyprofile.js.not_found_short') : 'Agency');

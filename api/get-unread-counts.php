@@ -14,7 +14,6 @@ require_once __DIR__ . '/../php/lang.php';
  *   Count unread messages addressed to me directly from the `messages` table (matching the
  *   schema actually shipped in samsar-2.sql). No join, no missing table.
  */
-session_start();
 header('Content-Type: application/json');
 require "../db/connect.php";
 

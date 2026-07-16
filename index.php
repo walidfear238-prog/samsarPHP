@@ -3,8 +3,233 @@ session_start();
 
 require_once "db/connect.php";
 
+/**
+ * ============================================================================
+ * SAMSAR homepage data layer
+ * ----------------------------------------------------------------------------
+ * Fetches Featured Listings + the logged-in-only "Latest in your feed" rail.
+ * All queries use mysqli prepared statements (no raw user input is ever
+ * concatenated into SQL). Every DB call is wrapped in try/catch so a query
+ * failure degrades gracefully (empty section) instead of crashing the page.
+ * ============================================================================
+ */
 
+const FEATURED_LIMIT = 6; // cards shown in "Featured listings"
+const FEED_LIMIT = 10;    // cards shown in "Latest in your feed" (logged-in only)
 
+/**
+ * Checks whether a column exists on a given table.
+ * Used so this page still works today (schema has no `is_featured` yet)
+ * and automatically switches to it once you add the column — see the
+ * migration note further down.
+ */
+function samsar_column_exists(mysqli $conn, string $table, string $column): bool
+{
+    try {
+        $stmt = $conn->prepare(
+            "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?
+             LIMIT 1"
+        );
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param("ss", $table, $column);
+        $stmt->execute();
+        $stmt->store_result();
+        $exists = $stmt->num_rows > 0;
+        $stmt->close();
+        return $exists;
+    } catch (Throwable $e) {
+        error_log("[SAMSAR][index.php] samsar_column_exists failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Featured Listings — pulled from `properties`.
+ *
+ * NOTE: this database does not currently have an `is_featured` column
+ * (see migration note below the code). Until it's added, this falls back
+ * to the newest published properties so the section is never empty.
+ */
+function get_featured_properties(mysqli $conn, int $limit): array
+{
+    $properties = [];
+    try {
+        $has_featured_col = samsar_column_exists($conn, 'properties', 'is_featured');
+        // Built from a boolean, never from user input — safe to inline.
+        $featured_clause = $has_featured_col ? "p.is_featured = 1 AND " : "";
+
+        $sql = "SELECT p.id, p.title, p.price, p.city, p.district, p.status,
+                       p.bedrooms, p.bathrooms, p.area, p.created_at,
+                       (SELECT pi.image_path FROM property_images pi
+                        WHERE pi.property_id = p.id
+                        ORDER BY pi.is_primary DESC, pi.sort_order ASC
+                        LIMIT 1) AS img
+                FROM properties p
+                WHERE {$featured_clause}p.status != 'draft'
+                ORDER BY p.created_at DESC
+                LIMIT ?";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new RuntimeException("Prepare failed: " . $conn->error);
+        }
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $properties[] = $row;
+        }
+        $stmt->close();
+    } catch (Throwable $e) {
+        error_log("[SAMSAR][index.php] get_featured_properties failed: " . $e->getMessage());
+    }
+    return $properties;
+}
+
+/**
+ * "Latest in your feed" — only ever called when a user is logged in.
+ * Shows ALL recently published listings (not filtered by featured status).
+ */
+function get_latest_properties(mysqli $conn, int $limit): array
+{
+    $properties = [];
+    try {
+        $sql = "SELECT p.id, p.title, p.price, p.city, p.district, p.status,
+                       p.bedrooms, p.bathrooms, p.area, p.created_at,
+                       (SELECT pi.image_path FROM property_images pi
+                        WHERE pi.property_id = p.id
+                        ORDER BY pi.is_primary DESC, pi.sort_order ASC
+                        LIMIT 1) AS img
+                FROM properties p
+                WHERE p.status != 'draft'
+                ORDER BY p.created_at DESC
+                LIMIT ?";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new RuntimeException("Prepare failed: " . $conn->error);
+        }
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $properties[] = $row;
+        }
+        $stmt->close();
+    } catch (Throwable $e) {
+        error_log("[SAMSAR][index.php] get_latest_properties failed: " . $e->getMessage());
+    }
+    return $properties;
+}
+
+/** Total published (non-draft) listings, used for the "View all" count. */
+function get_public_properties_count(mysqli $conn): int
+{
+    try {
+        $result = $conn->query("SELECT COUNT(*) AS cnt FROM properties WHERE status != 'draft'");
+        if ($result && ($row = $result->fetch_assoc())) {
+            return (int) $row['cnt'];
+        }
+    } catch (Throwable $e) {
+        error_log("[SAMSAR][index.php] get_public_properties_count failed: " . $e->getMessage());
+    }
+    return 0;
+}
+
+/**
+ * Picks the badge shown on a card: "New" if published in the last 7 days,
+ * otherwise mapped from the property's status.
+ */
+function get_property_badge(array $property): array
+{
+    $created = strtotime((string) $property['created_at']);
+    if ($created !== false && $created >= strtotime('-7 days')) {
+        return ['key' => 'card.new', 'text' => 'New', 'class' => 'crimson'];
+    }
+    switch ($property['status']) {
+        case 'rented':
+            return ['key' => 'card.forrent', 'text' => 'For Rent', 'class' => ''];
+        case 'sold':
+            return ['key' => 'propstatus.sold', 'text' => 'Sold', 'class' => 'crimson'];
+        case 'pending':
+            return ['key' => 'propstatus.pending', 'text' => 'Pending', 'class' => ''];
+        case 'available':
+        default:
+            return ['key' => 'card.forsale', 'text' => 'For Sale', 'class' => 'crimson'];
+    }
+}
+
+/** Renders one property card. Shared by both the feed and featured grids. */
+function render_property_card(array $p): void
+{
+    $badge    = get_property_badge($p);
+    $img      = !empty($p['img'])
+        ? 'uploads/property_images/' . htmlspecialchars($p['img'], ENT_QUOTES, 'UTF-8')
+        : 'https://placehold.co/600x400/eef2f5/8ba3b0?text=No+Image';
+    $title    = htmlspecialchars((string) $p['title'], ENT_QUOTES, 'UTF-8');
+    $city     = htmlspecialchars((string) ($p['city'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $district = htmlspecialchars((string) ($p['district'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $location = $district !== '' ? "{$district} · {$city}" : $city;
+    $price    = number_format((float) $p['price'], 0);
+    $isRent   = $p['status'] === 'rented';
+    $unitKey  = $isRent ? 'unit.mad_mo' : 'unit.mad';
+    $unitText = $isRent ? 'MAD / mo' : 'MAD';
+    ?>
+<article class="card reveal">
+    <div class="card-media">
+        <img src="<?= $img ?>" alt="<?= $title ?>" loading="lazy"
+            onerror="this.onerror=null;this.src='https://placehold.co/600x400/eef2f5/8ba3b0?text=No+Image';" />
+        <span class="card-badge <?= $badge['class'] ?>" data-i18n="<?= $badge['key'] ?>"><?= $badge['text'] ?></span>
+        <button class="card-fav" aria-label="Save property" data-i18n-aria-label="card.save_property">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+        </button>
+    </div>
+    <div class="card-body">
+        <span class="card-loc"><?= $location ?></span>
+        <h3 class="card-title"><?= $title ?></h3>
+        <div class="card-specs">
+            <span><?= (int) $p['bedrooms'] ?> <span
+                    data-i18n="unit.bd">bd</span></span><span><?= (int) $p['bathrooms'] ?> <span
+                    data-i18n="unit.ba">ba</span></span><span><?= rtrim(rtrim(number_format((float) $p['area'], 1), '0'), '.') ?>
+                m²</span>
+        </div>
+        <div class="card-foot">
+            <span class="card-price"><?= $price ?> <small data-i18n="<?= $unitKey ?>"><?= $unitText ?></small></span>
+            <a class="card-cta" href="03-property-details.php?id=<?= (int) $p['id'] ?>" data-cursor="hover"><span
+                    data-i18n="card.viewdetails">View Details</span>
+                <span class="arrow">→</span></a>
+        </div>
+    </div>
+</article>
+<?php
+}
+
+$is_logged_in = isset($_SESSION['user_id']);
+
+$featured_properties     = get_featured_properties($conn, FEATURED_LIMIT);
+$latest_properties       = $is_logged_in ? get_latest_properties($conn, FEED_LIMIT) : [];
+$public_properties_count = get_public_properties_count($conn);
+
+/**
+ * ----------------------------------------------------------------------------
+ * MIGRATION NOTE (does not run automatically — nothing here alters your schema):
+ * Your current `properties` table has no `is_featured` column, so Featured
+ * Listings above falls back to "newest published" until you add one. To turn
+ * on manual curation, run this whenever you're ready:
+ *
+ *   ALTER TABLE properties ADD COLUMN is_featured TINYINT(1) NOT NULL DEFAULT 0;
+ *   UPDATE properties SET is_featured = 1 WHERE id IN (42, 43); -- pick your picks
+ *
+ * The code above already checks for the column and will start using it the
+ * moment it exists — no further changes needed.
+ * ----------------------------------------------------------------------------
+ */
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -121,8 +346,10 @@ require_once "db/connect.php";
         <section class="actions" id="buy">
             <div class="container">
                 <div class="actions-header reveal">
-                    <h2><span data-i18n="home.actions.title1">Three ways</span><br /><span data-i18n="home.actions.title2">to move with SAMSAR.</span></h2>
-                    <p data-i18n="home.actions.subtitle">Whether you're settling in, cashing out, or just exploring — start with a single tap. Every
+                    <h2><span data-i18n="home.actions.title1">Three ways</span><br /><span
+                            data-i18n="home.actions.title2">to move with SAMSAR.</span></h2>
+                    <p data-i18n="home.actions.subtitle">Whether you're settling in, cashing out, or just exploring —
+                        start with a single tap. Every
                         path
                         is
                         brokered by a verified local samsar.</p>
@@ -131,17 +358,22 @@ require_once "db/connect.php";
                 <a class="action-row reveal" href="02-properties.php" data-cursor="hover">
                     <span class="arrow-in" aria-hidden="true">→</span>
                     <span class="label" data-i18n="home.actions.buy">Buy</span>
-                    <span class="meta"><strong>1,284 <span data-i18n="home.actions.homes_count">homes</span></strong>Marrakech · Casablanca · Tangier</span>
+                    <span class="meta"><strong>1,284 <span
+                                data-i18n="home.actions.homes_count">homes</span></strong>Marrakech · Casablanca ·
+                        Tangier</span>
                 </a>
                 <a class="action-row reveal" href="02-properties.php" data-cursor="hover" data-delay="80">
                     <span class="arrow-in" aria-hidden="true">→</span>
                     <span class="label" data-i18n="home.actions.rent">Rent</span>
-                    <span class="meta"><strong>540 <span data-i18n="home.actions.listings_count">listings</span></strong><span data-i18n="home.actions.rent_meta">Long-term & seasonal riads</span></span>
+                    <span class="meta"><strong>540 <span
+                                data-i18n="home.actions.listings_count">listings</span></strong><span
+                            data-i18n="home.actions.rent_meta">Long-term & seasonal riads</span></span>
                 </a>
                 <a class="action-row reveal" href="10-register-choose.php" data-cursor="hover" data-delay="160">
                     <span class="arrow-in" aria-hidden="true">→</span>
                     <span class="label" data-i18n="home.actions.sell">Sell</span>
-                    <span class="meta"><strong data-i18n="home.actions.free_valuation">Free valuation</strong><span data-i18n="home.actions.sell_meta">Listed in under 48 hours</span></span>
+                    <span class="meta"><strong data-i18n="home.actions.free_valuation">Free valuation</strong><span
+                            data-i18n="home.actions.sell_meta">Listed in under 48 hours</span></span>
                 </a>
             </div>
         </section>
@@ -149,104 +381,43 @@ require_once "db/connect.php";
         <!-- FEED & LATEST -->
         <section class="featured" id="developments">
             <div class="container">
+
+                <?php if ($is_logged_in): ?>
+                <!-- "Latest in your feed" — only rendered at all when logged in.
+                         Logged-out visitors get no trace of this markup in the DOM. -->
                 <div class="featured-header reveal">
-                    <h2><span data-i18n="home.feed.title">Latest in </span><em data-i18n="home.feed.title_em">your feed.</em></h2>
+                    <h2><span data-i18n="home.feed.title">Latest in </span><em data-i18n="home.feed.title_em">your
+                            feed.</em></h2>
                     <p data-i18n="home.feed.subtitle">New listings from agencies you follow.</p>
                 </div>
                 <div class="property-grid" id="feed-grid">
-                    <!-- Statically filled for demo -->
+                    <?php if (empty($latest_properties)): ?>
+                    <p class="reveal" data-i18n="home.feed.empty">No new listings yet — check back soon.</p>
+                    <?php else: ?>
+                    <?php foreach ($latest_properties as $property): ?>
+                    <?php render_property_card($property); ?>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
+                <?php endif; ?>
 
                 <div class="featured-header reveal" style="margin-top: 80px;">
-                    <h2><span data-i18n="home.featured.title">Featured </span><em data-i18n="home.featured.title_em">listings.</em></h2>
+                    <h2><span data-i18n="home.featured.title">Featured </span><em
+                            data-i18n="home.featured.title_em">listings.</em></h2>
                     <a class="view-all" href="02-properties.php" data-cursor="hover">
-                        <span data-i18n="home.featured.viewall">View all</span> 1,284 →
+                        <span data-i18n="home.featured.viewall">View all</span>
+                        <?= number_format($public_properties_count) ?> →
                     </a>
                 </div>
 
                 <div class="property-grid">
-
-                    <article class="card reveal">
-                        <div class="card-media">
-                            <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=900&q=80"
-                                alt="Villa with private pool, palm garden in Marrakech Palmeraie" loading="lazy" />
-                            <span class="card-badge crimson" data-i18n="card.forsale">For Sale</span>
-                            <button class="card-fav" aria-label="Save property" data-i18n-aria-label="card.save_property">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.8">
-                                    <path
-                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <span class="card-loc">Palmeraie · Marrakech</span>
-                            <h3 class="card-title">Villa Tazri — Pool & Atlas views</h3>
-                            <div class="card-specs">
-                                <span>5 <span data-i18n="unit.bd">bd</span></span><span>6 <span data-i18n="unit.ba">ba</span></span><span>620 m²</span>
-                            </div>
-                            <div class="card-foot">
-                                <span class="card-price">12,400,000 <small data-i18n="unit.mad">MAD</small></span>
-                                <a class="card-cta" href="03-property-details.php" data-cursor="hover"><span data-i18n="card.viewdetails">View Details</span>
-                                    <span class="arrow">→</span></a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="card reveal" data-delay="120">
-                        <div class="card-media">
-                            <img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=900&q=80"
-                                alt="Restored riad with zellige courtyard in Essaouira medina" loading="lazy" />
-                            <span class="card-badge" data-i18n="card.forrent">For Rent</span>
-                            <button class="card-fav" aria-label="Save property" data-i18n-aria-label="card.save_property">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.8">
-                                    <path
-                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <span class="card-loc">Medina · Essaouira</span>
-                            <h3 class="card-title">Riad Souira — Restored 18th-century</h3>
-                            <div class="card-specs">
-                                <span>4 <span data-i18n="unit.bd">bd</span></span><span>4 <span data-i18n="unit.ba">ba</span></span><span>310 m²</span>
-                            </div>
-                            <div class="card-foot">
-                                <span class="card-price">38,000 <small data-i18n="unit.mad_mo">MAD / mo</small></span>
-                                <a class="card-cta" href="03-property-details.php" data-cursor="hover"><span data-i18n="card.viewdetails">View Details</span>
-                                    <span class="arrow">→</span></a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="card reveal" data-delay="240">
-                        <div class="card-media">
-                            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
-                                alt="Bright penthouse with terrace in Casablanca Anfa" loading="lazy" />
-                            <span class="card-badge crimson" data-i18n="card.new">New</span>
-                            <button class="card-fav" aria-label="Save property" data-i18n-aria-label="card.save_property">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.8">
-                                    <path
-                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <span class="card-loc">Anfa · Casablanca</span>
-                            <h3 class="card-title">Penthouse Lumière — Ocean terrace</h3>
-                            <div class="card-specs">
-                                <span>3 <span data-i18n="unit.bd">bd</span></span><span>3 <span data-i18n="unit.ba">ba</span></span><span>240 m²</span>
-                            </div>
-                            <div class="card-foot">
-                                <span class="card-price">7,950,000 <small data-i18n="unit.mad">MAD</small></span>
-                                <a class="card-cta" href="03-property-details.php" data-cursor="hover"><span data-i18n="card.viewdetails">View Details</span>
-                                    <span class="arrow">→</span></a>
-                            </div>
-                        </div>
-                    </article>
-
+                    <?php if (empty($featured_properties)): ?>
+                    <p class="reveal" data-i18n="home.featured.empty">No featured listings yet — check back soon.</p>
+                    <?php else: ?>
+                    <?php foreach ($featured_properties as $property): ?>
+                    <?php render_property_card($property); ?>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>
@@ -257,8 +428,11 @@ require_once "db/connect.php";
                 <div class="why-grid">
                     <div class="why-intro reveal">
                         <span class="eyebrow" data-i18n="home.why.eyebrow">Why SAMSAR</span>
-                        <h2><span data-i18n="home.why.title1">A modern broker,</span><br /><span data-i18n="home.why.title2">rooted in </span><em data-i18n="home.why.title2_em">tradition.</em></h2>
-                        <p data-i18n="home.why.subtitle">The samsar has always been the soul of Moroccan property — the one who knows the door
+                        <h2><span data-i18n="home.why.title1">A modern broker,</span><br /><span
+                                data-i18n="home.why.title2">rooted in </span><em
+                                data-i18n="home.why.title2_em">tradition.</em></h2>
+                        <p data-i18n="home.why.subtitle">The samsar has always been the soul of Moroccan property — the
+                            one who knows the door
                             behind
                             the door.
                             We've kept the trust and added the technology.</p>
@@ -267,23 +441,27 @@ require_once "db/connect.php";
                         <div class="stat reveal">
                             <div class="num">100<em>%</em></div>
                             <h3 data-i18n="home.why.stat1.title">Verified listings</h3>
-                            <p data-i18n="home.why.stat1.text">Every title deed cross-checked with the Conservation Foncière before publication.</p>
+                            <p data-i18n="home.why.stat1.text">Every title deed cross-checked with the Conservation
+                                Foncière before publication.</p>
                         </div>
                         <div class="stat reveal" data-delay="100">
                             <div class="num">14<em>+</em></div>
                             <h3 data-i18n="home.why.stat2.title">Local samsars</h3>
-                            <p data-i18n="home.why.stat2.text">A network of vetted brokers across Marrakech, Casablanca, Tangier, Fès and the coast.
+                            <p data-i18n="home.why.stat2.text">A network of vetted brokers across Marrakech, Casablanca,
+                                Tangier, Fès and the coast.
                             </p>
                         </div>
                         <div class="stat reveal" data-delay="200">
                             <div class="num">0<em>%</em></div>
                             <h3 data-i18n="home.why.stat3.title">Hidden fees</h3>
-                            <p data-i18n="home.why.stat3.text">Flat 2.5% commission. Itemised in writing before you ever sign a thing.</p>
+                            <p data-i18n="home.why.stat3.text">Flat 2.5% commission. Itemised in writing before you ever
+                                sign a thing.</p>
                         </div>
                         <div class="stat reveal" data-delay="300">
                             <div class="num">3<em>×</em></div>
                             <h3 data-i18n="home.why.stat4.title">Bilingual contracts</h3>
-                            <p data-i18n="home.why.stat4.text">Arabic, French and English — drafted by a Moroccan notary you choose.</p>
+                            <p data-i18n="home.why.stat4.text">Arabic, French and English — drafted by a Moroccan notary
+                                you choose.</p>
                         </div>
                     </div>
                 </div>
@@ -368,10 +546,22 @@ require_once "db/connect.php";
         <!-- CTA BAND -->
         <section class="cta-band" id="list">
             <div class="container cta-inner">
-                <h2><span data-i18n="home.cta.title1">Selling your home?</span><br /><em data-i18n="home.cta.title2">Let's get started.</em></h2>
-                <a href="#" class="btn" data-open-modal data-cursor="hover">
-                    <span data-i18n="home.cta.button">Let's get started</span> <span class="arrow" aria-hidden="true">→</span>
+                <?php if ($is_logged_in): ?>
+                <!-- Logged-in users don't need the registration pitch — send them to their dashboard instead. -->
+                <h2><span data-i18n="home.cta.title1_loggedin">Ready for your next move?</span><br /><em
+                        data-i18n="home.cta.title2_loggedin">Go to your dashboard.</em></h2>
+                <a href="dashboard.php" class="btn" data-cursor="hover">
+                    <span data-i18n="home.cta.button_loggedin">Go to Dashboard</span> <span class="arrow"
+                        aria-hidden="true">→</span>
                 </a>
+                <?php else: ?>
+                <h2><span data-i18n="home.cta.title1">Selling your home?</span><br /><em
+                        data-i18n="home.cta.title2">Let's get started.</em></h2>
+                <a href="09-register.php" class="btn" data-cursor="hover">
+                    <span data-i18n="home.cta.button">Let's get started</span> <span class="arrow"
+                        aria-hidden="true">→</span>
+                </a>
+                <?php endif; ?>
             </div>
         </section>
 
@@ -389,7 +579,8 @@ require_once "db/connect.php";
                         </svg>
                         <span class="brand-word">SAMSAR</span>
                     </a>
-                    <p data-i18n="footer.tagline">The trusted Moroccan broker, reimagined. Properties brokered with transparency, from the
+                    <p data-i18n="footer.tagline">The trusted Moroccan broker, reimagined. Properties brokered with
+                        transparency, from the
                         Atlas to
                         the
                         Atlantic.</p>
@@ -473,24 +664,29 @@ require_once "db/connect.php";
                     <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
             </button>
-            <h3 id="modal-title"><span data-i18n="modal.title1">Let's </span><em data-i18n="modal.title1_em">get started.</em></h3>
-            <p data-i18n="modal.subtitle">Tell us about your property. A SAMSAR broker will reach out within 24 hours with a free
+            <h3 id="modal-title"><span data-i18n="modal.title1">Let's </span><em data-i18n="modal.title1_em">get
+                    started.</em></h3>
+            <p data-i18n="modal.subtitle">Tell us about your property. A SAMSAR broker will reach out within 24 hours
+                with a free
                 valuation.
             </p>
             <form>
                 <div class="field-row">
                     <div class="field">
                         <label for="m-name" data-i18n="modal.fullname">Full name</label>
-                        <input id="m-name" type="text" required placeholder="Yassine El Amrani" data-i18n-placeholder="modal.fullname.placeholder" />
+                        <input id="m-name" type="text" required placeholder="Yassine El Amrani"
+                            data-i18n-placeholder="modal.fullname.placeholder" />
                     </div>
                     <div class="field">
                         <label for="m-phone" data-i18n="modal.phone">Phone</label>
-                        <input id="m-phone" type="tel" required placeholder="+212 …" data-i18n-placeholder="modal.phone.placeholder" />
+                        <input id="m-phone" type="tel" required placeholder="+212 …"
+                            data-i18n-placeholder="modal.phone.placeholder" />
                     </div>
                 </div>
                 <div class="field">
                     <label for="m-email" data-i18n="modal.email">Email</label>
-                    <input id="m-email" type="email" required placeholder="you@samsar.ma" data-i18n-placeholder="modal.email.placeholder" />
+                    <input id="m-email" type="email" required placeholder="you@samsar.ma"
+                        data-i18n-placeholder="modal.email.placeholder" />
                 </div>
                 <div class="field-row">
                     <div class="field">
@@ -515,7 +711,8 @@ require_once "db/connect.php";
                     </div>
                 </div>
                 <button class="btn btn-primary" type="submit">
-                    <span data-i18n="modal.requestvaluation">Request valuation</span> <span class="arrow" aria-hidden="true">→</span>
+                    <span data-i18n="modal.requestvaluation">Request valuation</span> <span class="arrow"
+                        aria-hidden="true">→</span>
                 </button>
             </form>
         </div>

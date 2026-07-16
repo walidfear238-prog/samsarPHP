@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../php/lang.php';
-session_start();
 header('Content-Type: application/json');
 require "../db/connect.php";
 

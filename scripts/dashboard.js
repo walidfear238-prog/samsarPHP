@@ -53,12 +53,10 @@
   }
 
   function paintOverview(){
-    const props = Store.get('properties', []);
     const favs = Store.get('favorites', []);
-    const following = Store.get('following', []);
 
-    setText('stat-listings', props.length);
-    setText('stat-followers', following.length * 14); // demo
+    // stat-listings and stat-followers are now rendered server-side from the
+    // database in dashboard.php, so they're intentionally left alone here.
     setText('stat-favorites', favs.length);
     setText('bdg-fav', favs.length);
 
