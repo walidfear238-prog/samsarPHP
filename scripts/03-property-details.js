@@ -561,13 +561,6 @@
         : dt4('propdetails.js.professional_agency', 'Professional real estate agency.');
     setText('agent-bio', bio);
 
-    // ── WhatsApp link ─────────────────────────────────────────────────────────
-    const waEl = document.getElementById('whatsapp-link');
-    if (waEl && p.agent_phone) {
-      const phone = p.agent_phone.replace(/\D/g, '');
-      if (phone) waEl.href = `https://wa.me/${phone}`;
-    }
-
     // ── Agency profile link ───────────────────────────────────────────────────
     const agencyLink = document.getElementById('agency-profile-link');
     if (agencyLink && p.user_id) agencyLink.href = `05-agency-profile.php?id=${p.user_id}`;

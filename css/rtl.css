@@ -39,47 +39,250 @@ html[dir="rtl"] .dashboard-link .ico {
   margin-left: 0.5em;
 }
 
-/* Language switcher widget - direction-agnostic but tidy in both modes */
+/* ============================================================
+   Language switcher — single compact control (trigger + popover)
+   Direction-agnostic core, with small RTL flips lower down.
+   Uses currentColor/ink literals rather than the page-specific
+   --samsar-* custom properties, since those are named differently
+   (or absent) across the site's per-page stylesheets; this keeps
+   the widget visually correct everywhere rtl.css is loaded.
+   ============================================================ */
 .lang-switcher {
+  position: relative;
   display: inline-flex;
-  gap: 6px;
-  margin-inline-start: 12px;
+  align-items: center;
+  margin-inline-start: 10px;
 }
-.lang-switcher button {
+
+.lang-switcher-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(26, 26, 26, 0.18);
+  background: transparent;
+  color: #1a1a1a;
   font: inherit;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  background: transparent;
-  color: inherit;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  opacity: 0.65;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0.82;
+  transition: opacity 220ms ease, background 220ms ease,
+    border-color 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-.lang-switcher button:hover {
+.lang-switcher-globe {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.lang-switcher-code {
+  line-height: 1;
+}
+.lang-switcher-chevron {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lang-switcher-trigger:hover {
   opacity: 1;
+  background: rgba(26, 26, 26, 0.05);
+  border-color: rgba(26, 26, 26, 0.3);
   transform: translateY(-1px);
 }
-.lang-switcher button.active {
+.lang-switcher.is-open .lang-switcher-trigger {
   opacity: 1;
-  background: currentColor;
+  background: rgba(26, 26, 26, 0.06);
+  border-color: rgba(26, 26, 26, 0.32);
 }
-.lang-switcher button.active {
-  color: Canvas; /* inverts text color against the filled pill; safe fallback */
+.lang-switcher.is-open .lang-switcher-chevron {
+  transform: rotate(180deg);
+}
+.lang-switcher-trigger:focus-visible {
+  outline: 2px solid rgba(199, 44, 65, 0.55);
+  outline-offset: 2px;
 }
 
-/* Dashboard sidebar variant: stack under the nav, full width */
+/* White/glass treatment while the nav floats transparent over the hero */
+.nav:not(.is-scrolled) .lang-switcher-trigger {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.nav:not(.is-scrolled) .lang-switcher-trigger:hover,
+.nav:not(.is-scrolled) .lang-switcher.is-open .lang-switcher-trigger {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+/* Popover panel */
+.lang-switcher-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 200;
+  min-width: 176px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(26, 26, 26, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 24px 48px -16px rgba(26, 26, 26, 0.28),
+    0 4px 14px rgba(26, 26, 26, 0.06);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lang-switcher.is-open .lang-switcher-menu {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.lang-switcher-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+.lang-switcher-option:hover,
+.lang-switcher-option:focus-visible {
+  background: rgba(26, 26, 26, 0.06);
+}
+.lang-switcher-option:focus-visible {
+  outline: none;
+}
+.lang-switcher-option-code {
+  width: 24px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.5;
+}
+.lang-switcher-option-name {
+  flex: 1;
+}
+.lang-switcher-check {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: #c72c41;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.lang-switcher-option.active {
+  color: #c72c41;
+  font-weight: 600;
+}
+.lang-switcher-option.active .lang-switcher-option-code {
+  opacity: 1;
+}
+.lang-switcher-option.active .lang-switcher-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Auth pages (login/register): .form-head sits on a dark background,
+   so give the trigger the same glass treatment as the page's own
+   .circle-btn instead of the light-nav ink default. */
+.form-head .lang-switcher {
+  display: inline-flex;
+  margin: 14px 0 0;
+}
+.form-head .lang-switcher-trigger {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.form-head .lang-switcher-trigger:hover,
+.form-head .lang-switcher.is-open .lang-switcher-trigger {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Dashboard sidebar variant: full-width row, matching .dashboard-link */
 .dashboard-sidebar .lang-switcher {
-  margin: 12px 0 0 0;
-  padding: 0 4px;
+  display: block;
+  margin: 12px 4px 0;
+}
+.dashboard-sidebar .lang-switcher-trigger {
+  width: 100%;
+  justify-content: flex-start;
+  height: auto;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 10px;
+  opacity: 1;
+}
+.dashboard-sidebar .lang-switcher-trigger:hover {
+  background: #f4f4f2;
+  transform: none;
+}
+.dashboard-sidebar .lang-switcher-code {
+  margin-inline-end: auto;
+}
+.dashboard-sidebar .lang-switcher-menu {
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 0;
+  transform-origin: top center;
 }
 
 @media (max-width: 640px) {
-  .lang-switcher button {
-    padding: 4px 8px;
+  .lang-switcher-trigger {
+    height: 32px;
+    padding: 0 8px;
     font-size: 11px;
   }
+  .lang-switcher-menu {
+    min-width: 160px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang-switcher-trigger,
+  .lang-switcher-chevron,
+  .lang-switcher-menu,
+  .lang-switcher-option,
+  .lang-switcher-check {
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* RTL: mirror the popover to the opposite edge and align its text */
+html[dir="rtl"] .lang-switcher-menu {
+  right: auto;
+  left: 0;
+  transform-origin: top left;
+}
+html[dir="rtl"] .dashboard-sidebar .lang-switcher-menu {
+  left: 0;
+  right: 0;
+}
+html[dir="rtl"] .lang-switcher-option {
+  text-align: right;
+}
+html[dir="rtl"] .lang-switcher-option-code {
+  margin-inline-end: 0;
 }

@@ -722,7 +722,12 @@ body {
 .property-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 22px
+    gap: 22px;
+    transition: opacity .18s ease
+}
+
+.property-grid.is-paging {
+    opacity: 0
 }
 
 .property-grid.list-view {
@@ -941,7 +946,14 @@ body {
     font-weight: 500;
     color: var(--graphite);
     transition: all .25s ease;
-    cursor: pointer
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px
+}
+
+.chev-single {
+    display: none
 }
 
 .page-btn:hover,
@@ -953,6 +965,35 @@ body {
 .page-num.active {
     background: var(--ink);
     color: #fff
+}
+
+.pagination.is-hidden {
+    display: none
+}
+
+.page-btn:disabled,
+.page-num:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+    pointer-events: none
+}
+
+.page-ellipsis {
+    cursor: default;
+    padding-left: 4px;
+    padding-right: 4px
+}
+
+.page-ellipsis:hover {
+    background: none;
+    color: var(--graphite)
+}
+
+.page-edge {
+    padding: 10px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center
 }
 
 /* footer */
@@ -1059,6 +1100,29 @@ body {
     .view-details {
         width: 100%;
         justify-content: center
+    }
+
+    .pagination {
+        gap: 4px;
+        margin-top: 40px
+    }
+
+    .page-btn,
+    .page-num {
+        padding: 8px 10px;
+        font-size: 13px
+    }
+
+    .page-btn span {
+        display: none
+    }
+
+    .chev-single {
+        display: inline-block
+    }
+
+    .page-edge {
+        padding: 8px
     }
 }
 

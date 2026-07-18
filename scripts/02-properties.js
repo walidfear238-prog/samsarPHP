@@ -7,6 +7,9 @@
     // Global properties array - will be filled from API
     let props = [];
 
+    // Pagination config
+    const PAGE_SIZE = 6;
+
     // State management
     const state = {
         type: 'all',
@@ -17,13 +20,15 @@
         min: 0,
         max: Infinity,
         cities: [],
-        features: []
+        features: [],
+        page: 1
     };
 
     // DOM elements
     const grid = document.getElementById('grid');
     const countEl = document.getElementById('result-count');
     const panel = document.getElementById('filter-panel');
+    const paginationEl = document.getElementById('pagination');
 
     // Helper functions
     function escapeHtml(str) {
@@ -75,6 +80,105 @@
             }
             return true;
         });
+    }
+
+    // --- Pagination helpers ---
+
+    function getTotalPages(totalItems) {
+        return Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+    }
+
+    function getPageFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const p = parseInt(params.get('page'), 10);
+        return Number.isFinite(p) && p > 0 ? p : 1;
+    }
+
+    function updateUrlPage(page, push) {
+        const url = new URL(window.location.href);
+        if (page > 1) {
+            url.searchParams.set('page', page);
+        } else {
+            url.searchParams.delete('page');
+        }
+        const method = push ? 'pushState' : 'replaceState';
+        window.history[method]({ page }, '', url);
+    }
+
+    function scrollToResultsTop() {
+        const target = document.querySelector('.results-head') || grid;
+        if (target && target.scrollIntoView) {
+            target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+        }
+    }
+
+    function goToPage(n) {
+        const totalPages = getTotalPages(filteredList().length);
+        n = Math.max(1, Math.min(n, totalPages));
+        if (n === state.page) return;
+        state.page = n;
+        updateUrlPage(n, true);
+
+        if (grid && !reduced) {
+            grid.classList.add('is-paging');
+            setTimeout(() => {
+                render();
+                grid.classList.remove('is-paging');
+                scrollToResultsTop();
+            }, 180);
+        } else {
+            render();
+            scrollToResultsTop();
+        }
+    }
+
+    function renderPagination(totalItems, totalPages) {
+        if (!paginationEl) return;
+
+        if (totalItems === 0 || totalPages <= 1) {
+            paginationEl.innerHTML = '';
+            paginationEl.classList.add('is-hidden');
+            return;
+        }
+        paginationEl.classList.remove('is-hidden');
+
+        const current = state.page;
+        const isMobile = window.innerWidth <= 680;
+        const delta = isMobile ? 1 : 2;
+
+        let start = Math.max(2, current - delta);
+        let end = Math.min(totalPages - 1, current + delta);
+
+        const pages = [1];
+        if (start > 2) pages.push('…');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPages - 1) pages.push('…');
+        if (totalPages > 1) pages.push(totalPages);
+
+        const firstLabel = window.t ? window.t('properties.pagination.first', 'First page') : 'First page';
+        const lastLabel = window.t ? window.t('properties.pagination.last', 'Last page') : 'Last page';
+        const prevLabel = window.t ? window.t('properties.pagination.prev', '← Prev') : '← Prev';
+        const nextLabel = window.t ? window.t('properties.pagination.next', 'Next →') : 'Next →';
+
+        const chevronsDouble = (flip) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="${flip ? 'transform:rotate(180deg)' : ''}"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>`;
+        const chevronSingle = (flip) => `<svg class="chev-single" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="${flip ? 'transform:rotate(180deg)' : ''}"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+
+        let html = '';
+        html += `<button type="button" class="page-btn page-edge" data-action="first" aria-label="${firstLabel}" ${current === 1 ? 'disabled' : ''}>${chevronsDouble(false)}</button>`;
+        html += `<button type="button" class="page-btn" data-action="prev" ${current === 1 ? 'disabled' : ''}>${chevronSingle(false)}<span>${prevLabel}</span></button>`;
+
+        pages.forEach(p => {
+            if (p === '…') {
+                html += `<span class="page-num page-ellipsis" aria-hidden="true">…</span>`;
+            } else {
+                html += `<button type="button" class="page-num${p === current ? ' active' : ''}" data-page="${p}" ${p === current ? 'aria-current="page"' : ''}>${p}</button>`;
+            }
+        });
+
+        html += `<button type="button" class="page-btn" data-action="next" ${current === totalPages ? 'disabled' : ''}><span>${nextLabel}</span>${chevronSingle(true)}</button>`;
+        html += `<button type="button" class="page-btn page-edge" data-action="last" aria-label="${lastLabel}" ${current === totalPages ? 'disabled' : ''}>${chevronsDouble(true)}</button>`;
+
+        paginationEl.innerHTML = html;
     }
 
     function formatPrice(price) {
@@ -183,10 +287,19 @@
                 </div>
             `;
             if (countEl) countEl.textContent = '0';
+            renderPagination(0, 1);
             return;
         }
 
-        grid.innerHTML = list.map((p, i) => {
+        // Paginate: clamp current page to a valid range, then slice out this page's items
+        const totalPages = getTotalPages(list.length);
+        if (state.page > totalPages) state.page = totalPages;
+        if (state.page < 1) state.page = 1;
+        const startIdx = (state.page - 1) * PAGE_SIZE;
+        const pageItems = list.slice(startIdx, startIdx + PAGE_SIZE);
+        updateUrlPage(state.page, false);
+
+        grid.innerHTML = pageItems.map((p, i) => {
             const title = escapeHtml(p.title) || (window.t ? window.t('properties.js.default_title') : 'Property');
             const city = escapeHtml(p.city) || (window.t ? window.t('properties.js.default_city') : 'Morocco');
             const propertyType = escapeHtml(p.property_type) || (window.t ? window.t('properties.js.default_title') : 'Property');
@@ -282,6 +395,8 @@
                 });
             });
         });
+
+        renderPagination(list.length, totalPages);
     }
 
     function setActive(groupSelector, activeEl) {
@@ -298,6 +413,7 @@
             .then(data => {
                 if (data && Array.isArray(data)) {
                     props = data;
+                    state.page = getPageFromUrl();
                     render();
                 } else {
                     console.error('Invalid data format from API');
@@ -334,6 +450,7 @@
                 e.preventDefault();
                 setActive('.filter-chip', chip);
                 state.type = chip.dataset.v || 'all';
+                state.page = 1;
                 render();
                 return;
             }
@@ -342,6 +459,7 @@
                 e.preventDefault();
                 setActive('.seg-btn', seg);
                 state.status = seg.dataset.v || 'all';
+                state.page = 1;
                 render();
                 return;
             }
@@ -355,6 +473,7 @@
                     const group = row.dataset.group;
                     if (group === 'bd') state.bd = parseInt(pill.dataset.v) || 0;
                     if (group === 'ba') state.ba = parseInt(pill.dataset.v) || 0;
+                    state.page = 1;
                     render();
                 }
             }
@@ -362,17 +481,17 @@
     }
 
     const searchInput = document.getElementById('f-search');
-    if (searchInput) searchInput.addEventListener('input', e => { state.q = e.target.value; render(); });
+    if (searchInput) searchInput.addEventListener('input', e => { state.q = e.target.value; state.page = 1; render(); });
 
     ['f-min-price', 'f-max-price'].forEach(id => {
         const input = document.getElementById(id);
-        if (input) input.addEventListener('input', render);
+        if (input) input.addEventListener('input', () => { state.page = 1; render(); });
     });
 
-    document.querySelectorAll('[data-city], [data-feature]').forEach(input => input.addEventListener('change', render));
+    document.querySelectorAll('[data-city], [data-feature]').forEach(input => input.addEventListener('change', () => { state.page = 1; render(); }));
 
     const applyBtn = document.getElementById('apply-filters');
-    if (applyBtn) applyBtn.addEventListener('click', render);
+    if (applyBtn) applyBtn.addEventListener('click', () => { state.page = 1; render(); });
 
     const resetBtn = document.getElementById('reset-filters');
     if (resetBtn) resetBtn.addEventListener('click', () => {
@@ -385,6 +504,7 @@
         state.max = Infinity;
         state.cities = [];
         state.features = [];
+        state.page = 1;
 
         if (searchInput) searchInput.value = '';
         const minInput = document.getElementById('f-min-price');
@@ -396,6 +516,45 @@
         document.querySelectorAll('.filter-chip,.seg-btn,.pill').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('[data-v="all"],[data-v="0"]').forEach(el => el.classList.add('active'));
         render();
+    });
+
+    // Pagination controls: page numbers, prev/next, first/last
+    if (paginationEl) {
+        paginationEl.addEventListener('click', e => {
+            const btn = e.target.closest('[data-page], [data-action]');
+            if (!btn || btn.disabled) return;
+            e.preventDefault();
+
+            const totalPages = getTotalPages(filteredList().length);
+            let target = state.page;
+            if (btn.dataset.page) {
+                target = parseInt(btn.dataset.page, 10);
+            } else if (btn.dataset.action === 'prev') {
+                target = state.page - 1;
+            } else if (btn.dataset.action === 'next') {
+                target = state.page + 1;
+            } else if (btn.dataset.action === 'first') {
+                target = 1;
+            } else if (btn.dataset.action === 'last') {
+                target = totalPages;
+            }
+            goToPage(target);
+        });
+    }
+
+    // Keep the pagination window (and mobile/desktop sizing) in sync with the browser back/forward buttons
+    window.addEventListener('popstate', () => {
+        state.page = getPageFromUrl();
+        render();
+    });
+
+    // Re-render pagination on resize so the number of visible page pills adapts (fewer on mobile)
+    let paginationResizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(paginationResizeTimer);
+        paginationResizeTimer = setTimeout(() => {
+            renderPagination(filteredList().length, getTotalPages(filteredList().length));
+        }, 150);
     });
 
     const ftToggle = document.getElementById('ft-toggle');

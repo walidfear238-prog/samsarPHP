@@ -75,20 +75,20 @@ session_start();
             </section>
 
             <section class="form-block reveal" data-delay="160">
-                <form id="contact-form">
+                <form id="contact-form" novalidate>
                     <h2 data-i18n="contact.form.title">Send a message</h2>
                     <div class="row">
-                        <div class="field"><label for="name" data-i18n="modal.fullname">Full name</label><input id="name" type="text" required
+                        <div class="field"><label for="name" data-i18n="modal.fullname">Full name</label><input id="name" name="name" type="text" required
                                 placeholder="Yassine El Amrani" data-i18n-placeholder="modal.fullname.placeholder" /></div>
-                        <div class="field"><label for="email" data-i18n="modal.email">Email</label><input id="email" type="email" required
+                        <div class="field"><label for="email" data-i18n="modal.email">Email</label><input id="email" name="email" type="email" required
                                 placeholder="you@email.com" data-i18n-placeholder="contact.form.email.placeholder" /></div>
                     </div>
                     <div class="row">
-                        <div class="field"><label for="phone" data-i18n="agencyprofile.phone">Phone</label><input id="phone" type="tel"
+                        <div class="field"><label for="phone" data-i18n="agencyprofile.phone">Phone</label><input id="phone" name="phone" type="tel"
                                 placeholder="+212 …" data-i18n-placeholder="modal.phone.placeholder" />
                         </div>
                         <div class="field"><label for="topic" data-i18n="contact.form.topic">Topic</label>
-                            <select id="topic">
+                            <select id="topic" name="topic">
                                 <option data-i18n="contact.form.topic.general">General enquiry</option>
                                 <option data-i18n="contact.form.topic.buy">I want to buy</option>
                                 <option data-i18n="contact.form.topic.sell">I want to sell</option>
@@ -98,8 +98,14 @@ session_start();
                             </select>
                         </div>
                     </div>
-                    <div class="field"><label for="msg" data-i18n="propdetails.message">Message</label><textarea id="msg" rows="6" required
+                    <div class="field"><label for="msg" data-i18n="propdetails.message">Message</label><textarea id="msg" name="message" rows="6" required
                             placeholder="Tell us a little about what you're looking for…" data-i18n-placeholder="contact.form.message.placeholder"></textarea></div>
+                    <!-- Honeypot: hidden from real visitors, left blank by humans, often filled in by bots. -->
+                    <div class="field" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+                        <label for="website">Website</label>
+                        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+                    </div>
+                    <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
                     <button class="btn btn-primary" type="submit"><span data-i18n="contact.form.submit">Send message</span> <span class="arrow">→</span></button>
                 </form>
             </section>

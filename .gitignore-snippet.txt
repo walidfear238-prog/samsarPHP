@@ -1,0 +1,7 @@
+# SAMSAR — add these lines to your project's .gitignore (create one if you don't have it yet)
+
+# Contains real Gmail App Password — never commit this with real credentials
+php/mail-config.php
+
+# Composer dependencies (optional — only ignore if you'd rather run `composer install` on each machine)
+# vendor/

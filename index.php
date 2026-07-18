@@ -690,7 +690,7 @@ $public_properties_count = get_public_properties_count($conn);
                 </div>
                 <div class="field-row">
                     <div class="field">
-                        <label for="m-city" data-i18n="modal.city">City</label>
+                        8 <label for="m-city" data-i18n="modal.city">City</label>
                         <select id="m-city">
                             <option>Marrakech</option>
                             <option>Casablanca</option>

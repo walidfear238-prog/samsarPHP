@@ -23,10 +23,70 @@
  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
  const form=document.getElementById('contact-form');
- form.addEventListener('submit',e=>{
+ const statusEl=document.getElementById('form-status');
+ const fieldIdByError={name:'name',email:'email',phone:'phone',topic:'topic',message:'msg'};
+
+ function clearFieldErrors(){
+  Object.values(fieldIdByError).forEach(id=>{
+   const el=document.getElementById(id);
+   if(el)el.closest('.field')?.classList.remove('has-error');
+  });
+ }
+
+ function showStatus(text,isError){
+  statusEl.textContent=text;
+  statusEl.classList.remove('is-error','is-success');
+  statusEl.classList.add(isError?'is-error':'is-success','is-visible');
+ }
+
+ form.addEventListener('submit',async e=>{
   e.preventDefault();
-  const b=form.querySelector('button[type="submit"]'),o=b.textContent;
-  b.textContent=window.t?window.t('contact.js.sent'):'Sent — we\'ll reply within 24h ✓';b.disabled=true;
-  setTimeout(()=>{b.textContent=o;b.disabled=false;form.reset()},2000);
+
+  if(!form.checkValidity()){form.reportValidity();return;}
+
+  clearFieldErrors();
+  statusEl.classList.remove('is-visible');
+
+  const b=form.querySelector('button[type="submit"]'),originalHTML=b.innerHTML;
+  b.disabled=true;
+  b.innerHTML='<span>'+(window.t?window.t('contact.js.sending','Sending…'):'Sending…')+'</span>';
+
+  const payload={
+   name:document.getElementById('name').value.trim(),
+   email:document.getElementById('email').value.trim(),
+   phone:document.getElementById('phone').value.trim(),
+   topic:document.getElementById('topic').value.trim(),
+   message:document.getElementById('msg').value.trim(),
+   website:document.getElementById('website').value // honeypot, should stay empty
+  };
+
+  try{
+   const res=await fetch('api/send-contact.php',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+   });
+   const data=await res.json().catch(()=>({}));
+
+   if(res.ok&&data.success){
+    showStatus(window.t?window.t('contact.js.sent','Sent — we\'ll reply within 24h ✓'):'Sent — we\'ll reply within 24h ✓',false);
+    form.reset();
+    setTimeout(()=>statusEl.classList.remove('is-visible'),5000);
+   }else{
+    if(data.errors){
+     Object.keys(data.errors).forEach(key=>{
+      const id=fieldIdByError[key];
+      const el=id&&document.getElementById(id);
+      if(el)el.closest('.field')?.classList.add('has-error');
+     });
+    }
+    showStatus(data.message||'Something went wrong. Please try again.',true);
+   }
+  }catch(err){
+   showStatus('Network error — please check your connection and try again.',true);
+  }finally{
+   b.disabled=false;
+   b.innerHTML=originalHTML;
+  }
  });
 })();

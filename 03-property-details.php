@@ -148,14 +148,9 @@ session_start();
                             </div>
                             <div class="contact-buttons">
                                 <button class="btn btn-primary" type="submit" data-i18n="propdetails.sendmessage">Send Message</button>
-                                <a href="#" class="btn btn-whatsapp" id="whatsapp-link" data-i18n="propdetails.whatsapp">WhatsApp</a>
-                            </div>
-                            <div class="booking-section">
-                                <button type="button" class="btn btn-ghost full" id="book-visit-btn" data-i18n="propdetails.bookvisit">Book a
-                                    Visit</button>
+                                <a href="#" class="btn btn-ghost" id="agency-profile-link" data-i18n="propdetails.viewagencyprofile">View agency profile</a>
                             </div>
                         </form>
-                        <a href="#" class="view-agency" id="agency-profile-link"><span data-i18n="propdetails.viewagencyprofile">View agency profile</span> →</a>
                     </div>
                 </aside>
             </div>

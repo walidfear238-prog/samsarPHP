@@ -235,15 +235,7 @@ session_start();
 
                 <div class="property-grid" id="grid"></div>
 
-                <div class="pagination reveal">
-                    <button class="page-btn"><span data-i18n="properties.pagination.prev">← Prev</span></button>
-                    <span class="page-num active">1</span>
-                    <span class="page-num">2</span>
-                    <span class="page-num">3</span>
-                    <span class="page-num">…</span>
-                    <span class="page-num">54</span>
-                    <button class="page-btn"><span data-i18n="properties.pagination.next">Next →</span></button>
-                </div>
+                <nav class="pagination reveal" id="pagination" aria-label="Properties pagination"></nav>
             </section>
         </div>
     </main>

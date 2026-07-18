@@ -57,6 +57,8 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="dashboard-group"><span data-i18n="dash.group.main">MAIN</span></div>
                 <a class="dashboard-link active" href="dashboard.php"><span class="ico">⌂</span><span
                         data-i18n="dash.overview">Overview</span></a>
+                <a class="dashboard-link" href="profile.php"><span class="ico">☺</span><span
+                        data-i18n="dash.profile">Profile</span></a>
                 <a class="dashboard-link" href="my-properties.php"><span class="ico">▤</span><span
                         data-i18n="dash.myproperties">My Properties</span></a>
                 <a class="dashboard-link" href="add-property.php"><span class="ico">+</span><span
