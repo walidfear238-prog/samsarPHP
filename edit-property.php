@@ -532,6 +532,7 @@ if (!$property) {
         }
     });
     </script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

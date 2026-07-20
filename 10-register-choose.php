@@ -14,6 +14,7 @@ if (!isset($_SESSION['user_id'])) {
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="refresh" content="0; url=09-register.php" />
     <title data-i18n-doctitle="registerchoose.title">SAMSAR · Join</title>
     <link rel="stylesheet" href="styles/10-register-choose.css" />

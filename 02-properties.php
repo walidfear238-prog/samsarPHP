@@ -19,6 +19,7 @@ session_start();
     <link rel="stylesheet" href="styles/02-properties.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
     <link rel="stylesheet" href="css/rtl.css" />
+    <link rel="stylesheet" href="styles/responsive-nav.css" />
     <script src="js/translations.js"></script>
     <script src="js/language-switcher.js"></script>
 </head>
@@ -52,12 +53,14 @@ session_start();
 
                 echo '<a href="logout.php" class="btn btn-secondary"><span data-i18n="nav.logout">Logout</span></a>';
                 echo '
+        <button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
         </div>';
             } else {
                 // User is not logged in, show sign in and register options
                 echo '            <div class="nav-right">
                 <a href="08-login.php" class="nav-text"><span data-i18n="nav.signin">Sign in</span></a>
                 <a href="09-register.php" class="btn btn-primary"><span data-i18n="nav.join">Join SAMSAR</span> <span class="arrow">→</span></a>
+                <button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
             </div>';
             }
             ?>
@@ -253,6 +256,7 @@ session_start();
 
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/02-properties.js"></script>
+    <script src="scripts/responsive-nav.js"></script>
 </body>
 
 </html>

@@ -268,6 +268,12 @@ $avatarSrc = $user['profile_image'] ?: $defaultAvatar;
         }
     }
 
+    @media(max-width:420px) {
+        #profile-form>.content-card[style*="flex"] {
+            flex-wrap: wrap;
+        }
+    }
+
     .ap-status {
         display: none;
         max-width: 760px;
@@ -398,6 +404,7 @@ $avatarSrc = $user['profile_image'] ?: $defaultAvatar;
         });
     })();
     </script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

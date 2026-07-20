@@ -485,6 +485,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         const form = document.getElementById('add-form');
     })();
     </script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

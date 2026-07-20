@@ -210,6 +210,89 @@ function render_property_card(array $p): void
 <?php
 }
 
+/**
+ * ============================================================================
+ * "Explore by city" local image resolver
+ * ----------------------------------------------------------------------------
+ * The city photos used to be pulled from Unsplash. They now come from the
+ * /images folder that already ships with the project instead of any external
+ * URL, placeholder service, or browser upload.
+ *
+ * Filenames in /images don't always match the city name character-for-character
+ * (casing differs, accents are dropped, e.g. "Fès" -> fes.jpg, and a couple of
+ * files have small typos, e.g. "Chefchaouen" -> Chefchauen.jpg). To avoid any
+ * broken image links, city names and filenames are normalized (lowercased,
+ * accents stripped, non-alphanumeric characters removed) and matched by
+ * closest match (Levenshtein distance) rather than requiring an exact match.
+ * When more than one matching extension exists for the same city, .png is
+ * preferred over .jpg/.jpeg, per the required precedence.
+ * ============================================================================
+ */
+
+/** Normalizes a city name or filename for comparison: "Fès" / "fes.jpg" -> "fes". */
+function samsar_normalize_city_key(string $value): string
+{
+    $transliterated = @iconv('UTF-8', 'ASCII//TRANSLIT', $value);
+    $value = $transliterated !== false ? $transliterated : $value;
+    $value = strtolower($value);
+    return preg_replace('/[^a-z0-9]/', '', $value) ?? '';
+}
+
+/**
+ * Finds the local file in /images whose name best matches the given city
+ * name and returns a project-relative path (e.g. "images/Rabat.jpg"), or an
+ * empty string if nothing in the folder is a plausible match.
+ */
+function resolve_city_image(string $cityName, ?string $imagesDir = null): string
+{
+    static $cache = [];
+    if (array_key_exists($cityName, $cache)) {
+        return $cache[$cityName];
+    }
+
+    $imagesDir   = $imagesDir ?? (__DIR__ . '/images');
+    $extPriority = ['png' => 0, 'jpg' => 1, 'jpeg' => 2];
+    $targetKey   = samsar_normalize_city_key($cityName);
+
+    $best = null; // ['file' => string, 'distance' => int, 'extRank' => int]
+
+    foreach ((scandir($imagesDir) ?: []) as $file) {
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        if (!isset($extPriority[$ext])) {
+            continue; // not one of png/jpg/jpeg, or not a file at all
+        }
+
+        $baseKey  = samsar_normalize_city_key(pathinfo($file, PATHINFO_FILENAME));
+        $distance = levenshtein($targetKey, $baseKey);
+
+        // Keep matches close enough to be the same city (handles typos/accents)
+        // without risking a match against an unrelated city image.
+        $maxAllowedDistance = max(2, (int) floor(strlen($targetKey) * 0.25));
+        if ($distance > $maxAllowedDistance) {
+            continue;
+        }
+
+        $extRank = $extPriority[$ext];
+        $isBetter = $best === null
+            || $distance < $best['distance']
+            || ($distance === $best['distance'] && $extRank < $best['extRank']);
+
+        if ($isBetter) {
+            $best = ['file' => $file, 'distance' => $distance, 'extRank' => $extRank];
+        }
+    }
+
+    $result = $best !== null ? ('images/' . $best['file']) : '';
+    $cache[$cityName] = $result;
+    return $result;
+}
+
+/** Convenience wrapper for use directly inside HTML: <img src="<?= city_img('Rabat') ?>"> */
+function city_img(string $cityName): string
+{
+    return htmlspecialchars(resolve_city_image($cityName), ENT_QUOTES, 'UTF-8');
+}
+
 $is_logged_in = isset($_SESSION['user_id']);
 
 $featured_properties     = get_featured_properties($conn, FEATURED_LIMIT);
@@ -250,6 +333,7 @@ $public_properties_count = get_public_properties_count($conn);
     <link rel="stylesheet" href="styles/01-home.css" />
     <link rel="stylesheet" href="styles/samsar-transitions.css" />
     <link rel="stylesheet" href="css/rtl.css" />
+    <link rel="stylesheet" href="styles/responsive-nav.css" />
     <script src="js/translations.js"></script>
     <script src="js/language-switcher.js"></script>
 </head>
@@ -288,6 +372,7 @@ $public_properties_count = get_public_properties_count($conn);
 
                 echo '<a href="logout.php" class="btn btn-secondary"><span data-i18n="nav.logout">Logout</span></a>';
                 echo '
+        <button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
         </div>';
             } else {
                 // User is not logged in, show sign in and register options
@@ -297,7 +382,7 @@ $public_properties_count = get_public_properties_count($conn);
                 <span data-i18n="nav.join">Join SAMSAR</span>
                 <span class="arrow" aria-hidden="true">→</span>
             </a>
-            <button class="nav-toggle" aria-label="Open menu"><span></span></button>
+            <button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
         </div>';
             }
             ?>
@@ -491,49 +576,49 @@ $public_properties_count = get_public_properties_count($conn);
 
                 <div class="cities-track">
                     <div class="city" data-cursor="hover">
-                        <img src="https://images.unsplash.com/photo-1597211833712-5e41faa202ea?auto=format&fit=crop&w=700&q=80"
+                        <img src="<?= city_img('Chefchaouen') ?>"
                             alt="Blue alleys of Chefchaouen" loading="lazy" />
                         <div class="city-label">
                             <h3>Chefchaouen</h3><span>86 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
-                        <img src="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=700&q=80"
+                        <img src="<?= city_img('Marrakech') ?>"
                             alt="Marrakech medina rooftops" loading="lazy" />
                         <div class="city-label">
                             <h3>Marrakech</h3><span>412 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
-                        <img src="https://images.unsplash.com/photo-1538230575309-59fe2ecf5b59?auto=format&fit=crop&w=700&q=80"
+                        <img src="<?= city_img('Fès') ?>"
                             alt="Fès tanneries and medina" loading="lazy" />
                         <div class="city-label">
                             <h3>Fès</h3><span>164 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
-                        <img src="https://images.unsplash.com/photo-1577147443647-81d0e4bfe4cc?auto=format&fit=crop&w=700&q=80"
+                        <img src="<?= city_img('Tangier') ?>"
                             alt="Tangier waterfront" loading="lazy" />
                         <div class="city-label">
                             <h3>Tangier</h3><span>238 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
-                        <img src="https://images.unsplash.com/photo-1570214476695-19bd467e6f7a?auto=format&fit=crop&w=700&q=80"
+                        <img src="<?= city_img('Rabat') ?>"
                             alt="Hassan Tower Rabat" loading="lazy" />
                         <div class="city-label">
                             <h3>Rabat</h3><span>197 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
-                        <img src="https://images.unsplash.com/photo-1528657249085-893be9ffd04f?auto=format&fit=crop&w=700&q=80"
+                        <img src="<?= city_img('Essaouira') ?>"
                             alt="Essaouira fishing port and ramparts" loading="lazy" />
                         <div class="city-label">
                             <h3>Essaouira</h3><span>94 <span data-i18n="unit.homes">homes</span></span>
                         </div>
                     </div>
                     <div class="city" data-cursor="hover">
-                        <img src="https://images.unsplash.com/photo-1518730518541-d0843268c287?auto=format&fit=crop&w=700&q=80"
+                        <img src="<?= city_img('Ouarzazate') ?>"
                             alt="Ouarzazate desert kasbah" loading="lazy" />
                         <div class="city-label">
                             <h3>Ouarzazate</h3><span>52 <span data-i18n="unit.homes">homes</span></span>
@@ -690,7 +775,7 @@ $public_properties_count = get_public_properties_count($conn);
                 </div>
                 <div class="field-row">
                     <div class="field">
-                        8 <label for="m-city" data-i18n="modal.city">City</label>
+                        <label for="m-city" data-i18n="modal.city">City</label>
                         <select id="m-city">
                             <option>Marrakech</option>
                             <option>Casablanca</option>
@@ -720,6 +805,7 @@ $public_properties_count = get_public_properties_count($conn);
 
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/01-home.js"></script>
+    <script src="scripts/responsive-nav.js"></script>
 </body>
 
 </html>

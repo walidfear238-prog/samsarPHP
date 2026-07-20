@@ -15,6 +15,7 @@ session_start();
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/03-property-details.css" />
     <link rel="stylesheet" href="css/rtl.css" />
+    <link rel="stylesheet" href="styles/responsive-nav.css" />
     <script src="js/translations.js"></script>
     <script src="js/language-switcher.js"></script>
 </head>
@@ -44,11 +45,13 @@ session_start();
                 echo '<div class="nav-right">';
                 echo '<a href="dashboard.php" style="font-size:14px;font-weight:500"><span data-i18n="nav.dashboard">Dashboard</span></a>';
                 echo '<a href="logout.php" class="btn btn-secondary"><span data-i18n="nav.logout">Logout</span></a>';
+                echo '<button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>';
                 echo '</div>';
             } else {
                 echo '<div class="nav-right">';
                 echo '<a href="08-login.php" class="nav-text"><span data-i18n="nav.signin">Sign in</span></a>';
                 echo '<a href="10-register-choose.php" class="btn btn-primary"><span data-i18n="nav.join">Join SAMSAR</span> <span class="arrow">→</span></a>';
+                echo '<button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>';
                 echo '</div>';
             }
             ?>
@@ -181,6 +184,7 @@ session_start();
         console.log('Script ' + i + ':', scripts[i].src || 'inline');
     }
     </script>
+    <script src="scripts/responsive-nav.js"></script>
 </body>
 
 </html>

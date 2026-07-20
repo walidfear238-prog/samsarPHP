@@ -89,6 +89,13 @@ $user = $result->fetch_assoc();
         gap: 24px;
     }
 
+    @media(max-width:420px) {
+        .fav-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+    }
+
     .fav-card {
         background: #fff;
         border: 1px solid #ececec;
@@ -437,6 +444,7 @@ $user = $result->fetch_assoc();
         loadFavorites();
     })();
     </script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

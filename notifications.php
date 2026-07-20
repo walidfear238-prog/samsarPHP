@@ -304,6 +304,7 @@ $samsar_base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '
         load();
     })();
     </script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

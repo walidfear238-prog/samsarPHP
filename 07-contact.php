@@ -15,6 +15,7 @@ session_start();
         rel="stylesheet" />
     <link rel="stylesheet" href="styles/07-contact.css" />
     <link rel="stylesheet" href="css/rtl.css" />
+    <link rel="stylesheet" href="styles/responsive-nav.css" />
     <script src="js/translations.js"></script>
     <script src="js/language-switcher.js"></script>
 </head>
@@ -41,10 +42,12 @@ session_start();
 
                 echo '<a href="logout.php" class="btn btn-secondary"><span data-i18n="nav.logout">Logout</span></a>';
                 echo '
-            </div>';
+        <button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
+            </div>
+        </div>';
             } else {
                 echo '            <div class="nav-right"><a href="08-login.php" class="nav-text"><span data-i18n="nav.signin">Sign in</span></a><a href="10-register-choose.php"
-                    class="btn btn-primary"><span data-i18n="nav.join">Join SAMSAR</span> <span class="arrow">→</span></a></div>
+                    class="btn btn-primary"><span data-i18n="nav.join">Join SAMSAR</span> <span class="arrow">→</span></a><button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button></div>
         </div>';
             }
             ?>
@@ -119,6 +122,7 @@ session_start();
         <div class="container footer-inner"><span>© 2026 SAMSAR · Casablanca, Morocco</span></div>
     </footer>
     <script src="scripts/07-contact.js"></script>
+    <script src="scripts/responsive-nav.js"></script>
 </body>
 
 </html>

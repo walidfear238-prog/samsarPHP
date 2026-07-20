@@ -110,6 +110,12 @@ if (!isset($_SESSION['user_id'])) {
         gap: 18px
     }
 
+    @media(max-width:380px) {
+        .follow-grid {
+            grid-template-columns: 1fr
+        }
+    }
+
     .follow-card {
         background: #fff;
         border: 1px solid #ececec;
@@ -250,6 +256,7 @@ if (!isset($_SESSION['user_id'])) {
             .catch(() => renderEmpty());
     })();
     </script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

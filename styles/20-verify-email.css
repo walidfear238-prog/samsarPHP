@@ -55,7 +55,8 @@ body {
     font-family: var(--font-s);
     color: #fff;
     background: var(--ink);
-    background-image: radial-gradient(ellipse at 50% 20%, rgba(165, 0, 52, .2), transparent 55%), linear-gradient(180deg, #0B0809, #120E0F)
+    background-image: radial-gradient(ellipse at 50% 20%, rgba(165, 0, 52, .2), transparent 55%), linear-gradient(180deg, #0B0809, #120E0F);
+    overflow-x: hidden
 }
 
 @media(pointer:fine) {
@@ -500,6 +501,22 @@ h1 em {
 
     .card {
         padding: 28px 20px
+    }
+}
+
+@media(max-width:360px) {
+    .code-input {
+        gap: 6px
+    }
+
+    .code-input input {
+        width: 34px;
+        height: 44px;
+        font-size: 16px
+    }
+
+    .card {
+        padding: 24px 14px
     }
 }
 

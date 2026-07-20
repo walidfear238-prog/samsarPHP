@@ -249,14 +249,14 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px">
+            <div class="db-two-col" style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px">
                 <section>
                     <div class="content-card" style="margin-bottom:18px">
                         <h3 style="font-family:Fraunces,serif;font-size:24px;margin:0 0 6px"
                             data-i18n="dash.quickactions">Quick Actions</h3>
                         <p style="margin:0 0 18px;color:#666" data-i18n="dash.quickactions.subtitle">Jump back into the
                             most common tasks.</p>
-                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+                        <div class="db-quick-actions" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
                             <a class="btn btn-primary" href="add-property.php" style="text-align:center"
                                 data-i18n="dash.addproperty.plus2">+ Add
                                 Property</a>
@@ -414,6 +414,7 @@ if (!isset($_SESSION['user_id'])) {
     <script src="scripts/samsar-transitions.js"></script>
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

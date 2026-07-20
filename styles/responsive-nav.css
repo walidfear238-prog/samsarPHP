@@ -1,0 +1,164 @@
+/* =========================================================
+   SAMSAR · responsive-nav.css
+   Shared mobile navigation drawer for every page that uses the
+   standard `.nav` header (index.php, 02-properties.php,
+   03-property-details.php, 04-agencies.php, 05-agency-profile.php,
+   06-about.php, 07-contact.php).
+
+   Loaded AFTER each page's own stylesheet so it can safely take
+   over the mobile breakpoint without editing every page CSS file
+   individually. Does not touch desktop layout at all.
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .nav-inner {
+    grid-template-columns: 1fr auto;
+    column-gap: 16px;
+  }
+
+  /* The toggle is visually detached from .nav-right via fixed
+     positioning so it keeps working even while the drawer beneath
+     it is open (it stays anchored to the corner of the viewport). */
+  .nav-toggle {
+    display: inline-flex !important;
+    position: fixed;
+    top: 20px;
+    right: var(--gutter, 20px);
+    z-index: 320;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+  }
+  html[dir="rtl"] .nav-toggle { right: auto; left: var(--gutter, 20px); }
+
+  .nav-toggle span,
+  .nav-toggle span::before,
+  .nav-toggle span::after {
+    background: var(--samsar-ink, var(--ink, #1A1A1A));
+    transition: transform 300ms cubic-bezier(0.16,1,0.3,1), top 250ms ease, opacity 200ms ease, background 200ms ease;
+  }
+
+  /* Keep the hamburger legible over transparent/dark hero headers */
+  .nav:not(.is-scrolled) .nav-toggle span,
+  .nav:not(.is-scrolled) .nav-toggle span::before,
+  .nav:not(.is-scrolled) .nav-toggle span::after {
+    background: #fff;
+  }
+
+  /* Force the icon dark once the drawer (white panel) is open,
+     regardless of scroll state, and morph into an "X". */
+  .nav.is-open .nav-toggle span { background: transparent; }
+  .nav.is-open .nav-toggle span::before,
+  .nav.is-open .nav-toggle span::after {
+    background: var(--samsar-ink, var(--ink, #1A1A1A));
+    top: 0;
+  }
+  .nav.is-open .nav-toggle span::before { transform: rotate(45deg); }
+  .nav.is-open .nav-toggle span::after { transform: rotate(-45deg); }
+
+  /* Hidden by default; each spans the full width of nav-inner so it
+     drops onto its own row once the grid grows past 2 columns. */
+  .nav-links,
+  .nav-right {
+    grid-column: 1 / -1;
+    display: none;
+  }
+
+  .nav.is-open {
+    position: fixed !important;
+    inset: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fff !important;
+    backdrop-filter: none;
+    z-index: 300;
+  }
+
+  .nav.is-open .nav-inner {
+    height: auto;
+    min-height: 100%;
+    align-content: start;
+    padding-top: calc(var(--nav-h, 76px) + 8px);
+    padding-bottom: 40px;
+    row-gap: 6px;
+  }
+
+  .nav.is-open .nav-links,
+  .nav.is-open .nav-right {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  /* Some page stylesheets permanently hide the CTA button or text
+     links at narrow widths (with no drawer to reveal them in) —
+     force them visible again inside the open drawer. */
+  .nav.is-open .nav-right > * {
+    display: flex !important;
+  }
+  .nav.is-open .nav-links > * {
+    display: block !important;
+  }
+
+  .nav.is-open .nav-links {
+    gap: 4px;
+    margin-top: 12px;
+  }
+  .nav.is-open .nav-links a {
+    color: var(--samsar-ink, var(--ink, #1A1A1A)) !important;
+    font-size: 20px;
+    font-family: var(--font-display, serif);
+    padding: 14px 4px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .nav.is-open .nav-links a::after { display: none; }
+
+  .nav.is-open .nav-right {
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+  .nav.is-open .nav-right a:not(.btn) {
+    color: var(--samsar-ink, var(--ink, #1A1A1A)) !important;
+    font-size: 16px;
+    padding: 6px 4px;
+  }
+  .nav.is-open .nav-right .btn {
+    width: 100%;
+    padding: 16px 22px;
+  }
+  .nav.is-open .nav-right .lang-switcher {
+    align-self: flex-start;
+    margin: 4px 0 0;
+  }
+
+  body.nav-scroll-lock {
+    overflow: hidden;
+  }
+}
+
+/* Comfortable tap targets on touch devices, every breakpoint */
+@media (pointer: coarse) {
+  .nav-links a,
+  .nav-right a,
+  .btn,
+  .nav-toggle {
+    min-height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav.is-open,
+  .nav-toggle span,
+  .nav-toggle span::before,
+  .nav-toggle span::after {
+    transition-duration: 0.001ms !important;
+  }
+}

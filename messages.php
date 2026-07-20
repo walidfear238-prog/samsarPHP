@@ -92,6 +92,12 @@ $user = $result->fetch_assoc();
             </header>
 
             <div class="chat-layout">
+                <button type="button" class="chat-back-btn" aria-label="Back to conversations">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                </button>
                 <aside class="chat-list" id="chat-list"></aside>
                 <section class="chat-window" id="chat-window">
                     <div class="chat-empty">
@@ -307,6 +313,81 @@ $user = $result->fetch_assoc();
         border-color: #C72C41
     }
 
+    .chat-back-btn {
+        display: none;
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        z-index: 20;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid #ececec;
+        background: #fff;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #1A1A1A;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, .06)
+    }
+
+    html[dir="rtl"] .chat-back-btn {
+        left: auto;
+        right: 14px
+    }
+
+    html[dir="rtl"] .chat-back-btn svg {
+        transform: scaleX(-1)
+    }
+
+    @media(max-width:860px) {
+        .chat-layout {
+            display: block;
+            position: relative;
+            height: calc(100vh - 200px);
+            min-height: 460px
+        }
+
+        .chat-list {
+            height: 100%
+        }
+
+        .chat-window {
+            display: none;
+            height: 100%
+        }
+
+        .chat-layout.show-chat .chat-list {
+            display: none
+        }
+
+        .chat-layout.show-chat .chat-window {
+            display: flex
+        }
+
+        .chat-layout.show-chat .chat-head {
+            padding-left: 58px
+        }
+
+        .chat-layout.show-chat .chat-back-btn {
+            display: flex
+        }
+
+        .bubble {
+            max-width: 84%
+        }
+    }
+
+    @media(max-width:480px) {
+        .chat-body {
+            padding: 14px
+        }
+
+        .chat-form {
+            padding: 10px
+        }
+    }
+
     .chat-form button {
         padding: 12px 22px;
         background: #C72C41;
@@ -326,6 +407,8 @@ $user = $result->fetch_assoc();
     <script src="scripts/dashboard-shell.js"></script>
     <script src="scripts/dashboard.js"></script>
     <script src="scripts/chat.js"></script>
+    <script src="scripts/chat-mobile.js"></script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

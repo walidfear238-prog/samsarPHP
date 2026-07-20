@@ -97,19 +97,21 @@ if (!isset($_SESSION['user_id'])) {
             </header>
 
             <div class="content-card" style="padding:0;overflow:hidden">
-                <table class="mp-table">
-                    <thead>
-                        <tr>
-                            <th data-i18n="myproperties.th.property">Property</th>
-                            <th data-i18n="propdetails.status">Status</th>
-                            <th data-i18n="myproperties.th.price">Price</th>
-                            <th data-i18n="myproperties.th.bedsbaths">Beds / Baths</th>
-                            <th data-i18n="myproperties.th.area">Area</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="mp-body"></tbody>
-                </table>
+                <div class="table-scroll">
+                    <table class="mp-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="myproperties.th.property">Property</th>
+                                <th data-i18n="propdetails.status">Status</th>
+                                <th data-i18n="myproperties.th.price">Price</th>
+                                <th data-i18n="myproperties.th.bedsbaths">Beds / Baths</th>
+                                <th data-i18n="myproperties.th.area">Area</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="mp-body"></tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
@@ -127,10 +129,29 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 
     <style>
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .mp-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 14px
+    }
+
+    @media (max-width: 900px) {
+        .mp-table { min-width: 720px; }
+    }
+
+    @media (max-width: 640px) {
+        .dashboard-head { flex-direction: column; align-items: flex-start; }
+        .dashboard-head .btn { width: 100%; justify-content: center; }
+        .mp-table th, .mp-table td { padding: 12px 14px; }
+        .mp-table th:nth-child(5), .mp-table td:nth-child(5) { display: none; }
+        .mp-cell img { width: 48px; height: 48px; }
+        .mp-actions { flex-wrap: wrap; justify-content: flex-start; }
     }
 
     .mp-table th {
@@ -492,6 +513,7 @@ if (!isset($_SESSION['user_id'])) {
     }
     </script>
     </script>
+    <script src="scripts/dashboard-mobile-nav.js"></script>
 </body>
 
 </html>

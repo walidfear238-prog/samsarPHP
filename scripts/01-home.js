@@ -294,16 +294,8 @@
   }
 
   // ---------------------------------------------------------
-  // 8. Mobile nav toggle (simple)
+  // 8. Mobile nav toggle now handled by scripts/responsive-nav.js
   // ---------------------------------------------------------
-  const toggle = document.querySelector(".nav-toggle");
-  if (toggle) {
-    toggle.addEventListener("click", () => {
-      // For brevity: open modal as a quick contact gesture on mobile
-      const modalEl = document.getElementById("modal");
-      if (modalEl) modalEl.classList.add("is-open"), document.body.style.overflow = "hidden";
-    });
-  }
 
   // ---------------------------------------------------------
   // 9. Year stamp
